@@ -102,36 +102,101 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(C.weeklyHolidayPay(20000, 40).belowMinWage === false, "최저임금 이상 정상");
 }
 
-// ── 9. index.html 구조 검증 ──
-const htmlPath = path.join(__dirname, "index.html");
-if (fs.existsSync(htmlPath)) {
-  const h = fs.readFileSync(htmlPath, "utf8");
-  const checks = [
+// ── 9. 대출 이자 계산기 ──
+{
+  // 원리금균등: 매월 동일, 총상환>원금, 총이자>0
+  const a = C.loanPayment({ principal: 100000000, annualRate: 4.5, months: 360, method: "equalPI" });
+  ok(a.monthly > 0, "원리금균등 월상환>0");
+  ok(a.totalPayment > a.principal, "총상환 > 원금");
+  ok(a.totalInterest > 0, "총이자 > 0");
+  ok(Math.abs(a.totalPayment - a.principal - a.totalInterest) <= 2, "총상환=원금+총이자");
+  // 원금균등: 첫 달 > 마지막 달, 총이자 < 원리금균등
+  const b = C.loanPayment({ principal: 100000000, annualRate: 4.5, months: 360, method: "equalP" });
+  ok(b.monthlyFirst > b.monthlyLast, "원금균등 첫달>마지막달");
+  ok(b.totalInterest < a.totalInterest, "원금균등 총이자 < 원리금균등");
+  // 만기일시: 총이자 가장 큼
+  const c = C.loanPayment({ principal: 100000000, annualRate: 4.5, months: 360, method: "bullet" });
+  ok(c.totalInterest >= a.totalInterest, "만기일시 총이자 최대");
+  ok(c.monthlyInterest === Math.floor(100000000 * (0.045/12)), "만기일시 월이자 정확");
+  // 금리 0%면 이자 0
+  ok(C.loanPayment({ principal: 12000000, annualRate: 0, months: 12, method: "equalPI" }).totalInterest === 0, "금리0 → 이자0");
+  // 빈 입력 방어
+  ok(C.loanPayment({ principal: 0, annualRate: 4, months: 12 }).totalPayment === 0, "원금0 방어");
+  ok(C.loanPayment({ principal: 1000000, annualRate: 4, months: 0 }).totalPayment === 0, "기간0 방어");
+  // 단조성: 금리↑ → 총이자↑ (원리금균등)
+  let prevInt = -1;
+  for (let rate = 1; rate <= 12; rate += 0.5) {
+    const r = C.loanPayment({ principal: 50000000, annualRate: rate, months: 120, method: "equalPI" });
+    ok(r.totalInterest >= prevInt, `대출 금리↑→총이자↑ (${rate}%)`);
+    prevInt = r.totalInterest;
+  }
+}
+
+// ── 10. 만 나이 계산기 ──
+{
+  ok(C.koreanAge("2000-01-01", "2026-01-01").man === 26, "만나이 생일당일 +1");
+  ok(C.koreanAge("2000-06-15", "2026-06-14").man === 25, "만나이 생일 하루전");
+  ok(C.koreanAge("2000-06-15", "2026-06-15").man === 26, "만나이 생일 당일");
+  ok(C.koreanAge("2000-06-15", "2026-06-16").man === 26, "만나이 생일 다음날");
+  ok(C.koreanAge("2000-01-01", "2026-06-01").counting === 27, "세는나이 = 연도차+1");
+  ok(C.koreanAge("2000-01-01", "2026-06-01").yearAge === 26, "연나이 = 연도차");
+  ok(C.koreanAge("not-a-date") === null, "잘못된 날짜 방어");
+  // 단조성: 기준일 늦을수록 만나이 비감소
+  let prevAge = -1;
+  for (let y = 2010; y <= 2030; y++) {
+    const m = C.koreanAge("2000-03-10", y + "-07-01").man;
+    ok(m >= prevAge, `만나이 단조 (${y})`);
+    prevAge = m;
+  }
+}
+
+// ── 11. 평수 변환 ──
+{
+  ok(Math.abs(C.pyeongToM2(1) - 3.31) < 0.01, "1평 ≈ 3.31㎡");
+  ok(Math.abs(C.m2ToPyeong(3.3058) - 1) < 0.01, "3.3058㎡ ≈ 1평");
+  // 왕복 변환 오차 작음 (1~200평)
+  for (let p = 1; p <= 200; p++) {
+    const back = C.m2ToPyeong(C.pyeongToM2(p));
+    ok(Math.abs(back - p) < 0.05, `평수 왕복변환 오차작음 (${p}평)`);
+  }
+  ok(C.pyeongToM2(0) === 0 && C.m2ToPyeong(0) === 0, "0 입력 방어");
+  ok(C.pyeongToM2(-5) === 0, "음수 입력 방어");
+}
+
+// ── 12. HTML 페이지 구조 검증 (전 페이지) ──
+const pages = ["index.html", "daechul.html", "man-nai.html", "pyeong.html"];
+ok(fs.existsSync(path.join(__dirname, "style.css")), "style.css 존재");
+ok(fs.existsSync(path.join(__dirname, "calc.js")), "calc.js 존재");
+pages.forEach((page) => {
+  const p = path.join(__dirname, page);
+  if (!fs.existsSync(p)) { ok(false, `${page} 존재`); return; }
+  const h = fs.readFileSync(p, "utf8");
+  [
     ["<!DOCTYPE html>", "DOCTYPE"],
     ['lang="ko"', "한국어 lang"],
-    ['name="viewport"', "모바일 viewport"],
-    ['name="description"', "SEO description"],
-    ['property="og:title"', "OG 제목"],
+    ['name="viewport"', "viewport"],
+    ['name="description"', "description"],
+    ['property="og:title"', "OG"],
+    ['rel="canonical"', "canonical"],
+    ['"style.css"', "style.css 연결"],
     ['"calc.js"', "calc.js 연결"],
-    ["실수령", "실수령 키워드"],
-    ["@media", "반응형"],
-    ["ADSENSE_CLIENT", "애드센스 설정 지점"],
-    ["AFFILIATE", "제휴 링크 설정 지점"],
+    ['class="sitenav"', "허브 네비"],
+    ["ADSENSE_CLIENT", "애드센스 지점"],
     ["</html>", "html 닫힘"],
-  ];
-  checks.forEach(([needle, name]) =>
-    ok(h.includes(needle), `HTML: ${name}`));
-  // style 중괄호 균형
-  const sm = h.match(/<style>([\s\S]*?)<\/style>/);
-  if (sm) ok((sm[1].match(/{/g)||[]).length === (sm[1].match(/}/g)||[]).length, "CSS 중괄호 균형");
+  ].forEach(([needle, name]) => ok(h.includes(needle), `${page}: ${name}`));
   // script 태그 짝
-  ok((h.match(/<script/g)||[]).length === (h.match(/<\/script>/g)||[]).length, "script 태그 짝");
+  ok((h.match(/<script/g)||[]).length === (h.match(/<\/script>/g)||[]).length, `${page}: script 짝`);
+  // 허브 교차링크: 4개 페이지 모두 링크
+  pages.forEach((other) => ok(h.includes(`href="${other}"`), `${page}: ${other} 링크`));
   // 내부 앵커 유효성
   const anchors = [...h.matchAll(/href="#([\w-]+)"/g)].map(m => m[1]).filter(Boolean);
   const ids = new Set([...h.matchAll(/id="([\w-]+)"/g)].map(m => m[1]));
-  anchors.forEach(a => ok(ids.has(a), `내부링크 #${a} 대상존재`));
-} else {
-  ok(false, "index.html 존재");
+  anchors.forEach(a => ok(ids.has(a), `${page}: 내부링크 #${a}`));
+});
+// style.css 중괄호 균형
+{
+  const css = fs.readFileSync(path.join(__dirname, "style.css"), "utf8");
+  ok((css.match(/{/g)||[]).length === (css.match(/}/g)||[]).length, "style.css 중괄호 균형");
 }
 
 // ── 결과 ──

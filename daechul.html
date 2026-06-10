@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>대출 이자 계산기 — 원리금균등·원금균등·만기일시 월상환액 계산 (2026)</title>
+<meta name="description" content="대출 원금·금리·기간만 입력하면 월 상환액과 총 이자를 즉시 계산. 원리금균등·원금균등·만기일시 상환방식 비교. 주택담보·신용·전세자금 대출 모두 무료 계산." />
+<meta name="keywords" content="대출 이자 계산기, 원리금균등상환, 원금균등상환, 월상환액 계산기, 대출 계산기, 주택담보대출 이자" />
+<link rel="canonical" href="https://example.com/daechul.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="대출 이자 계산기 — 월상환액·총이자 즉시 계산" />
+<meta property="og:description" content="원리금균등·원금균등·만기일시 상환방식별 월 상환액과 총 이자를 비교하세요." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"대출 이자 계산기","applicationCategory":"FinanceApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+</script>
+<script>
+  const ADSENSE_CLIENT = "";
+  const AFFILIATE = { loan: { label: "💰 여러 은행 대출금리 1초 비교하고 이자 아끼기 →", url: "#" } };
+</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html">연봉 실수령액</a>
+  <a href="daechul.html" class="on">대출이자</a>
+  <a href="man-nai.html">만 나이</a>
+  <a href="pyeong.html">평수</a>
+</div></nav>
+
+<header class="wrap">
+  <span class="y">무료 · 가입 없음</span>
+  <h1>대출 이자 계산기</h1>
+  <p>원금·금리·기간만 넣으면 <b>월 상환액과 총 이자</b>를 상환방식별로 바로 계산해요.</p>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="field">
+      <label>대출 원금</label>
+      <div class="inputrow"><input id="principal" type="text" inputmode="numeric" placeholder="100,000,000" /><span class="unit">원</span></div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>연이율</label>
+        <div class="inputrow"><input id="rate" type="text" inputmode="decimal" placeholder="4.5" /><span class="unit">%</span></div>
+      </div>
+      <div class="field">
+        <label>대출 기간</label>
+        <div class="inputrow"><input id="years" type="text" inputmode="numeric" placeholder="30" /><span class="unit">년</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>상환 방식</label>
+      <div class="toggle">
+        <label><input type="radio" name="method" value="equalPI" checked><span>원리금균등</span></label>
+        <label><input type="radio" name="method" value="equalP"><span>원금균등</span></label>
+        <label><input type="radio" name="method" value="bullet"><span>만기일시</span></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="lbl" id="resLbl">월 상환액</div>
+    <div class="big" id="monthly">–</div>
+    <div class="sub">총 이자 <b id="totalInterest">–</b> · 총 상환액 <b id="totalPayment">–</b></div>
+  </div>
+
+  <a class="aff" id="affLoan" href="#" target="_blank" rel="noopener nofollow"></a>
+
+  <div class="card">
+    <table id="detail"></table>
+    <p class="note">※ 실제 대출은 중도상환수수료·우대금리·거치기간 등에 따라 달라질 수 있습니다. 본 계산은 참고용 추정치입니다.</p>
+  </div>
+
+  <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
+
+  <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
+  <details open><summary>원리금균등과 원금균등, 뭐가 더 유리한가요?</summary><div class="a">원리금균등은 매월 갚는 금액이 일정해 계획이 쉽고 초기 부담이 적습니다. 원금균등은 초기 상환액이 크지만 <b>총 이자가 더 적습니다</b>. 여유가 있다면 원금균등이 이자 측면에서 유리합니다.</div></details>
+  <details><summary>만기일시상환은 언제 쓰나요?</summary><div class="a">매월 이자만 내고 만기에 원금을 한 번에 갚는 방식입니다. 전세자금대출이나 단기 자금에 주로 쓰이며, 총 이자는 가장 많습니다.</div></details>
+  <details><summary>금리를 조금만 낮춰도 차이가 큰가요?</summary><div class="a">네. 대출 금액이 크고 기간이 길수록 0.5%만 낮아져도 총 이자가 수백만 원 차이 납니다. 여러 은행 금리를 비교하는 것이 가장 확실한 이자 절감 방법입니다.</div></details>
+</main>
+
+<footer class="wrap">
+  <p>계산 결과는 참고용 추정치이며 법적 효력이 없습니다.</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브</p>
+</footer>
+
+<script src="calc.js"></script>
+<script>
+(function(){
+  var won = function(n){ return (n||0).toLocaleString('ko-KR') + '원'; };
+  var intnum = function(el){ return parseInt(String(el.value).replace(/[^0-9]/g,''),10) || 0; };
+  var floatnum = function(el){ return parseFloat(String(el.value).replace(/[^0-9.]/g,'')) || 0; };
+  function commaize(el){ var v=intnum(el); el.value = v ? v.toLocaleString('ko-KR') : ''; }
+
+  var principal=document.getElementById('principal'), rate=document.getElementById('rate'), years=document.getElementById('years');
+  function calc(){
+    var P=intnum(principal), r=floatnum(rate), y=intnum(years);
+    var method=document.querySelector('input[name=method]:checked').value;
+    if(!P || !y){ document.getElementById('monthly').textContent='–'; document.getElementById('detail').innerHTML=''; return; }
+    var res=SalaryCalc.loanPayment({principal:P, annualRate:r, months:y*12, method:method});
+    var rows='';
+    if(method==='equalPI'){
+      document.getElementById('resLbl').textContent='월 상환액 (매월 동일)';
+      document.getElementById('monthly').textContent=won(res.monthly);
+      rows='<tr><td>월 상환액</td><td>'+won(res.monthly)+'</td></tr>';
+    } else if(method==='equalP'){
+      document.getElementById('resLbl').textContent='첫 달 상환액 (점차 감소)';
+      document.getElementById('monthly').textContent=won(res.monthlyFirst);
+      rows='<tr><td>첫 달 상환액</td><td>'+won(res.monthlyFirst)+'</td></tr>'+
+           '<tr><td>마지막 달 상환액</td><td>'+won(res.monthlyLast)+'</td></tr>';
+    } else {
+      document.getElementById('resLbl').textContent='매월 이자 (만기에 원금 상환)';
+      document.getElementById('monthly').textContent=won(res.monthlyInterest);
+      rows='<tr><td>매월 이자</td><td>'+won(res.monthlyInterest)+'</td></tr>'+
+           '<tr><td>만기 상환액(원금+이자)</td><td>'+won(res.monthlyLast)+'</td></tr>';
+    }
+    document.getElementById('totalInterest').textContent=won(res.totalInterest);
+    document.getElementById('totalPayment').textContent=won(res.totalPayment);
+    document.getElementById('detail').innerHTML = rows +
+      '<tr><td>대출 원금</td><td>'+won(res.principal)+'</td></tr>'+
+      '<tr><td>총 이자</td><td class="neg">'+won(res.totalInterest)+'</td></tr>'+
+      '<tr class="tot"><td>총 상환액</td><td>'+won(res.totalPayment)+'</td></tr>';
+  }
+  principal.addEventListener('input',function(){commaize(principal);calc();});
+  years.addEventListener('input',function(){commaize(years);calc();});
+  rate.addEventListener('input',calc);
+  document.querySelectorAll('input[name=method]').forEach(function(el){ el.addEventListener('change',calc); });
+
+  var a=document.getElementById('affLoan'); a.textContent=AFFILIATE.loan.label;
+  var valid=AFFILIATE.loan.url && AFFILIATE.loan.url!=='#'; a.href=valid?AFFILIATE.loan.url:'#';
+  if(!valid){ a.style.opacity=.55; a.addEventListener('click',function(e){e.preventDefault();}); }
+
+  if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
+    var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
+    s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
+  }
+  document.getElementById('year').textContent=new Date().getFullYear();
+  principal.value='100,000,000'; rate.value='4.5'; years.value='30'; calc();
+})();
+</script>
+</body>
+</html>

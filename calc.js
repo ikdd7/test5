@@ -211,11 +211,76 @@
     };
   }
 
+  // ───────────────────────── 대출 이자 계산기 ─────────────────────────
+  /**
+   * @param {Object} o
+   *   principal: 대출원금(원), annualRate: 연이율(%), months: 기간(개월)
+   *   method: 'equalPI'(원리금균등) | 'equalP'(원금균등) | 'bullet'(만기일시)
+   */
+  function loanPayment(o) {
+    o = o || {};
+    var P = Math.max(0, o.principal || 0);
+    var months = Math.max(0, Math.floor(o.months || 0));
+    var r = (Math.max(0, o.annualRate || 0) / 100) / 12; // 월 이율
+    var method = o.method || "equalPI";
+    var empty = { method: method, principal: P, months: months,
+      monthlyFirst: 0, monthlyLast: 0, totalInterest: 0, totalPayment: 0 };
+    if (P === 0 || months === 0) return empty;
+
+    if (method === "equalP") { // 원금균등: 매월 원금 동일, 이자 점감
+      var pPart = P / months;
+      var first = won(pPart + P * r);
+      var last = won(pPart + pPart * r);
+      var totalInterest = won(P * r * (months + 1) / 2);
+      return { method: method, principal: P, months: months,
+        monthlyFirst: first, monthlyLast: last,
+        totalInterest: totalInterest, totalPayment: won(P + totalInterest) };
+    }
+    if (method === "bullet") { // 만기일시: 매월 이자만, 만기에 원금
+      var mi = won(P * r);
+      var ti = won(P * r * months);
+      return { method: method, principal: P, months: months,
+        monthlyInterest: mi, monthlyFirst: mi, monthlyLast: won(mi + P),
+        totalInterest: ti, totalPayment: won(P + ti) };
+    }
+    // 원리금균등(기본): 매월 상환액 동일
+    var M = r === 0 ? P / months : P * r / (1 - Math.pow(1 + r, -months));
+    var total = M * months;
+    return { method: "equalPI", principal: P, months: months,
+      monthly: won(M), monthlyFirst: won(M), monthlyLast: won(M),
+      totalInterest: won(total - P), totalPayment: won(total) };
+  }
+
+  // ───────────────────────── 만 나이 계산기 ─────────────────────────
+  /** birth: 'YYYY-MM-DD' 생년월일, base: 기준일(기본 오늘) */
+  function koreanAge(birth, base) {
+    var b = new Date(birth);
+    var d = base ? new Date(base) : new Date();
+    if (isNaN(b.getTime()) || isNaN(d.getTime())) return null;
+    var man = d.getFullYear() - b.getFullYear();
+    var mDiff = d.getMonth() - b.getMonth();
+    if (mDiff < 0 || (mDiff === 0 && d.getDate() < b.getDate())) man--;
+    return {
+      man: man,                                        // 만 나이(법적)
+      counting: d.getFullYear() - b.getFullYear() + 1, // 세는 나이
+      yearAge: d.getFullYear() - b.getFullYear(),      // 연 나이(병역/청소년보호법)
+    };
+  }
+
+  // ───────────────────────── 평수 변환 ─────────────────────────
+  var PYEONG_TO_M2 = 3.3057851;
+  function pyeongToM2(p) { return Math.round((Math.max(0, p) * PYEONG_TO_M2) * 100) / 100; }
+  function m2ToPyeong(m) { return Math.round((Math.max(0, m) / PYEONG_TO_M2) * 100) / 100; }
+
   var API = {
     RATES: RATES,
     netSalary: netSalary,
     severancePay: severancePay,
     weeklyHolidayPay: weeklyHolidayPay,
+    loanPayment: loanPayment,
+    koreanAge: koreanAge,
+    pyeongToM2: pyeongToM2,
+    m2ToPyeong: m2ToPyeong,
     // 내부 함수도 테스트용으로 노출
     _internal: {
       nationalPension: nationalPension, healthInsurance: healthInsurance,

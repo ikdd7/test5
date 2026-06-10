@@ -3,124 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>연봉 실수령액 계산기 2026 — 4대보험·세금 자동계산 | 퇴직금·주휴수당</title>
-<meta name="description" content="2026년 기준 연봉 실수령액을 1초 만에 계산하세요. 국민연금·건강보험·고용보험·소득세까지 자동 반영. 퇴직금 계산기, 시급·주휴수당 계산기도 무료로 제공합니다." />
+<title>연봉 실수령액 계산기 2026 — 4대보험·세금 자동계산 | 무료 계산기</title>
+<meta name="description" content="2026년 기준 연봉 실수령액을 1초 만에 계산하세요. 국민연금·건강보험·고용보험·소득세 자동 반영. 퇴직금·주휴수당·대출이자·만나이·평수 계산기도 무료 제공." />
 <meta name="keywords" content="연봉 실수령액 계산기, 실수령액, 4대보험 계산기, 월급 실수령액, 퇴직금 계산기, 주휴수당 계산기, 2026 연봉" />
 <link rel="canonical" href="https://example.com/" />
-
 <meta property="og:type" content="website" />
 <meta property="og:title" content="연봉 실수령액 계산기 2026 — 4대보험·세금 자동계산" />
-<meta property="og:description" content="연봉만 입력하면 월 실수령액과 4대보험·세금 공제내역을 한눈에. 퇴직금·주휴수당 계산기 포함." />
+<meta property="og:description" content="연봉만 입력하면 월 실수령액과 4대보험·세금 공제내역을 한눈에." />
 <meta property="og:locale" content="ko_KR" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💰</text></svg>" />
-
-<!-- 구조화 데이터(검색 노출 강화) -->
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"연봉 실수령액 계산기 2026","applicationCategory":"FinanceApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
 </script>
 
-<!-- ╔════════════════════════════════════════════════════════════╗
-     ║  수익화 설정 — 여기 두 곳만 채우면 됩니다.                  ║
-     ╚════════════════════════════════════════════════════════════╝ -->
+<!-- ╔═══ 수익화 설정 — 여기 두 곳만 채우면 됩니다 ═══╗ -->
 <script>
-  // ① 구글 애드센스 승인 후 발급받은 client ID (예: "ca-pub-1234567890123456")
-  const ADSENSE_CLIENT = "";   // ← 비워두면 광고영역은 자리만 표시됩니다
-  // ② 제휴(대출/카드/보험 비교) 링크 — 클릭당/가입당 수익
+  const ADSENSE_CLIENT = "";   // ① 애드센스 승인 후 ca-pub-xxxx
   const AFFILIATE = {
-    loan: { label: "내 조건 대출금리 1초 비교 →", url: "#" },   // 대출비교 제휴 링크
-    card: { label: "연봉대로 카드 추천받기 →",   url: "#" },   // 카드 제휴 링크
+    loan: { label: "내 조건 대출금리 1초 비교 →", url: "#" },
+    card: { label: "연봉대로 카드 추천받기 →",   url: "#" },
   };
 </script>
-
-<style>
-  :root{
-    --bg:#0e1117;--card:#161b24;--card2:#1c2230;--line:#283041;
-    --text:#e9edf6;--muted:#9aa4ba;--brand:#3b82f6;--brand2:#22d3ee;
-    --good:#34d399;--warn:#fbbf24;--bad:#f87171;--radius:16px;--maxw:760px;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;
-    background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 16px}
-  a{color:var(--brand2);text-decoration:none}
-  h1,h2,h3{letter-spacing:-.02em;line-height:1.3}
-
-  header{padding:28px 0 8px;text-align:center}
-  header .y{display:inline-block;background:var(--card2);border:1px solid var(--line);
-    color:var(--brand2);font-weight:800;font-size:.8rem;padding:5px 12px;border-radius:999px;margin-bottom:12px}
-  header h1{font-size:clamp(1.5rem,5vw,2.1rem);font-weight:900}
-  header p{color:var(--muted);margin-top:8px;font-size:.97rem}
-
-  /* 탭 */
-  .tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);
-    border-radius:999px;padding:5px;margin:22px auto;max-width:520px}
-  .tabs button{flex:1;background:none;border:0;color:var(--muted);font-weight:700;
-    font-size:.92rem;padding:11px 8px;border-radius:999px;cursor:pointer;transition:.15s}
-  .tabs button.active{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
-
-  .panel{display:none}
-  .panel.active{display:block;animation:fade .25s ease}
-  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px;margin-bottom:16px}
-  .field{margin-bottom:16px}
-  .field label{display:block;font-weight:700;font-size:.92rem;margin-bottom:7px}
-  .field .hint{color:var(--muted);font-weight:400;font-size:.82rem;margin-left:6px}
-  .inputrow{display:flex;align-items:center;background:var(--card2);border:1px solid var(--line);
-    border-radius:12px;padding:0 14px;transition:border-color .15s}
-  .inputrow:focus-within{border-color:var(--brand)}
-  .inputrow input,.inputrow select{flex:1;background:none;border:0;color:var(--text);
-    font-size:1.15rem;font-weight:700;padding:14px 6px;outline:none;width:100%}
-  .inputrow .unit{color:var(--muted);font-weight:700;font-size:.95rem;white-space:nowrap}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  select{appearance:none;cursor:pointer}
-
-  .toggle{display:flex;gap:8px;flex-wrap:wrap}
-  .toggle label{flex:1;min-width:120px;text-align:center;background:var(--card2);
-    border:1px solid var(--line);border-radius:10px;padding:11px;cursor:pointer;font-weight:700;font-size:.9rem;color:var(--muted)}
-  .toggle input{display:none}
-  .toggle input:checked + span{color:var(--text)}
-  .toggle label:has(input:checked){border-color:var(--brand);background:rgba(59,130,246,.12);color:var(--text)}
-
-  /* 결과 */
-  .result{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
-    border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:16px}
-  .result .lbl{color:var(--muted);font-size:.92rem}
-  .result .big{font-size:clamp(2rem,8vw,2.8rem);font-weight:900;letter-spacing:-.03em;margin:6px 0;
-    background:linear-gradient(135deg,var(--good),var(--brand2));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .result .sub{color:var(--muted);font-size:.9rem}
-  table{width:100%;border-collapse:collapse;margin-top:6px}
-  table td{padding:11px 4px;border-bottom:1px solid var(--line);font-size:.95rem}
-  table td:last-child{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
-  table tr:last-child td{border-bottom:0}
-  .tot td{font-weight:900;color:var(--good);border-top:2px solid var(--line)}
-  .neg{color:var(--bad)}
-
-  .note{color:var(--muted);font-size:.8rem;margin-top:10px}
-  .warnbox{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:var(--warn);
-    border-radius:10px;padding:10px 14px;font-size:.88rem;font-weight:700;margin-top:12px}
-
-  /* 광고 / 제휴 */
-  .ad{margin:18px 0;min-height:90px;background:repeating-linear-gradient(45deg,var(--card),var(--card) 10px,var(--card2) 10px,var(--card2) 20px);
-    border:1px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.82rem}
-  .aff{display:block;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:800;
-    text-align:center;padding:16px;border-radius:12px;margin:14px 0;box-shadow:0 8px 24px rgba(59,130,246,.35)}
-
-  /* FAQ */
-  details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 18px;margin-bottom:10px}
-  summary{cursor:pointer;list-style:none;padding:16px 0;font-weight:700;display:flex;justify-content:space-between}
-  summary::-webkit-details-marker{display:none}
-  summary::after{content:"+";color:var(--brand2);font-weight:900;font-size:1.3rem}
-  details[open] summary::after{content:"−"}
-  details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
-
-  footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
-
-  @media(max-width:520px){ .grid2{grid-template-columns:1fr} }
-</style>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
+
+<!-- 계산기 허브 네비 (모든 페이지 공통) -->
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html" class="on">연봉 실수령액</a>
+  <a href="daechul.html">대출이자</a>
+  <a href="man-nai.html">만 나이</a>
+  <a href="pyeong.html">평수</a>
+</div></nav>
 
 <header class="wrap">
   <span class="y">2026년 기준 · 무료</span>
@@ -135,7 +51,6 @@
     <button data-tab="wage">시급·주휴수당</button>
   </div>
 
-  <!-- ── 연봉 실수령액 ── -->
   <section class="panel active" id="salary">
     <div class="card">
       <div class="field">
@@ -181,7 +96,6 @@
     <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
   </section>
 
-  <!-- ── 퇴직금 ── -->
   <section class="panel" id="severance">
     <div class="card">
       <div class="field">
@@ -198,10 +112,9 @@
       <div class="big" id="sevPay">–</div>
       <div class="sub">재직일수 <b id="sevDays">–</b>일</div>
     </div>
-    <p class="note wrap" style="padding:0">※ 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365). 평균임금에 상여·연차수당이 포함되면 금액이 늘 수 있습니다.</p>
+    <p class="note">※ 퇴직금 = 1일 평균임금 × 30 × (재직일수 / 365). 평균임금에 상여·연차수당이 포함되면 금액이 늘 수 있습니다.</p>
   </section>
 
-  <!-- ── 시급/주휴수당 ── -->
   <section class="panel" id="wage">
     <div class="card">
       <div class="grid2">
@@ -221,23 +134,20 @@
       <div class="sub">주급 <b id="wageWeekly">–</b> · 주휴 포함 실질시급 <b id="wageEff">–</b></div>
     </div>
     <div id="minWarn"></div>
-    <p class="note wrap" style="padding:0">※ 주 15시간 이상 근무 시 주휴수당이 발생합니다. 월 환산은 평균 4.345주 기준입니다.</p>
+    <p class="note">※ 주 15시간 이상 근무 시 주휴수당이 발생합니다. 월 환산은 평균 4.345주 기준입니다.</p>
   </section>
 
-  <!-- 제휴 배너 (공통) -->
   <a class="aff" id="affCard" href="#" target="_blank" rel="noopener nofollow"></a>
 
-  <!-- FAQ (SEO) -->
   <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
   <details open><summary>실수령액이 왜 연봉보다 한참 적나요?</summary><div class="a">연봉에서 국민연금(4.5%)·건강보험·고용보험 등 4대보험과 근로소득세·지방소득세가 매달 빠지기 때문입니다. 보통 연봉의 8~18%가 공제됩니다(연봉이 높을수록 비율↑).</div></details>
   <details><summary>비과세액은 무엇이고 왜 입력하나요?</summary><div class="a">식대(월 20만원 한도) 등 비과세 항목은 세금·4대보험 계산에서 제외돼 실수령액을 높입니다. 회사 급여명세서의 비과세 항목 합계를 넣으면 더 정확합니다.</div></details>
-  <details><summary>이 계산기는 정확한가요?</summary><div class="a">2026년 잠정 요율로 계산한 추정치입니다. 실제 매달 떼는 세금은 국세청 간이세액표를, 최종 금액은 연말정산을 따릅니다. 실수령액의 대략적인 기준으로 활용하세요.</div></details>
-  <details><summary>퇴직금 '별도'와 '포함'의 차이는?</summary><div class="a">'별도'는 연봉 외에 퇴직금을 따로 받는 경우, '포함'은 연봉 안에 퇴직금이 들어있는(연봉÷13) 경우입니다. 계약서를 확인하세요.</div></details>
+  <details><summary>이 계산기는 정확한가요?</summary><div class="a">2026년 잠정 요율로 계산한 추정치입니다. 실제 매달 떼는 세금은 국세청 간이세액표를, 최종 금액은 연말정산을 따릅니다.</div></details>
 </main>
 
 <footer class="wrap">
   <p>본 사이트의 계산 결과는 참고용 추정치이며 법적 효력이 없습니다. 요율 기준: 2026년(잠정).</p>
-  <p style="margin-top:6px">© <span id="year"></span> 실수령액 계산기</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브</p>
 </footer>
 
 <script src="calc.js"></script>
@@ -247,7 +157,6 @@
   var num = function(el){ return parseInt(String(el.value).replace(/[^0-9]/g,''),10) || 0; };
   function commaize(el){ var v = num(el); el.value = v ? v.toLocaleString('ko-KR') : ''; }
 
-  // 탭 전환
   document.querySelectorAll('.tabs button').forEach(function(b){
     b.addEventListener('click', function(){
       document.querySelectorAll('.tabs button').forEach(function(x){x.classList.remove('active')});
@@ -257,15 +166,12 @@
     });
   });
 
-  // ── 연봉 실수령액 ──
   var annual=document.getElementById('annual'), nontax=document.getElementById('nontax'),
       dep=document.getElementById('dependents'), kid=document.getElementById('children');
   function calcSalary(){
     var r = SalaryCalc.netSalary({
-      annualSalary: num(annual),
-      dependents: parseInt(dep.value,10),
-      children: parseInt(kid.value,10),
-      nonTaxMonthly: num(nontax),
+      annualSalary: num(annual), dependents: parseInt(dep.value,10),
+      children: parseInt(kid.value,10), nonTaxMonthly: num(nontax),
       severanceIncluded: document.querySelector('input[name=sev]:checked').value === '1'
     });
     if(!num(annual)){ document.getElementById('netMonthly').textContent='–'; document.getElementById('breakdown').innerHTML=''; return; }
@@ -287,13 +193,10 @@
   [dep,kid].forEach(function(el){ el.addEventListener('change',calcSalary); });
   document.querySelectorAll('input[name=sev]').forEach(function(el){ el.addEventListener('change',calcSalary); });
 
-  // ── 퇴직금 ──
   var sevWage=document.getElementById('sevWage'), sevStart=document.getElementById('sevStart'), sevEnd=document.getElementById('sevEnd');
   function calcSev(){
     var wage=num(sevWage), days=0;
-    if(sevStart.value && sevEnd.value){
-      days = Math.round((new Date(sevEnd.value)-new Date(sevStart.value))/86400000);
-    }
+    if(sevStart.value && sevEnd.value){ days = Math.round((new Date(sevEnd.value)-new Date(sevStart.value))/86400000); }
     if(!wage || days<=0){ document.getElementById('sevPay').textContent='–'; document.getElementById('sevDays').textContent='–'; return; }
     document.getElementById('sevPay').textContent = won(SalaryCalc.severancePay(wage,days));
     document.getElementById('sevDays').textContent = days.toLocaleString('ko-KR');
@@ -301,7 +204,6 @@
   sevWage.addEventListener('input',function(){commaize(sevWage);calcSev();});
   [sevStart,sevEnd].forEach(function(el){ el.addEventListener('change',calcSev); });
 
-  // ── 시급/주휴 ──
   var hourly=document.getElementById('hourly'), weeklyHours=document.getElementById('weeklyHours');
   function calcWage(){
     var h=num(hourly), wh=num(weeklyHours);
@@ -315,7 +217,6 @@
   }
   [hourly,weeklyHours].forEach(function(el){ el.addEventListener('input',function(){ if(el===hourly) commaize(hourly); calcWage();}); });
 
-  // 제휴 배너 연결
   function bindAff(id, conf){
     var a=document.getElementById(id); if(!a) return;
     a.textContent = conf.label;
@@ -323,19 +224,14 @@
     a.href = valid ? conf.url : '#';
     if(!valid){ a.style.opacity=.55; a.addEventListener('click',function(e){e.preventDefault();}); }
   }
-  bindAff('affLoan', AFFILIATE.loan);
-  bindAff('affCard', AFFILIATE.card);
+  bindAff('affLoan', AFFILIATE.loan); bindAff('affCard', AFFILIATE.card);
 
-  // 애드센스 자동 로드(설정 시)
   if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
     var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
     s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
-    document.head.appendChild(s);
-    document.getElementById('ad1').textContent='';
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
   }
-
   document.getElementById('year').textContent=new Date().getFullYear();
-  // 기본 예시값으로 첫 화면에 결과 노출
   annual.value='40,000,000'; calcSalary();
 })();
 </script>

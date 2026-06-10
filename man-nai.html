@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>만 나이 계산기 — 생년월일로 만 나이·세는나이·연나이 즉시 확인</title>
+<meta name="description" content="생년월일만 입력하면 만 나이, 세는 나이, 연 나이를 한 번에 계산합니다. 만 나이 통일법 기준, 띠·생일까지 남은 날도 확인하세요. 무료, 가입 없음." />
+<meta name="keywords" content="만 나이 계산기, 만나이, 세는나이, 연나이, 나이 계산기, 만 나이 통일" />
+<link rel="canonical" href="https://example.com/man-nai.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="만 나이 계산기 — 생년월일로 즉시 확인" />
+<meta property="og:description" content="만 나이·세는 나이·연 나이를 한 번에 계산하세요." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎂</text></svg>" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"만 나이 계산기","applicationCategory":"UtilitiesApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+</script>
+<script>const ADSENSE_CLIENT = "";</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html">연봉 실수령액</a>
+  <a href="daechul.html">대출이자</a>
+  <a href="man-nai.html" class="on">만 나이</a>
+  <a href="pyeong.html">평수</a>
+</div></nav>
+
+<header class="wrap">
+  <span class="y">만 나이 통일법 기준</span>
+  <h1>만 나이 계산기</h1>
+  <p>생년월일만 넣으면 <b>만 나이·세는 나이·연 나이</b>를 한 번에 알려드려요.</p>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="grid2">
+      <div class="field"><label>생년월일</label><div class="inputrow"><input id="birth" type="date" /></div></div>
+      <div class="field"><label>기준일 <span class="hint">기본 오늘</span></label><div class="inputrow"><input id="base" type="date" /></div></div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="lbl">만 나이</div>
+    <div class="big" id="man">–</div>
+    <div class="sub">세는 나이 <b id="counting">–</b> · 연 나이 <b id="yearAge">–</b></div>
+  </div>
+
+  <div class="card">
+    <table id="detail"></table>
+  </div>
+
+  <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
+
+  <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
+  <details open><summary>만 나이, 세는 나이, 연 나이가 뭐가 다른가요?</summary><div class="a"><b>만 나이</b>는 태어난 날 0세로 시작해 생일마다 +1 하는 국제 표준(법적 기준)입니다. <b>세는 나이</b>는 태어나면 1세, 매년 1월 1일 +1 하던 한국식 나이입니다. <b>연 나이</b>는 '현재 연도 − 출생 연도'로, 병역·청소년보호법 등에서 씁니다.</div></details>
+  <details><summary>2023년 만 나이 통일법 이후 어떻게 되나요?</summary><div class="a">2023년 6월부터 법령·계약·행정에서 별도 표기가 없으면 모두 '만 나이'로 통일되었습니다. 일상에서 묻는 나이도 만 나이로 답하는 것이 표준입니다.</div></details>
+</main>
+
+<footer class="wrap">
+  <p>계산 결과는 참고용입니다.</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브</p>
+</footer>
+
+<script src="calc.js"></script>
+<script>
+(function(){
+  var birth=document.getElementById('birth'), base=document.getElementById('base');
+  function calc(){
+    if(!birth.value){ document.getElementById('man').textContent='–'; document.getElementById('detail').innerHTML=''; return; }
+    var r=SalaryCalc.koreanAge(birth.value, base.value || undefined);
+    if(!r){ return; }
+    document.getElementById('man').textContent = r.man + '세';
+    document.getElementById('counting').textContent = r.counting + '세';
+    document.getElementById('yearAge').textContent = r.yearAge + '세';
+    // 다음 생일까지 남은 날
+    var b=new Date(birth.value), d=base.value?new Date(base.value):new Date();
+    var next=new Date(d.getFullYear(), b.getMonth(), b.getDate());
+    if(next < d) next.setFullYear(d.getFullYear()+1);
+    var dday=Math.ceil((next - d)/86400000);
+    document.getElementById('detail').innerHTML =
+      '<tr><td>만 나이 (법적 기준)</td><td>'+r.man+'세</td></tr>'+
+      '<tr><td>세는 나이 (한국식)</td><td>'+r.counting+'세</td></tr>'+
+      '<tr><td>연 나이 (병역·청소년)</td><td>'+r.yearAge+'세</td></tr>'+
+      '<tr class="tot"><td>다음 생일까지</td><td>'+(dday===0?'오늘! 🎉':'D-'+dday)+'</td></tr>';
+  }
+  birth.addEventListener('change',calc); base.addEventListener('change',calc);
+  if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
+    var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
+    s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
+  }
+  document.getElementById('year').textContent=new Date().getFullYear();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>평수 계산기 — 평 ↔ 제곱미터(㎡) 변환 | 분양면적·전용면적</title>
+<meta name="description" content="평을 제곱미터로, 제곱미터를 평으로 즉시 변환합니다. 아파트 분양면적·전용면적 평수 환산, 1평은 몇 제곱미터인지 바로 확인하세요. 무료." />
+<meta name="keywords" content="평수 계산기, 평 제곱미터 변환, 제곱미터 평 변환, 평 환산, 1평, 전용면적 평수" />
+<link rel="canonical" href="https://example.com/pyeong.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="평수 계산기 — 평 ↔ ㎡ 변환" />
+<meta property="og:description" content="평과 제곱미터를 양방향으로 즉시 변환하세요." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📐</text></svg>" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"평수 계산기","applicationCategory":"UtilitiesApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+</script>
+<script>const ADSENSE_CLIENT = "";</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html">연봉 실수령액</a>
+  <a href="daechul.html">대출이자</a>
+  <a href="man-nai.html">만 나이</a>
+  <a href="pyeong.html" class="on">평수</a>
+</div></nav>
+
+<header class="wrap">
+  <span class="y">평 ↔ ㎡ 양방향</span>
+  <h1>평수 계산기</h1>
+  <p>평을 ㎡로, ㎡를 평으로 <b>입력하는 즉시</b> 변환해드려요.</p>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="field">
+      <label>평 → 제곱미터</label>
+      <div class="inputrow"><input id="pyeong" type="text" inputmode="decimal" placeholder="34" /><span class="unit">평</span></div>
+    </div>
+    <div class="result" style="margin:0">
+      <div class="lbl">제곱미터</div>
+      <div class="big" id="m2out">–</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>제곱미터 → 평</label>
+      <div class="inputrow"><input id="m2" type="text" inputmode="decimal" placeholder="84" /><span class="unit">㎡</span></div>
+    </div>
+    <div class="result" style="margin:0">
+      <div class="lbl">평</div>
+      <div class="big" id="pyeongout">–</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <table id="ref"></table>
+    <p class="note">※ 1평 = 3.3058㎡ (정확히 400/121㎡). 아파트 '34평'은 보통 공급면적 기준이며 전용면적은 더 작습니다.</p>
+  </div>
+
+  <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
+
+  <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
+  <details open><summary>1평은 몇 제곱미터인가요?</summary><div class="a">1평은 약 3.3058㎡입니다. 반대로 1㎡는 약 0.3025평입니다. 흔히 쓰는 '국민평형' 84㎡는 약 25.4평(전용)이며, 공급면적 기준으로는 보통 33~34평으로 불립니다.</div></details>
+  <details><summary>공급면적과 전용면적은 어떻게 다른가요?</summary><div class="a">전용면적은 현관 안쪽 실제 거주 공간, 공급(분양)면적은 전용면적에 계단·복도 등 주거공용면적을 더한 것입니다. 분양 광고의 '평수'는 대개 공급면적 기준입니다.</div></details>
+</main>
+
+<footer class="wrap">
+  <p>계산 결과는 참고용입니다.</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브</p>
+</footer>
+
+<script src="calc.js"></script>
+<script>
+(function(){
+  var pyeong=document.getElementById('pyeong'), m2=document.getElementById('m2');
+  var fnum=function(el){ return parseFloat(String(el.value).replace(/[^0-9.]/g,'')) || 0; };
+  function fromPyeong(){
+    var p=fnum(pyeong);
+    document.getElementById('m2out').textContent = p ? SalaryCalc.pyeongToM2(p).toLocaleString('ko-KR')+'㎡' : '–';
+  }
+  function fromM2(){
+    var m=fnum(m2);
+    document.getElementById('pyeongout').textContent = m ? SalaryCalc.m2ToPyeong(m).toLocaleString('ko-KR')+'평' : '–';
+  }
+  pyeong.addEventListener('input',fromPyeong);
+  m2.addEventListener('input',fromM2);
+
+  // 자주 찾는 평수 환산표
+  var rows='<tr><td colspan="2" style="color:var(--brand2);font-weight:800">자주 찾는 면적</td></tr>';
+  [[24,'24평'],[32,'32평'],[34,'34평'],[43,'43평']].forEach(function(x){
+    rows+='<tr><td>'+x[1]+'</td><td>'+SalaryCalc.pyeongToM2(x[0]).toLocaleString('ko-KR')+'㎡</td></tr>';
+  });
+  [[59,'59㎡'],[84,'84㎡'],[114,'114㎡']].forEach(function(x){
+    rows+='<tr><td>'+x[1]+'</td><td>'+SalaryCalc.m2ToPyeong(x[0]).toLocaleString('ko-KR')+'평</td></tr>';
+  });
+  document.getElementById('ref').innerHTML=rows;
+
+  if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
+    var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
+    s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
+  }
+  document.getElementById('year').textContent=new Date().getFullYear();
+  pyeong.value='34'; fromPyeong(); m2.value='84'; fromM2();
+})();
+</script>
+</body>
+</html>
