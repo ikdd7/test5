@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>결혼식장 비용 공개 — 식대·대관료 그래프로 비교 | 웨딩 가격 투명화</title>
+<meta name="description" content="결혼식장이 방문 상담으로만 알려주는 식대·대관료를 제보로 모아 그래프로 공개합니다. 지역·홀타입별 평균 식대, 대관료, 총비용을 한눈에 비교하고 내 견적과 맞춰보세요." />
+<meta name="keywords" content="결혼식장 비용, 식대, 대관료, 웨딩홀 가격, 예식장 식대 비교, 결혼식 비용 계산기, 웨딩홀 평균" />
+<link rel="canonical" href="https://example.com/wedding.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="결혼식장 비용 공개 — 식대·대관료를 그래프로" />
+<meta property="og:description" content="숨겨진 웨딩홀 가격, 제보로 함께 공개해요." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💒</text></svg>" />
+<script>
+  // ── 설정 ──────────────────────────────────────────────
+  // 구글폼 제보 링크(만든 뒤 붙여넣기). 비우면 버튼이 안내 모드로 동작.
+  const REPORT_FORM_URL = "";
+  // 구글시트 응답을 CSV로 게시한 주소(파일 → 웹에 게시 → CSV).
+  // 설정 시 실데이터를 불러와 예시 데이터를 대체합니다. 비우면 예시 데이터 사용.
+  const SHEET_CSV_URL = "";
+  const ADSENSE_CLIENT = "";
+</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html">연봉 실수령액</a>
+  <a href="silup.html">실업급여</a>
+  <a href="wedding.html" class="on">결혼식장 비용</a>
+  <a href="daechul.html">대출이자</a>
+  <a href="man-nai.html">만 나이</a>
+  <a href="pyeong.html">평수</a>
+</div></nav>
+
+<header class="wrap">
+  <span class="y">💒 웨딩 가격 투명화 프로젝트</span>
+  <h1>결혼식장 비용, 그래프로 공개</h1>
+  <p>식장이 “방문 상담”으로만 알려주는 <b>식대·대관료</b>를 제보로 모아 누구나 비교할 수 있게.</p>
+  <p style="margin-top:10px"><span class="samplebadge" id="dataBadge">예시 데이터 64건</span></p>
+</header>
+
+<main class="wrap">
+
+  <!-- 필터 -->
+  <div class="card">
+    <label style="font-weight:800">지역</label>
+    <div class="pill-row" id="regionPills"></div>
+    <label style="font-weight:800;margin-top:6px;display:block">홀 타입</label>
+    <div class="pill-row" id="typePills"></div>
+  </div>
+
+  <!-- 요약 통계 -->
+  <div class="result">
+    <div class="lbl">선택 조건 평균 식대 (1인)</div>
+    <div class="big" id="avgMeal">–</div>
+    <div class="sub">평균 대관료 <b id="avgRental">–</b> · 표본 <b id="nCount">–</b>건</div>
+  </div>
+
+  <div class="chart-card">
+    <h3>🍽️ 홀 타입별 평균 식대 (1인)</h3>
+    <div id="chartTypeMeal"></div>
+    <p class="cap">호텔·하우스가 높고 일반예식장이 낮은 경향. 같은 타입 안에서도 지역차가 큽니다.</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>📍 지역별 평균 식대 (1인)</h3>
+    <div id="chartRegionMeal"></div>
+  </div>
+
+  <div class="chart-card">
+    <h3>🏛️ 홀 타입별 평균 대관료</h3>
+    <div id="chartTypeRental"></div>
+    <p class="cap">보증인원을 채우면 대관료를 면제해주는 곳도 많아 0원 표본이 섞여 있습니다.</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>👥 보증인원 vs 총 예상비용</h3>
+    <div id="chartScatter"></div>
+    <p class="cap">총비용 = 식대×보증인원 + 대관료. 점 하나가 식장 한 곳(예시)입니다.</p>
+  </div>
+
+  <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
+
+  <!-- 내 견적 비교 계산기 + 공유훅 -->
+  <h2 style="margin:28px 0 12px;font-size:1.3rem">💰 내 결혼식 비용, 평균과 비교</h2>
+  <div class="card">
+    <div class="grid2">
+      <div class="field">
+        <label>예상 하객 수</label>
+        <div class="inputrow"><input id="myGuests" type="text" inputmode="numeric" placeholder="250" /><span class="unit">명</span></div>
+      </div>
+      <div class="field">
+        <label>1인 식대</label>
+        <div class="inputrow"><input id="myMeal" type="text" inputmode="numeric" placeholder="65,000" /><span class="unit">원</span></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>대관료 <span class="hint">없으면 0</span></label>
+      <div class="inputrow"><input id="myRental" type="text" inputmode="numeric" placeholder="0" /><span class="unit">원</span></div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="lbl">내 총 예상 비용 (식대+대관료)</div>
+    <div class="big" id="myTotal">–</div>
+    <div class="verdict" id="verdict"></div>
+  </div>
+
+  <div class="share" id="share"></div>
+
+  <!-- 제보 CTA -->
+  <div class="chart-card" style="text-align:center">
+    <h3>📝 내 식장 가격, 같이 공개해요</h3>
+    <p class="cap" style="margin:0 0 14px">제보가 쌓일수록 모두에게 정확해집니다. 익명으로 30초면 끝나요.</p>
+    <button type="button" class="sharebtn alt" id="reportBtn" style="max-width:320px;margin:0 auto">💒 우리 식장 가격 제보하기</button>
+  </div>
+
+  <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
+  <details open><summary>이 가격은 진짜인가요?</summary><div class="a">현재 표시되는 데이터는 통계 흐름을 보여주기 위한 <b>예시(합성) 데이터</b>이며 실제 식장이 아닙니다. 사용자 제보가 쌓이면 실제 값으로 대체됩니다. 특정 식장의 가격을 임의로 단정해 게시하지 않습니다.</div></details>
+  <details><summary>식대·대관료는 보통 얼마인가요?</summary><div class="a">일반예식장은 1인 5만~7만원대, 컨벤션 6만~8만원대, 호텔은 9만~16만원대가 흔합니다. 대관료는 보증인원을 채우면 면제되는 경우도 많지만, 호텔·하우스웨딩은 수백만~수천만원이 들기도 합니다. (지역·시즌·요일에 따라 차이)</div></details>
+  <details><summary>총 결혼식 비용은 어떻게 계산하나요?</summary><div class="a">가장 큰 항목은 <b>식대 × 보증인원 + 대관료</b>입니다. 여기에 꽃·예식·스드메·사회/주례 등이 추가됩니다. 위 계산기로 식대·대관료 기준 핵심 비용을 먼저 잡아보세요.</div></details>
+</main>
+
+<footer class="wrap">
+  <p>표시 데이터는 참고용이며 실제 계약 조건과 다를 수 있습니다. 제보 데이터는 제보자 입력에 근거합니다.</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브 · 웨딩 가격 투명화 프로젝트</p>
+</footer>
+
+<script src="wedding-data.js"></script>
+<script src="charts.js"></script>
+<script src="share.js"></script>
+<script>
+(function(){
+  var won = Charts.won;
+  var manwon = function(n){ // 만원 단위 축약
+    if(n>=10000) return Math.round(n/10000).toLocaleString('ko-KR')+'만';
+    return Math.round(n).toLocaleString('ko-KR');
+  };
+  var intnum = function(el){ return parseInt(String(el.value).replace(/[^0-9]/g,''),10) || 0; };
+  function commaize(el){ var v=intnum(el); el.value=v?v.toLocaleString('ko-KR'):''; }
+  function avg(a){ return a.length? a.reduce(function(s,x){return s+x;},0)/a.length : 0; }
+
+  var DATA = (window.WEDDING_SAMPLE||[]).slice();
+  var fRegion='전체', fType='전체';
+
+  // ── 구글시트 CSV 실데이터(설정 시) ──
+  function parseCSV(txt){
+    var lines=txt.trim().split(/\r?\n/); if(lines.length<2) return [];
+    var head=lines[0].split(',').map(function(s){return s.trim().toLowerCase();});
+    var idx=function(names){ for(var i=0;i<head.length;i++){ if(names.indexOf(head[i])>=0) return i; } return -1; };
+    var iR=idx(['region','지역']), iT=idx(['type','홀타입','타입']), iM=idx(['meal','식대']),
+        iV=idx(['rental','대관료']), iG=idx(['guarantee','보증인원']);
+    var out=[];
+    for(var i=1;i<lines.length;i++){
+      var c=lines[i].split(','); if(c.length<2) continue;
+      var num=function(j){ return parseInt(String(c[j]||'').replace(/[^0-9]/g,''),10)||0; };
+      var r={ region:(c[iR]||'기타').trim(), type:(c[iT]||'기타').trim(),
+        meal:num(iM), rental:num(iV), guarantee:num(iG)||200, sample:false };
+      if(r.meal>0) out.push(r);
+    }
+    return out;
+  }
+  if(typeof SHEET_CSV_URL==='string' && SHEET_CSV_URL){
+    fetch(SHEET_CSV_URL).then(function(r){return r.text();}).then(function(t){
+      var real=parseCSV(t);
+      if(real.length){ DATA=real; document.getElementById('dataBadge').textContent='제보 데이터 '+real.length+'건';
+        document.getElementById('dataBadge').classList.remove('samplebadge'); buildPills(); render(); }
+    }).catch(function(){ /* 예시 데이터 유지 */ });
+  }
+
+  function filtered(){
+    return DATA.filter(function(d){
+      return (fRegion==='전체'||d.region===fRegion) && (fType==='전체'||d.type===fType);
+    });
+  }
+  function uniq(key){ var s={}; DATA.forEach(function(d){s[d[key]]=1;}); return Object.keys(s).sort(); }
+
+  function buildPills(){
+    function fill(elId, vals, cur, on){
+      var el=document.getElementById(elId); el.innerHTML='';
+      ['전체'].concat(vals).forEach(function(v){
+        var b=document.createElement('button'); b.textContent=v; if(v===cur) b.className='on';
+        b.addEventListener('click',function(){ on(v); });
+        el.appendChild(b);
+      });
+    }
+    fill('regionPills', uniq('region'), fRegion, function(v){ fRegion=v; buildPills(); render(); });
+    fill('typePills', uniq('type'), fType, function(v){ fType=v; buildPills(); render(); });
+  }
+
+  function groupAvg(rows, key, valKey){
+    var g={}; rows.forEach(function(d){ (g[d[key]]=g[d[key]]||[]).push(d[valKey]); });
+    return Object.keys(g).map(function(k){ return {label:k, value:avg(g[k]), n:g[k].length}; })
+      .sort(function(a,b){ return b.value-a.value; });
+  }
+
+  function render(){
+    var rows=filtered();
+    document.getElementById('nCount').textContent=rows.length;
+    document.getElementById('avgMeal').textContent= rows.length? won(avg(rows.map(function(d){return d.meal;}))) : '–';
+    document.getElementById('avgRental').textContent= rows.length? won(avg(rows.map(function(d){return d.rental;}))) : '–';
+
+    // 차트는 전체 데이터 기준(비교 목적), 단 지역필터는 반영
+    var base=DATA.filter(function(d){ return fRegion==='전체'||d.region===fRegion; });
+    Charts.bars(document.getElementById('chartTypeMeal'), {
+      data: groupAvg(base,'type','meal').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fType}; }) });
+    Charts.bars(document.getElementById('chartRegionMeal'), {
+      data: groupAvg(DATA,'region','meal').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fRegion}; }) });
+    Charts.bars(document.getElementById('chartTypeRental'), {
+      data: groupAvg(base,'type','rental').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fType}; }) });
+    Charts.scatter(document.getElementById('chartScatter'), {
+      points: rows.map(function(d){ return {x:d.guarantee, y:d.meal*d.guarantee+d.rental, label:d.type}; }),
+      xfmt:function(v){return v+'명';}, yfmt:function(v){return manwon(v)+'원';},
+      xlabel:'보증인원(명)', ylabel:'총비용' });
+    compare();
+  }
+
+  // ── 내 견적 비교 ──
+  var myGuests=document.getElementById('myGuests'), myMeal=document.getElementById('myMeal'), myRental=document.getElementById('myRental');
+  var last=null;
+  function compare(){
+    var g=intnum(myGuests), m=intnum(myMeal), rt=intnum(myRental);
+    if(!g||!m){ document.getElementById('myTotal').textContent='–'; document.getElementById('verdict').textContent=''; last=null; return; }
+    var total=m*g+rt;
+    document.getElementById('myTotal').textContent=won(total);
+    // 비교 기준: 현재 필터(지역/타입) 표본의 평균 식대
+    var rows=filtered();
+    var baseMeal= rows.length? avg(rows.map(function(d){return d.meal;})) : avg(DATA.map(function(d){return d.meal;}));
+    var diff= (m-baseMeal)/baseMeal*100;
+    var v=document.getElementById('verdict');
+    var label=(fRegion==='전체'?'':fRegion+' ')+(fType==='전체'?'평균':fType);
+    if(diff>3){ v.className='verdict exp'; v.textContent='💸 '+label+'보다 식대 '+Math.round(diff)+'% 비싸요'; }
+    else if(diff<-3){ v.className='verdict cheap'; v.textContent='✅ '+label+'보다 식대 '+Math.round(-diff)+'% 저렴해요'; }
+    else { v.className='verdict'; v.textContent='👌 '+label+'과 비슷한 수준이에요'; }
+    last={total:total, guests:g, meal:m, rental:rt, diff:diff, label:label};
+  }
+  [myGuests,myMeal,myRental].forEach(function(el){ el.addEventListener('input',function(){commaize(el);compare();}); });
+
+  ShareCard.mount(document.getElementById('share'), function(){
+    if(!last) return null;
+    return {
+      title:'우리 결혼식 예상 비용',
+      big: won(last.total),
+      fileName:'결혼식_비용',
+      lines:[
+        {k:'하객 '+last.guests+'명 × 식대', v:won(last.meal)},
+        {k:'대관료', v:won(last.rental)},
+        {k:last.label+' 대비', v:(last.diff>0?'+':'')+Math.round(last.diff)+'%'},
+      ],
+      site:'결혼식장 비용 공개 · 계산기허브'
+    };
+  });
+
+  // 제보 버튼
+  document.getElementById('reportBtn').addEventListener('click',function(){
+    if(typeof REPORT_FORM_URL==='string' && REPORT_FORM_URL){ window.open(REPORT_FORM_URL,'_blank','noopener'); }
+    else { alert('제보 폼은 준비 중이에요!\n\n운영자: README의 안내대로 구글폼을 만들어\nREPORT_FORM_URL 에 주소를 넣으면 활성화됩니다.'); }
+  });
+
+  if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
+    var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
+    s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
+  }
+
+  document.getElementById('dataBadge').textContent='예시 데이터 '+DATA.length+'건';
+  document.getElementById('year').textContent=new Date().getFullYear();
+  buildPills();
+  myGuests.value='250'; myMeal.value='65,000'; myRental.value='0';
+  render();
+})();
+</script>
+</body>
+</html>

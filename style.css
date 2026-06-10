@@ -100,5 +100,32 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .sharebtn.alt{background:linear-gradient(135deg,var(--brand),var(--brand2));border:0;color:#fff}
 @media(max-width:420px){ .share{flex-direction:column} }
 
+/* 차트 */
+.chart-bars{display:flex;flex-direction:column;gap:10px;margin:6px 0}
+.cb{display:grid;grid-template-columns:88px 1fr auto;align-items:center;gap:10px;font-size:.86rem}
+.cb-l{color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-t{background:var(--card2);border-radius:999px;height:18px;overflow:hidden}
+.cb-f{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .5s ease}
+.cb.hi .cb-f{background:linear-gradient(90deg,var(--warn),#f97316)}
+.cb-v{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.cb-v i{color:var(--muted);font-weight:600;font-style:normal;font-size:.8rem}
+.chart-svg{width:100%;height:auto;display:block}
+.chart-svg .cg{stroke:var(--line);stroke-width:1}
+.chart-svg .ct{fill:var(--muted);font-size:11px}
+.chart-svg .cax{fill:var(--muted);font-size:12px;font-weight:700}
+.chart-svg .cd{fill:var(--brand2);opacity:.8}
+.chart-svg .cd.hi{fill:var(--warn);opacity:1;stroke:#fff;stroke-width:2}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;margin:14px 0}
+.chart-card h3{font-size:1rem;margin-bottom:14px}
+.chart-card .cap{color:var(--muted);font-size:.8rem;margin-top:10px}
+.pill-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+.pill-row button{background:var(--card2);border:1px solid var(--line);color:var(--muted);font-weight:700;
+  font-size:.82rem;padding:7px 13px;border-radius:999px;cursor:pointer}
+.pill-row button.on{background:rgba(59,130,246,.16);border-color:var(--brand);color:var(--text)}
+.samplebadge{display:inline-block;background:rgba(251,191,36,.14);border:1px solid var(--warn);color:var(--warn);
+  font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:999px}
+.verdict{font-weight:800;font-size:1.05rem;margin-top:6px}
+.verdict.cheap{color:var(--good)} .verdict.exp{color:var(--bad)}
+
 footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
 @media(max-width:520px){ .grid2{grid-template-columns:1fr} .hub{grid-template-columns:1fr} }

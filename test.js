@@ -186,11 +186,34 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   }
 }
 
+// ── 11.6 결혼식장 예시 데이터 검증 ──
+{
+  const raw = fs.readFileSync(path.join(__dirname, "wedding-data.js"), "utf8");
+  const json = raw.slice(raw.indexOf("=") + 1, raw.lastIndexOf(";")).trim();
+  let recs = [];
+  try { recs = JSON.parse(json); } catch (e) { ok(false, "wedding-data.js JSON 파싱"); }
+  ok(recs.length >= 40, `결혼식장 표본 충분(${recs.length}건)`);
+  const TYPES = ["일반예식장", "컨벤션", "호텔", "하우스웨딩", "채플/성당"];
+  recs.forEach((r, i) => {
+    ok(typeof r.region === "string" && r.region, `표본#${i} 지역`);
+    ok(TYPES.includes(r.type), `표본#${i} 홀타입 유효`);
+    ok(r.meal >= 30000 && r.meal <= 300000, `표본#${i} 식대 현실범위`);
+    ok(r.rental >= 0, `표본#${i} 대관료 음수아님`);
+    ok(r.guarantee >= 50 && r.guarantee <= 500, `표본#${i} 보증인원 범위`);
+    ok(r.sample === true, `표본#${i} 예시표시(sample=true)`);
+  });
+  // 홀타입별 평균 식대 순서 상식 검증(호텔 > 일반예식장)
+  const byType = {};
+  recs.forEach((r) => (byType[r.type] = byType[r.type] || []).push(r.meal));
+  const m = (t) => byType[t] ? byType[t].reduce((s, x) => s + x, 0) / byType[t].length : 0;
+  if (byType["호텔"] && byType["일반예식장"]) ok(m("호텔") > m("일반예식장"), "호텔 식대 > 일반예식장");
+}
+
 // ── 12. HTML 페이지 구조 검증 (전 페이지) ──
-const pages = ["index.html", "silup.html", "daechul.html", "man-nai.html", "pyeong.html"];
-ok(fs.existsSync(path.join(__dirname, "share.js")), "share.js 존재");
-ok(fs.existsSync(path.join(__dirname, "style.css")), "style.css 존재");
-ok(fs.existsSync(path.join(__dirname, "calc.js")), "calc.js 존재");
+const pages = ["index.html", "silup.html", "wedding.html", "daechul.html", "man-nai.html", "pyeong.html"];
+const calcPages = pages.filter((p) => p !== "wedding.html"); // wedding은 charts.js 사용
+["share.js", "style.css", "calc.js", "charts.js", "wedding-data.js"].forEach((f) =>
+  ok(fs.existsSync(path.join(__dirname, f)), `${f} 존재`));
 pages.forEach((page) => {
   const p = path.join(__dirname, page);
   if (!fs.existsSync(p)) { ok(false, `${page} 존재`); return; }
@@ -203,11 +226,12 @@ pages.forEach((page) => {
     ['property="og:title"', "OG"],
     ['rel="canonical"', "canonical"],
     ['"style.css"', "style.css 연결"],
-    ['"calc.js"', "calc.js 연결"],
     ['class="sitenav"', "허브 네비"],
     ["ADSENSE_CLIENT", "애드센스 지점"],
     ["</html>", "html 닫힘"],
   ].forEach(([needle, name]) => ok(h.includes(needle), `${page}: ${name}`));
+  ok(calcPages.includes(page) ? h.includes('"calc.js"') : h.includes('"charts.js"'),
+    `${page}: 엔진 스크립트 연결`);
   // script 태그 짝
   ok((h.match(/<script/g)||[]).length === (h.match(/<\/script>/g)||[]).length, `${page}: script 짝`);
   // 허브 교차링크: 4개 페이지 모두 링크
