@@ -163,8 +163,32 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(C.pyeongToM2(-5) === 0, "음수 입력 방어");
 }
 
+// ── 11.5 실업급여(구직급여) 계산기 ──
+{
+  const r = C.unemploymentBenefit({ monthlyWage: 3000000, age: 35, insuredYears: 2 });
+  ok(r.totalBenefit === r.dailyBenefit * r.payDays, "총수령=일액×일수");
+  ok(r.payDays === 150, "35세·1~3년 → 150일");
+  ok(C.unemploymentBenefit({ monthlyWage: 3000000, age: 55, insuredYears: 2 }).payDays === 180, "55세·1~3년 → 180일");
+  ok(C.unemploymentBenefit({ monthlyWage: 3000000, age: 35, insuredYears: 0.5 }).payDays === 120, "1년미만 → 120일");
+  ok(C.unemploymentBenefit({ monthlyWage: 3000000, age: 55, insuredYears: 12 }).payDays === 270, "55세·10년+ → 270일(최대)");
+  ok(C.unemploymentBenefit({ monthlyWage: 0, age: 35, insuredYears: 5 }).totalBenefit === 0, "월급0 방어");
+  // 일액 상·하한 적용
+  const hi = C.unemploymentBenefit({ monthlyWage: 100000000, age: 40, insuredYears: 5 });
+  ok(hi.dailyBenefit <= hi.dailyUpper, "일액 상한 준수");
+  const lo = C.unemploymentBenefit({ monthlyWage: 1000000, age: 40, insuredYears: 5 });
+  ok(lo.dailyBenefit >= Math.min(lo.dailyLower, lo.dailyUpper), "일액 하한 준수");
+  // 월급↑ → 총수령 비감소(상한 전까지)
+  let prevT = -1;
+  for (let m = 1500000; m <= 6000000; m += 250000) {
+    const x = C.unemploymentBenefit({ monthlyWage: m, age: 30, insuredYears: 4 });
+    ok(x.totalBenefit >= prevT, `실업급여 월급↑→총수령↑ (${m})`);
+    prevT = x.totalBenefit;
+  }
+}
+
 // ── 12. HTML 페이지 구조 검증 (전 페이지) ──
-const pages = ["index.html", "daechul.html", "man-nai.html", "pyeong.html"];
+const pages = ["index.html", "silup.html", "daechul.html", "man-nai.html", "pyeong.html"];
+ok(fs.existsSync(path.join(__dirname, "share.js")), "share.js 존재");
 ok(fs.existsSync(path.join(__dirname, "style.css")), "style.css 존재");
 ok(fs.existsSync(path.join(__dirname, "calc.js")), "calc.js 존재");
 pages.forEach((page) => {

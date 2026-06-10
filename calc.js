@@ -47,6 +47,9 @@
 
     minWageHourly: 10320, // 2026년 최저시급(잠정) — 고시 확인 후 수정
     weeklyStdHours: 40,   // 주 소정근로 기준
+
+    // 구직급여 1일 상·하한액 (2025년 확정 기준 — 2026년 고시 후 수정)
+    unemployment: { dailyUpper: 66000, dailyLower: 64192 },
   };
 
   function won(n) { return Math.floor(n); } // 원 단위 절사
@@ -272,9 +275,50 @@
   function pyeongToM2(p) { return Math.round((Math.max(0, p) * PYEONG_TO_M2) * 100) / 100; }
   function m2ToPyeong(m) { return Math.round((Math.max(0, m) / PYEONG_TO_M2) * 100) / 100; }
 
+  // ───────────────────────── 실업급여(구직급여) 계산기 ─────────────────────────
+  /**
+   * @param {Object} o
+   *   monthlyWage: 퇴직 전 3개월 평균 월급여(원)
+   *   age: 퇴사 당시 만 나이 (50세 기준 소정급여일수 달라짐)
+   *   insuredYears: 고용보험 가입기간(년)
+   */
+  function unemploymentBenefit(o) {
+    o = o || {};
+    var monthly = Math.max(0, o.monthlyWage || 0);
+    var age = Math.max(0, o.age || 0);
+    var years = Math.max(0, o.insuredYears || 0);
+
+    var avgDaily = monthly * 3 / 91;        // 1일 평균임금
+    var raw = avgDaily * 0.6;               // 구직급여 일액 = 평균임금 60%
+    var upper = RATES.unemployment.dailyUpper; // 상한액
+    var lower = RATES.unemployment.dailyLower; // 하한액(최저임금80%×8h 기준)
+    if (lower > upper) lower = upper;
+    var daily = monthly === 0 ? 0 : won(Math.min(Math.max(raw, lower), upper));
+
+    // 소정급여일수 (이직일 2019.10.1 이후 기준)
+    var over50 = age >= 50;
+    var days;
+    if (years < 1) days = 120;
+    else if (years < 3) days = over50 ? 180 : 150;
+    else if (years < 5) days = over50 ? 210 : 180;
+    else if (years < 10) days = over50 ? 240 : 210;
+    else days = over50 ? 270 : 240;
+
+    return {
+      dailyBenefit: daily,
+      payDays: days,
+      totalBenefit: daily * days,
+      monthlyBenefit: won(daily * 30),
+      dailyLower: lower,
+      dailyUpper: upper,
+      avgDaily: won(avgDaily),
+    };
+  }
+
   var API = {
     RATES: RATES,
     netSalary: netSalary,
+    unemploymentBenefit: unemploymentBenefit,
     severancePay: severancePay,
     weeklyHolidayPay: weeklyHolidayPay,
     loanPayment: loanPayment,

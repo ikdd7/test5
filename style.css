@@ -92,5 +92,13 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .hub .t{color:var(--text);font-weight:800;margin-top:8px}
 .hub .d{color:var(--muted);font-size:.85rem;margin-top:2px}
 
+/* 공유 버튼 (바이럴 훅) */
+.share{display:flex;gap:10px;margin:4px 0 16px}
+.sharebtn{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--text);
+  font-weight:800;font-size:.95rem;padding:14px;border-radius:12px;cursor:pointer;transition:.15s}
+.sharebtn:hover{border-color:var(--brand);background:rgba(59,130,246,.12)}
+.sharebtn.alt{background:linear-gradient(135deg,var(--brand),var(--brand2));border:0;color:#fff}
+@media(max-width:420px){ .share{flex-direction:column} }
+
 footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
 @media(max-width:520px){ .grid2{grid-template-columns:1fr} .hub{grid-template-columns:1fr} }

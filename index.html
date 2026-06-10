@@ -33,6 +33,7 @@
 <nav class="sitenav"><div class="in">
   <span class="brand">🧮 계산기허브</span>
   <a href="index.html" class="on">연봉 실수령액</a>
+  <a href="silup.html">실업급여</a>
   <a href="daechul.html">대출이자</a>
   <a href="man-nai.html">만 나이</a>
   <a href="pyeong.html">평수</a>
@@ -85,6 +86,8 @@
       <div class="big" id="netMonthly">–</div>
       <div class="sub">연 실수령액 <b id="netAnnual">–</b> · 월 공제 합계 <b id="dedTotal">–</b></div>
     </div>
+
+    <div class="share" id="share"></div>
 
     <a class="aff" id="affLoan" href="#" target="_blank" rel="noopener nofollow"></a>
 
@@ -151,11 +154,13 @@
 </footer>
 
 <script src="calc.js"></script>
+<script src="share.js"></script>
 <script>
 (function(){
   var won = function(n){ return (n||0).toLocaleString('ko-KR') + '원'; };
   var num = function(el){ return parseInt(String(el.value).replace(/[^0-9]/g,''),10) || 0; };
   function commaize(el){ var v = num(el); el.value = v ? v.toLocaleString('ko-KR') : ''; }
+  var lastSalary = null;
 
   document.querySelectorAll('.tabs button').forEach(function(b){
     b.addEventListener('click', function(){
@@ -174,7 +179,8 @@
       children: parseInt(kid.value,10), nonTaxMonthly: num(nontax),
       severanceIncluded: document.querySelector('input[name=sev]:checked').value === '1'
     });
-    if(!num(annual)){ document.getElementById('netMonthly').textContent='–'; document.getElementById('breakdown').innerHTML=''; return; }
+    if(!num(annual)){ document.getElementById('netMonthly').textContent='–'; document.getElementById('breakdown').innerHTML=''; lastSalary=null; return; }
+    lastSalary=r;
     document.getElementById('netMonthly').textContent = won(r.netMonthly);
     document.getElementById('netAnnual').textContent = won(r.netAnnual);
     document.getElementById('dedTotal').textContent = won(r.deductionMonthly);
@@ -225,6 +231,20 @@
     if(!valid){ a.style.opacity=.55; a.addEventListener('click',function(e){e.preventDefault();}); }
   }
   bindAff('affLoan', AFFILIATE.loan); bindAff('affCard', AFFILIATE.card);
+
+  ShareCard.mount(document.getElementById('share'), function(){
+    if(!lastSalary) return null;
+    return {
+      title:'내 연봉 실수령액',
+      big: won(lastSalary.netMonthly) + ' / 월',
+      fileName:'연봉_실수령액',
+      lines:[
+        {k:'연 실수령액', v:won(lastSalary.netAnnual)},
+        {k:'월 공제 합계', v:won(lastSalary.deductionMonthly)},
+      ],
+      site:'연봉 실수령액 계산기 · 계산기허브'
+    };
+  });
 
   if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
     var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>실업급여 계산기 2026 — 구직급여 일액·소정급여일수·총수령액 계산</title>
+<meta name="description" content="퇴사 전 월급·나이·고용보험 가입기간만 입력하면 2026년 실업급여(구직급여) 1일 수급액, 소정급여일수, 총 예상 수령액을 즉시 계산합니다. 무료, 결과 이미지 공유 가능." />
+<meta name="keywords" content="실업급여 계산기, 구직급여 계산기, 실업급여 얼마, 실업급여 2026, 소정급여일수, 실업급여 모의계산" />
+<link rel="canonical" href="https://example.com/silup.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="실업급여 계산기 2026 — 총 수령액 즉시 계산" />
+<meta property="og:description" content="구직급여 일액·소정급여일수·총 예상 수령액을 1초 만에." />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"실업급여 계산기 2026","applicationCategory":"FinanceApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"}}
+</script>
+<script>
+  const ADSENSE_CLIENT = "";
+  const AFFILIATE = { job: { label: "💼 실업급여 받는 동안 할 수 있는 일자리·국비교육 보기 →", url: "#" } };
+</script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="sitenav"><div class="in">
+  <span class="brand">🧮 계산기허브</span>
+  <a href="index.html">연봉 실수령액</a>
+  <a href="silup.html" class="on">실업급여</a>
+  <a href="daechul.html">대출이자</a>
+  <a href="man-nai.html">만 나이</a>
+  <a href="pyeong.html">평수</a>
+</div></nav>
+
+<header class="wrap">
+  <span class="y">2026년 기준 · 모의계산</span>
+  <h1>실업급여 계산기</h1>
+  <p>퇴사 전 월급·나이·가입기간만 넣으면 <b>총 예상 수령액</b>을 바로 알려드려요.</p>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <div class="field">
+      <label>퇴직 전 3개월 평균 월급여 <span class="hint">세전</span></label>
+      <div class="inputrow"><input id="wage" type="text" inputmode="numeric" placeholder="3,000,000" /><span class="unit">원</span></div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>퇴사 당시 만 나이</label>
+        <div class="inputrow"><input id="age" type="text" inputmode="numeric" placeholder="35" /><span class="unit">세</span></div>
+      </div>
+      <div class="field">
+        <label>고용보험 가입기간</label>
+        <div class="inputrow"><select id="years">
+          <option value="0.5">1년 미만</option>
+          <option value="2" selected>1~3년</option>
+          <option value="4">3~5년</option>
+          <option value="7">5~10년</option>
+          <option value="12">10년 이상</option>
+        </select></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result">
+    <div class="lbl">총 예상 수령액</div>
+    <div class="big" id="total">–</div>
+    <div class="sub">1일 <b id="daily">–</b> · 소정급여일수 <b id="days">–</b>일</div>
+  </div>
+
+  <!-- 바이럴 공유훅 -->
+  <div class="share" id="share"></div>
+
+  <a class="aff" id="affJob" href="#" target="_blank" rel="noopener nofollow"></a>
+
+  <div class="card">
+    <table id="detail"></table>
+    <p class="note">※ 실업급여는 비자발적 이직 등 수급요건을 충족해야 받을 수 있습니다. 본 계산은 2026년 잠정 기준 <b>모의계산</b>이며 실제 수급액·자격은 고용센터 판단을 따릅니다.</p>
+  </div>
+
+  <div class="ad" id="ad1">광고 영역 (애드센스 승인 후 자동 노출)</div>
+
+  <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
+  <details open><summary>실업급여는 얼마나 받나요?</summary><div class="a">구직급여 1일 수급액은 퇴직 전 평균임금의 60%입니다. 단 상한액(1일 약 66,000원)과 하한액(최저임금의 80%×8시간)이 적용됩니다. 여기에 나이·가입기간으로 정해지는 소정급여일수(120~270일)를 곱한 것이 총 수령액입니다.</div></details>
+  <details><summary>소정급여일수는 어떻게 정해지나요?</summary><div class="a">퇴사 당시 만 나이(50세 기준)와 고용보험 가입기간에 따라 120일에서 최대 270일까지 차등 지급됩니다. 50세 이상이거나 장애인은 같은 가입기간이라도 더 길게 받습니다.</div></details>
+  <details><summary>자발적 퇴사도 받을 수 있나요?</summary><div class="a">원칙적으로 자발적 이직은 수급 대상이 아니지만, 임금체불·질병·통근곤란 등 정당한 사유가 인정되면 예외적으로 가능합니다. 자세한 자격은 고용센터에 확인하세요.</div></details>
+</main>
+
+<footer class="wrap">
+  <p>계산 결과는 참고용 추정치이며 법적 효력이 없습니다. 기준: 2026년(잠정).</p>
+  <p style="margin-top:6px">© <span id="year"></span> 계산기허브</p>
+</footer>
+
+<script src="calc.js"></script>
+<script src="share.js"></script>
+<script>
+(function(){
+  var won = function(n){ return (n||0).toLocaleString('ko-KR') + '원'; };
+  var intnum = function(el){ return parseInt(String(el.value).replace(/[^0-9]/g,''),10) || 0; };
+  function commaize(el){ var v=intnum(el); el.value = v ? v.toLocaleString('ko-KR') : ''; }
+
+  var wage=document.getElementById('wage'), age=document.getElementById('age'), years=document.getElementById('years');
+  var last=null;
+  function calc(){
+    var w=intnum(wage), a=intnum(age), y=parseFloat(years.value);
+    if(!w){ document.getElementById('total').textContent='–'; document.getElementById('detail').innerHTML=''; last=null; return; }
+    var r=SalaryCalc.unemploymentBenefit({ monthlyWage:w, age:a, insuredYears:y });
+    last=r;
+    document.getElementById('total').textContent=won(r.totalBenefit);
+    document.getElementById('daily').textContent=won(r.dailyBenefit);
+    document.getElementById('days').textContent=r.payDays;
+    document.getElementById('detail').innerHTML=
+      '<tr><td>1일 평균임금</td><td>'+won(r.avgDaily)+'</td></tr>'+
+      '<tr><td>1일 구직급여 (평균임금 60%)</td><td>'+won(r.dailyBenefit)+'</td></tr>'+
+      '<tr><td>소정급여일수</td><td>'+r.payDays+'일</td></tr>'+
+      '<tr><td>월 환산(약 30일)</td><td>'+won(r.monthlyBenefit)+'</td></tr>'+
+      '<tr class="tot"><td>총 예상 수령액</td><td>'+won(r.totalBenefit)+'</td></tr>';
+  }
+  wage.addEventListener('input',function(){commaize(wage);calc();});
+  age.addEventListener('input',function(){commaize(age);calc();});
+  years.addEventListener('change',calc);
+
+  // 공유훅 mount
+  ShareCard.mount(document.getElementById('share'), function(){
+    if(!last) return null;
+    return {
+      title:'내 실업급여 예상 수령액',
+      big: won(last.totalBenefit),
+      fileName:'실업급여_계산결과',
+      lines:[
+        {k:'1일 구직급여', v:won(last.dailyBenefit)},
+        {k:'소정급여일수', v:last.payDays+'일'},
+        {k:'월 환산', v:won(last.monthlyBenefit)},
+      ],
+      site:'실업급여 계산기 · 계산기허브'
+    };
+  });
+
+  var aj=document.getElementById('affJob'); aj.textContent=AFFILIATE.job.label;
+  var valid=AFFILIATE.job.url && AFFILIATE.job.url!=='#'; aj.href=valid?AFFILIATE.job.url:'#';
+  if(!valid){ aj.style.opacity=.55; aj.addEventListener('click',function(e){e.preventDefault();}); }
+
+  if(typeof ADSENSE_CLIENT==='string' && ADSENSE_CLIENT.indexOf('ca-pub-')===0){
+    var s=document.createElement('script'); s.async=true; s.crossOrigin='anonymous';
+    s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
+    document.head.appendChild(s); document.getElementById('ad1').textContent='';
+  }
+  document.getElementById('year').textContent=new Date().getFullYear();
+  wage.value='3,000,000'; age.value='35'; calc();
+})();
+</script>
+</body>
+</html>
