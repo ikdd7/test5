@@ -194,7 +194,9 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   try { recs = JSON.parse(json); } catch (e) { ok(false, "wedding-data.js JSON 파싱"); }
   ok(recs.length >= 40, `결혼식장 표본 충분(${recs.length}건)`);
   const TYPES = ["일반예식장", "컨벤션", "호텔", "하우스웨딩", "채플/성당"];
+  const SLOTS = ["토요일 낮", "토요일 저녁", "일요일", "평일"];
   recs.forEach((r, i) => {
+    ok(SLOTS.includes(r.slot), `표본#${i} 시간대 정규값`);
     ok(typeof r.region === "string" && r.region, `표본#${i} 지역`);
     ok(TYPES.includes(r.type), `표본#${i} 홀타입 유효`);
     ok(r.meal >= 30000 && r.meal <= 300000, `표본#${i} 식대 현실범위`);

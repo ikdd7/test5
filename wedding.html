@@ -50,6 +50,8 @@
     <div class="pill-row" id="regionPills"></div>
     <label style="font-weight:800;margin-top:6px;display:block">홀 타입</label>
     <div class="pill-row" id="typePills"></div>
+    <label style="font-weight:800;margin-top:6px;display:block">시간대</label>
+    <div class="pill-row" id="slotPills"></div>
   </div>
 
   <!-- 요약 통계 -->
@@ -74,6 +76,12 @@
     <h3>🏛️ 홀 타입별 평균 대관료</h3>
     <div id="chartTypeRental"></div>
     <p class="cap">보증인원을 채우면 대관료를 면제해주는 곳도 많아 0원 표본이 섞여 있습니다.</p>
+  </div>
+
+  <div class="chart-card">
+    <h3>🕐 시간대별 평균 대관료</h3>
+    <div id="chartSlotRental"></div>
+    <p class="cap">토요일 낮(프라임)이 가장 비싸고 평일이 가장 저렴한 경향 — 시간대만 옮겨도 수백만원이 갈립니다.</p>
   </div>
 
   <div class="chart-card">
@@ -144,22 +152,43 @@
   function avg(a){ return a.length? a.reduce(function(s,x){return s+x;},0)/a.length : 0; }
 
   var DATA = (window.WEDDING_SAMPLE||[]).slice();
-  var fRegion='전체', fType='전체';
+  var fRegion='전체', fType='전체', fSlot='전체';
+
+  // 자유입력 시간대 → 정규 시간대 변환(제보 데이터 품질 통일)
+  function normSlot(s){
+    s=String(s||'').trim();
+    if(/평일|월요|화요|수요|목요|금요/.test(s)) return '평일';
+    if(/일요/.test(s)) return '일요일';
+    if(/토/.test(s)) return /(저녁|밤|야간|6시|7시|18|19)/.test(s) ? '토요일 저녁' : '토요일 낮';
+    return s || '기타';
+  }
 
   // ── 구글시트 CSV 실데이터(설정 시) ──
+  // 인식 컬럼: 필수(region,type,meal,rental,guarantee) +
+  //            선택(venue 식장명, hall 홀, slot 시간대, month 시기, vat 부가세포함)
   function parseCSV(txt){
     var lines=txt.trim().split(/\r?\n/); if(lines.length<2) return [];
     var head=lines[0].split(',').map(function(s){return s.trim().toLowerCase();});
     var idx=function(names){ for(var i=0;i<head.length;i++){ if(names.indexOf(head[i])>=0) return i; } return -1; };
     var iR=idx(['region','지역']), iT=idx(['type','홀타입','타입']), iM=idx(['meal','식대']),
-        iV=idx(['rental','대관료']), iG=idx(['guarantee','보증인원']);
+        iV=idx(['rental','대관료']), iG=idx(['guarantee','보증인원']),
+        iVen=idx(['venue','식장명','식장','예식장명']), iH=idx(['hall','홀','홀이름']),
+        iS=idx(['slot','시간대','요일']), iMo=idx(['month','시기','월']),
+        iVat=idx(['vat','부가세','부가세포함']);
     var out=[];
     for(var i=1;i<lines.length;i++){
       var c=lines[i].split(','); if(c.length<2) continue;
       var num=function(j){ return parseInt(String(c[j]||'').replace(/[^0-9]/g,''),10)||0; };
+      var meal=num(iM);
+      // ⚠️ 부가세 함정 보정: "미포함/별도"면 포함가(×1.1)로 통일해 비교 가능하게
+      var vat=String(iVat>=0?(c[iVat]||''):'').trim();
+      if(/미포함|별도|no|n$/i.test(vat)) meal=Math.round(meal*1.1);
       var r={ region:(c[iR]||'기타').trim(), type:(c[iT]||'기타').trim(),
-        meal:num(iM), rental:num(iV), guarantee:num(iG)||200, sample:false };
-      if(r.meal>0) out.push(r);
+        venue:(iVen>=0?(c[iVen]||''):'').trim(), hall:(iH>=0?(c[iH]||''):'').trim(),
+        slot:normSlot(iS>=0?c[iS]:''), month:(iMo>=0?(c[iMo]||''):'').trim(),
+        meal:meal, rental:num(iV), guarantee:num(iG)||200, sample:false };
+      // 이상치 필터: 식대 2만~30만 범위만(오타·단위실수 제거)
+      if(r.meal>=20000 && r.meal<=300000) out.push(r);
     }
     return out;
   }
@@ -173,7 +202,8 @@
 
   function filtered(){
     return DATA.filter(function(d){
-      return (fRegion==='전체'||d.region===fRegion) && (fType==='전체'||d.type===fType);
+      return (fRegion==='전체'||d.region===fRegion) && (fType==='전체'||d.type===fType)
+        && (fSlot==='전체'||d.slot===fSlot);
     });
   }
   function uniq(key){ var s={}; DATA.forEach(function(d){s[d[key]]=1;}); return Object.keys(s).sort(); }
@@ -189,6 +219,7 @@
     }
     fill('regionPills', uniq('region'), fRegion, function(v){ fRegion=v; buildPills(); render(); });
     fill('typePills', uniq('type'), fType, function(v){ fType=v; buildPills(); render(); });
+    fill('slotPills', uniq('slot'), fSlot, function(v){ fSlot=v; buildPills(); render(); });
   }
 
   function groupAvg(rows, key, valKey){
@@ -211,6 +242,8 @@
       data: groupAvg(DATA,'region','meal').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fRegion}; }) });
     Charts.bars(document.getElementById('chartTypeRental'), {
       data: groupAvg(base,'type','rental').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fType}; }) });
+    Charts.bars(document.getElementById('chartSlotRental'), {
+      data: groupAvg(base,'slot','rental').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fSlot}; }) });
     Charts.scatter(document.getElementById('chartScatter'), {
       points: rows.map(function(d){ return {x:d.guarantee, y:d.meal*d.guarantee+d.rental, label:d.type}; }),
       xfmt:function(v){return v+'명';}, yfmt:function(v){return manwon(v)+'원';},

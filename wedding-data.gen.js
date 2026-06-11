@@ -16,7 +16,18 @@ const TYPES = {
   "채플/성당":   { meal: [55000, 78000], rental: [1000000, 4500000], guar: [150, 250] },
 };
 const REGIONS = { "서울": 1.15, "경기": 1.0, "인천": 0.95, "부산": 0.96, "대구": 0.9, "대전": 0.9, "광주": 0.88, "제주": 1.06 };
-const SLOTS = ["주말 점심", "주말 저녁", "평일 저녁", "토요일", "일요일"];
+// 정규 시간대 체계 — 토요일 낮이 프라임(대관료 비쌈), 평일이 가장 쌈
+const SLOTS = [
+  { name: "토요일 낮", rentalMul: 1.2, w: 0.4 },
+  { name: "토요일 저녁", rentalMul: 1.0, w: 0.25 },
+  { name: "일요일", rentalMul: 0.92, w: 0.25 },
+  { name: "평일", rentalMul: 0.75, w: 0.1 },
+];
+function pickSlot() {
+  var r = rnd(), acc = 0;
+  for (var i = 0; i < SLOTS.length; i++) { acc += SLOTS[i].w; if (r <= acc) return SLOTS[i]; }
+  return SLOTS[0];
+}
 
 // 재현 가능한 의사난수(시드 고정)
 let seed = 20260610;
@@ -29,16 +40,17 @@ const typeNames = Object.keys(TYPES), regionNames = Object.keys(REGIONS);
 const N = 64;
 for (let i = 0; i < N; i++) {
   const t = pick(typeNames), r = pick(regionNames), spec = TYPES[t], m = REGIONS[r];
+  const slot = pickSlot();
   const meal = range(spec.meal, m);
-  const rental = range(spec.rental, 1) === 0 ? 0 : range(spec.rental, m);
+  const rental = range(spec.rental, 1) === 0 ? 0 : range(spec.rental, m * slot.rentalMul);
   const guar = Math.round((spec.guar[0] + rnd() * (spec.guar[1] - spec.guar[0])) / 10) * 10;
   rows.push({
     id: "ex" + (i + 1),
     region: r, type: t,
-    meal: meal,                 // 1인 식대(원)
+    meal: meal,                 // 1인 식대(원, 부가세 포함가로 통일)
     rental: rnd() < 0.25 ? 0 : rental, // 일부는 보증인원 충족 시 무료대관
     guarantee: guar,            // 보증인원(명)
-    slot: pick(SLOTS),
+    slot: slot.name,            // 정규 시간대(토요일 낮/토요일 저녁/일요일/평일)
     month: "2025-" + String(1 + Math.floor(rnd() * 11)).padStart(2, "0"),
     sample: true,
   });
