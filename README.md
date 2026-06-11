@@ -23,6 +23,7 @@ stats.js      ← 강건 통계 엔진(중앙값·이상치 제외·백분위, N
 regions.js    ← 지역명↔슬러그 맵 (build.js·wedding.html 공용)
 region.js     ← 지역 페이지 클라이언트(차트·백분위 비교·게이트)
 charts.js     ← 의존성 0 미니 차트(가로막대·산점도)
+koreamap.js   ← 전국 17개 시도 가격 히트맵(스키매틱, 좌표·외부API 불필요)
 wedding-data.js / wedding-data.gen.js  ← 결혼식장 예시(합성) 데이터 + 생성기
 WEDDING_SETUP.md / LEGAL_NOTES.md / PLAN.md  ← 운영·법무·전략 문서
 daechul.html  ← 대출 이자 계산기 (원리금균등·원금균등·만기일시)  ★수익 핵심

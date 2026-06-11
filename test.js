@@ -246,6 +246,13 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(fs.existsSync(path.join(__dirname, "stats.js")), "stats.js 존재");
   ok(fs.existsSync(path.join(__dirname, "region.js")), "region.js 존재");
   ok(fs.existsSync(path.join(__dirname, "build.js")), "build.js 존재");
+  ok(fs.existsSync(path.join(__dirname, "koreamap.js")), "koreamap.js 존재");
+  // 전국 지도: 17개 시도가 모두 좌표를 갖는지
+  const KM = require("./koreamap.js").KoreaMap;
+  const sido = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
+  ok(Object.keys(KM.POS).length === 17, "지도 17개 시도");
+  sido.forEach((s) => ok(Array.isArray(KM.POS[s]) && KM.POS[s].length === 2, `지도 좌표: ${s}`));
+  ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("koreamap.js"), "wedding.html 지도 연결");
   const files = fs.existsSync(path.join(__dirname, "region")) ? fs.readdirSync(path.join(__dirname, "region")).filter((f) => f.endsWith(".html")) : [];
   ok(files.length >= 1, `지역 페이지 생성됨(${files.length}개)`);
   files.forEach((f) => {

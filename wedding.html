@@ -44,6 +44,13 @@
 
 <main class="wrap">
 
+  <!-- 전국 가격 지도 -->
+  <div class="chart-card" style="text-align:center">
+    <h3>🗺️ 전국 웨딩홀 식대 지도</h3>
+    <div id="koreaMap"></div>
+    <p class="cap" id="mapNote" style="margin:4px 0 0">색이 진할수록 비싼 지역. 데이터 있는 지역을 누르면 상세로 이동해요.</p>
+  </div>
+
   <!-- 필터 -->
   <div class="card">
     <label style="font-weight:800">지역</label>
@@ -158,6 +165,8 @@
 
 <script src="wedding-data.js"></script>
 <script src="regions.js"></script>
+<script src="stats.js"></script>
+<script src="koreamap.js"></script>
 <script src="charts.js"></script>
 <script src="share.js"></script>
 <script>
@@ -237,7 +246,7 @@
       if(real.length){ DATA=real;
         var label='제보 데이터 '+real.length+'건' + (real._moderation? ' (검토 대기 '+real._pending+')':'');
         document.getElementById('dataBadge').textContent=label;
-        document.getElementById('dataBadge').classList.remove('samplebadge'); buildPills(); render(); }
+        document.getElementById('dataBadge').classList.remove('samplebadge'); buildPills(); render(); renderMap(); }
     }).catch(function(){ /* 예시 데이터 유지 */ });
   }
 
@@ -386,6 +395,22 @@
     s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_CLIENT;
     document.head.appendChild(s); document.getElementById('ad1').textContent='';
   }
+
+  // 전국 가격 지도
+  function renderMap(){
+    if(!window.KoreaMap) return;
+    window.KoreaMap.render(document.getElementById('koreaMap'), {
+      data: DATA, slugs: window.REGION_SLUGS||{}, minPage: 5,
+      onPick: function(region, eligible, slug){
+        if(eligible && slug){ location.href='region/'+slug+'.html'; return; }
+        var n=DATA.filter(function(d){return d.region===region;}).length;
+        document.getElementById('mapNote').textContent =
+          region+'은 아직 '+n+'건이라 페이지가 안 열렸어요. 5건 모이면 열립니다 — 아래에서 제보해 주세요!';
+        var rep=document.getElementById('reportBtn'); if(rep) rep.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+    });
+  }
+  renderMap();
 
   // 지역별 상세 페이지 링크(데이터 5건 이상 + 슬러그 보유)
   (function(){

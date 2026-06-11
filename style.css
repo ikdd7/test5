@@ -147,5 +147,20 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .gateover{position:absolute;left:0;right:0;bottom:16px;text-align:center;padding:0 16px}
 .gateover .sharebtn{max-width:300px;margin:0 auto}
 
+/* 전국 시도 히트맵 */
+.kmap{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;max-width:360px;margin:10px auto 6px;
+  background:radial-gradient(circle at 50% 28%,#102236,#0c1117);padding:16px;border-radius:18px;border:1px solid var(--line)}
+.kmap-cell{aspect-ratio:1/.84;border:1px solid var(--line);background:#1a212e;border-radius:12px;color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;padding:3px;
+  font-family:inherit;transition:transform .12s,filter .12s}
+.kmap-cell b{font-size:.82rem;font-weight:800;letter-spacing:-.02em}
+.kmap-cell i{font-size:.7rem;font-style:normal;font-weight:700;opacity:.95}
+.kmap-cell i.soon{opacity:.45;font-weight:600;font-size:.62rem}
+.kmap-cell.empty{cursor:default;background:#161b24;color:#7c8699}
+.kmap-cell.link:hover{transform:translateY(-2px);filter:brightness(1.14)}
+.kmap-legend{display:flex;align-items:center;gap:8px;justify-content:center;font-size:.74rem;color:var(--muted);margin:8px 0 2px;flex-wrap:wrap}
+.kmap-legend .bar{width:110px;height:10px;border-radius:6px;
+  background:linear-gradient(90deg,hsl(120,62%,42%),hsl(60,62%,45%),hsl(0,62%,45%))}
+
 footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
 @media(max-width:520px){ .grid2{grid-template-columns:1fr} .hub{grid-template-columns:1fr} }
