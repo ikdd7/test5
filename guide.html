@@ -50,32 +50,67 @@
   </section>
 
   <section class="card">
-    <h2>2. 정부지원금 핵심</h2>
-    <ul id="subsidy"></ul>
+    <h2>2. 형태(타입)별 특징 — 귀걸이형 vs 귓속형</h2>
+    <table class="tier" id="forms"></table>
   </section>
 
   <section class="card">
-    <h2>3. 청각장애 등록 절차</h2>
+    <h2>3. 충전·블루투스 등 기능</h2>
+    <ol class="steps" id="features"></ol>
+  </section>
+
+  <section class="card">
+    <h2>4. 정부지원금 핵심</h2>
+    <ul id="subsidy"></ul>
+    <h3 style="font-size:15px;margin:16px 0 6px">기준액 131만원은 이렇게 구성돼요</h3>
+    <table class="tier" id="breakdown"></table>
+    <p class="sub" id="breakdownNote" style="margin-top:8px"></p>
+  </section>
+
+  <section class="card">
+    <h2>5. 청각장애 등록 절차</h2>
     <ol class="steps" id="register"></ol>
   </section>
 
   <section class="card">
-    <h2>4. 보청기 지원금(급여) 신청·환급 절차</h2>
+    <h2>6. 보청기 지원금(급여) 신청·환급 절차</h2>
     <ol class="steps" id="claim"></ol>
   </section>
 
   <section class="card">
-    <h2>5. 계약 전 ‘숨은 비용’ 체크리스트</h2>
+    <h2>7. 계약 전 ‘숨은 비용’ 체크리스트</h2>
     <ul class="check" id="cautions"></ul>
   </section>
 
   <section class="card">
-    <h2>6. 주요 브랜드 특징</h2>
+    <h2>8. 실제 소비자 피해, 어디서 터지나</h2>
+    <p class="sub">한국소비자연맹 1372 상담 351건(2025) 분석. 대부분 제품이 아니라 <b>판매·계약 과정</b>에서 발생.</p>
+    <table class="tier" id="disputes"></table>
+  </section>
+
+  <section class="card">
+    <h2>9. 양쪽(양이) 착용이 한쪽보다 나은 이유</h2>
+    <ul id="binaural"></ul>
+    <p class="sub" id="binauralExc" style="margin-top:8px"></p>
+  </section>
+
+  <section class="card">
+    <h2>10. 연말정산·세제 혜택</h2>
+    <ol class="steps" id="tax"></ol>
+  </section>
+
+  <section class="card">
+    <h2>11. 오래 쓰는 관리법</h2>
+    <ol class="steps" id="care"></ol>
+  </section>
+
+  <section class="card">
+    <h2>12. 주요 브랜드 특징</h2>
     <div class="brandgrid" id="brands"></div>
   </section>
 
   <section class="card">
-    <h2>7. 자주 묻는 질문</h2>
+    <h2>13. 자주 묻는 질문</h2>
     <dl class="faq" id="faq"></dl>
   </section>
 
@@ -108,12 +143,45 @@
     t.appendChild(tr);
   });
 
+  // 형태
+  var f = $('#forms');
+  f.innerHTML = '<tr><th>형태</th><th>장점</th><th>단점</th></tr>';
+  D.FORM_TYPES.forEach(function(x){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><b>'+x.label+'</b></td><td>'+x.pros+'</td><td style="color:var(--muted)">'+x.cons+'</td>';
+    f.appendChild(tr);
+  });
+
+  // 기능
+  $('#features').innerHTML = D.FEATURE_NOTES.map(function(x){
+    return '<li><b>'+x.t+'</b><span>'+x.d+'</span></li>'; }).join('');
+
   // 지원금
   var s = D.SUBSIDY_FACTS;
   $('#subsidy').innerHTML = [
     ['지원 주기', s.cycle],['지원 범위', s.side],
     ['일반 가입자', s.general],['차상위·수급', s.lowincome],['필수 조건', s.require]
   ].map(function(r){ return '<li><b>'+r[0]+'</b> — '+r[1]+'</li>'; }).join('');
+
+  // 지원금 구성
+  var bd = D.SUBSIDY_BREAKDOWN, bt = $('#breakdown');
+  bt.innerHTML = '<tr><th>항목</th><th>기준액</th><th>지급 시점</th></tr>';
+  bd.parts.forEach(function(p){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><b>'+p.t+'</b></td><td class="price">'+won(p.amount)+'원</td>'
+      + '<td style="color:var(--muted);font-size:13px">'+p.when+'</td>';
+    bt.appendChild(tr);
+  });
+  $('#breakdownNote').textContent = '합계 ' + won(bd.total) + '원. ' + bd.note;
+
+  // 피해유형
+  var dp = $('#disputes');
+  dp.innerHTML = '<tr><th>피해 유형</th><th>비중</th></tr>';
+  D.DISPUTES.forEach(function(x){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>'+x.type+'</td><td class="price"><b>'+x.pct+'%</b></td>';
+    dp.appendChild(tr);
+  });
 
   // 절차
   function steps(sel, arr){
@@ -125,6 +193,15 @@
   // 체크리스트
   $('#cautions').innerHTML = D.CAUTIONS.map(function(c){
     return '<li>'+c.q+'<span>'+c.why+'</span></li>'; }).join('');
+
+  // 양측 효과
+  $('#binaural').innerHTML = D.BINAURAL.benefits.map(function(b){
+    return '<li>'+b+'</li>'; }).join('');
+  $('#binauralExc').textContent = '예외: ' + D.BINAURAL.exception;
+
+  // 세제·관리
+  steps('#tax', D.TAX);
+  steps('#care', D.CARE_TIPS);
 
   // 브랜드
   $('#brands').innerHTML = D.BRANDS.map(function(b){
