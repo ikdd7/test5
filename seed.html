@@ -85,6 +85,13 @@
         <label>출처(링크·메모)</label>
         <input id="source" placeholder="카페글 URL 등" />
       </div>
+      <div>
+        <label>검증(견적서 사진 있음?)</label>
+        <select id="verified">
+          <option value="">미검증</option>
+          <option value="y">검증(견적서 확인)</option>
+        </select>
+      </div>
       <div class="full warn-inline" id="warn"></div>
       <div class="full seedrow" style="margin:4px 0 0">
         <button type="submit" class="badd">➕ 추가 (Enter)</button>
@@ -145,10 +152,20 @@
     });
   }
 
-  $('meal').addEventListener('input',function(){
-    var m=num($('meal').value);
-    $('warn').textContent = (m && (m<20000||m>300000)) ? '⚠️ 식대가 2만~30만원 범위 밖이에요. 단위 확인(예: 6.5만 → 65000)' : '';
-  });
+  // 홀 타입별 상식 범위(교차필드 검증) — 명백히 벗어나면 경고
+  var BAND={ '호텔':[60000,260000], '하우스웨딩':[50000,220000], '컨벤션':[40000,160000],
+    '일반예식장':[35000,130000], '채플/성당':[40000,160000], '야외/가든':[40000,180000], '스몰웨딩':[30000,150000] };
+  function checkMeal(){
+    var m=num($('meal').value), t=$('type').value, b=BAND[t];
+    var vat=$('vat').value, adj=vat==='미포함'?Math.round(m*1.1):m;
+    if(!m){ $('warn').textContent=''; return; }
+    if(adj<20000||adj>300000){ $('warn').textContent='⚠️ 식대가 2만~30만원 범위 밖이에요. 단위 확인(예: 6.5만 → 65000)'; return; }
+    if(b && (adj<b[0]||adj>b[1])){ $('warn').textContent='⚠️ '+t+' 통상 범위('+b[0].toLocaleString()+'~'+b[1].toLocaleString()+'원)와 달라요. 타입·금액 확인'; return; }
+    $('warn').textContent='';
+  }
+  $('meal').addEventListener('input',checkMeal);
+  $('type').addEventListener('change',checkMeal);
+  $('vat').addEventListener('change',checkMeal);
 
   $('f').addEventListener('submit',function(e){
     e.preventDefault();
@@ -158,7 +175,8 @@
       venue:venue, region:$('region').value, type:$('type').value, hall:$('hall').value.trim(),
       meal:meal, vat:$('vat').value, rental:num($('rental').value),
       guarantee:num($('guarantee').value)||200, slot:$('slot').value,
-      month:$('month').value.trim(), source:$('source').value.trim()
+      month:$('month').value.trim(), source:$('source').value.trim(),
+      verified:$('verified').value
     });
     save(); renderTable();
     // 빠른 연속 입력: 식장/홀/금액만 비우고 지역·타입·시간대는 유지
@@ -174,7 +192,7 @@
   function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
   $('exportCsv').onclick=function(){
     if(!rows.length){ alert('입력된 데이터가 없어요.'); return; }
-    var head=['venue','region','type','hall','meal','vat','rental','guarantee','slot','month','source'];
+    var head=['venue','region','type','hall','meal','vat','rental','guarantee','slot','month','verified','source'];
     var csv=head.join(',')+'\n'+rows.map(function(r){
       return head.map(function(k){ return csvCell(r[k]); }).join(',');
     }).join('\n');
@@ -185,7 +203,8 @@
     // wedding-data.js 형식(부가세 보정·필수필드만)으로 내보내기 → 시드 직접 교체용
     var clean=rows.map(function(r,i){ return {
       id:'seed'+(i+1), region:r.region, type:r.type, venue:r.venue, hall:r.hall,
-      meal:rowMeal(r), rental:r.rental, guarantee:r.guarantee, slot:r.slot, month:r.month, sample:false
+      meal:rowMeal(r), rental:r.rental, guarantee:r.guarantee, slot:r.slot, month:r.month,
+      verified:!!r.verified, sample:false
     };});
     dl('wedding-data.js', 'window.WEDDING_SAMPLE = '+JSON.stringify(clean)+';\n', 'application/javascript');
   };

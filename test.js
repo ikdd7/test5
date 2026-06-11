@@ -202,13 +202,16 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
     ok(r.meal >= 30000 && r.meal <= 300000, `표본#${i} 식대 현실범위`);
     ok(r.rental >= 0, `표본#${i} 대관료 음수아님`);
     ok(r.guarantee >= 50 && r.guarantee <= 500, `표본#${i} 보증인원 범위`);
+    ok(typeof r.verified === "boolean", `표본#${i} 검증플래그 boolean`);
     ok(r.sample === true, `표본#${i} 예시표시(sample=true)`);
   });
-  // 홀타입별 평균 식대 순서 상식 검증(호텔 > 일반예식장)
+  // 강건 통계: 중앙값으로 비교(주입된 이상치에 흔들리면 안 됨)
+  const med = (a) => { const s = a.slice().sort((x, y) => x - y), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
   const byType = {};
   recs.forEach((r) => (byType[r.type] = byType[r.type] || []).push(r.meal));
-  const m = (t) => byType[t] ? byType[t].reduce((s, x) => s + x, 0) / byType[t].length : 0;
-  if (byType["호텔"] && byType["일반예식장"]) ok(m("호텔") > m("일반예식장"), "호텔 식대 > 일반예식장");
+  if (byType["호텔"] && byType["일반예식장"]) ok(med(byType["호텔"]) > med(byType["일반예식장"]), "호텔 식대 중앙값 > 일반예식장");
+  // 의도적 이상치(미검증)가 들어가 있는지 확인 → 통계 방어 대상 존재
+  ok(recs.some((r) => r.verified === false), "미검증 표본 존재");
 }
 
 // ── 12. HTML 페이지 구조 검증 (전 페이지) ──

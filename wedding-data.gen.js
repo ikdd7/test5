@@ -52,9 +52,14 @@ for (let i = 0; i < N; i++) {
     guarantee: guar,            // 보증인원(명)
     slot: slot.name,            // 정규 시간대(토요일 낮/토요일 저녁/일요일/평일)
     month: "2025-" + String(1 + Math.floor(rnd() * 11)).padStart(2, "0"),
+    verified: rnd() < 0.55,     // 견적서 사진 등으로 검증된 제보 여부
     sample: true,
   });
 }
+
+// 강건 통계 시연용: 의도적 이상치(저격성 허위) 2건 — IQR 필터/미검증 처리로 걸러져야 함
+rows.push({ id: "ex_out1", region: "서울", type: "호텔", meal: 30000, rental: 0, guarantee: 200, slot: "평일", month: "2025-03", verified: false, sample: true });
+rows.push({ id: "ex_out2", region: "경기", type: "일반예식장", meal: 250000, rental: 0, guarantee: 200, slot: "토요일 낮", month: "2025-08", verified: false, sample: true });
 
 const out =
   "/* 자동 생성 — wedding-data.gen.js (예시/합성 데이터, 실제 식장 아님) */\n" +

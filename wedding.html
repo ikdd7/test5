@@ -52,34 +52,45 @@
     <div class="pill-row" id="typePills"></div>
     <label style="font-weight:800;margin-top:6px;display:block">시간대</label>
     <div class="pill-row" id="slotPills"></div>
+    <label style="font-weight:800;margin-top:6px;display:block">데이터 품질</label>
+    <div class="pill-row" id="verifyPills"></div>
   </div>
 
   <!-- 요약 통계 -->
   <div class="result">
-    <div class="lbl">선택 조건 평균 식대 (1인)</div>
+    <div class="lbl">선택 조건 식대 중앙값 (1인) <span class="hint">이상치 제외</span></div>
     <div class="big" id="avgMeal">–</div>
-    <div class="sub">평균 대관료 <b id="avgRental">–</b> · 표본 <b id="nCount">–</b>건</div>
+    <div class="sub">중앙값 대관료 <b id="avgRental">–</b> · 표본 <b id="nCount">–</b>건</div>
+    <div class="cap" id="qualMeta" style="margin-top:8px;color:var(--muted);font-size:.8rem"></div>
+  </div>
+
+  <div class="chart-card" style="border-style:dashed">
+    <h3>🛡️ 데이터 품질은 이렇게 지킵니다</h3>
+    <p class="cap" style="margin:0">① <b>중앙값(median)</b>으로 표시 → 누가 식대 1억을 넣어도 결과가 안 흔들립니다.
+    ② <b>IQR 이상치 자동 제외</b> → 비상식적 값은 통계에서 빠집니다(제외 건수 표기).
+    ③ <b>최소 표본 3건</b> 안 되면 통계 대신 “표본 부족” 표시.
+    ④ <b>검증/미검증 구분</b> → 견적서로 검증된 제보만 따로 볼 수 있어요.</p>
   </div>
 
   <div class="chart-card">
-    <h3>🍽️ 홀 타입별 평균 식대 (1인)</h3>
+    <h3>🍽️ 홀 타입별 식대 중앙값 (1인)</h3>
     <div id="chartTypeMeal"></div>
     <p class="cap">호텔·하우스가 높고 일반예식장이 낮은 경향. 같은 타입 안에서도 지역차가 큽니다.</p>
   </div>
 
   <div class="chart-card">
-    <h3>📍 지역별 평균 식대 (1인)</h3>
+    <h3>📍 지역별 식대 중앙값 (1인)</h3>
     <div id="chartRegionMeal"></div>
   </div>
 
   <div class="chart-card">
-    <h3>🏛️ 홀 타입별 평균 대관료</h3>
+    <h3>🏛️ 홀 타입별 대관료 중앙값</h3>
     <div id="chartTypeRental"></div>
     <p class="cap">보증인원을 채우면 대관료를 면제해주는 곳도 많아 0원 표본이 섞여 있습니다.</p>
   </div>
 
   <div class="chart-card">
-    <h3>🕐 시간대별 평균 대관료</h3>
+    <h3>🕐 시간대별 대관료 중앙값</h3>
     <div id="chartSlotRental"></div>
     <p class="cap">토요일 낮(프라임)이 가장 비싸고 평일이 가장 저렴한 경향 — 시간대만 옮겨도 수백만원이 갈립니다.</p>
   </div>
@@ -129,6 +140,7 @@
   <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
   <details open><summary>이 가격은 진짜인가요?</summary><div class="a">현재 표시되는 데이터는 통계 흐름을 보여주기 위한 <b>예시(합성) 데이터</b>이며 실제 식장이 아닙니다. 사용자 제보가 쌓이면 실제 값으로 대체됩니다. 특정 식장의 가격을 임의로 단정해 게시하지 않습니다.</div></details>
   <details><summary>식대·대관료는 보통 얼마인가요?</summary><div class="a">일반예식장은 1인 5만~7만원대, 컨벤션 6만~8만원대, 호텔은 9만~16만원대가 흔합니다. 대관료는 보증인원을 채우면 면제되는 경우도 많지만, 호텔·하우스웨딩은 수백만~수천만원이 들기도 합니다. (지역·시즌·요일에 따라 차이)</div></details>
+  <details><summary>거짓 정보가 섞이면 어떡하죠?</summary><div class="a">가짜 한두 건이 결과를 흔들지 못하도록 <b>평균이 아닌 중앙값</b>으로 표시하고, IQR 기준 이상치는 통계에서 자동 제외합니다. 견적서로 <b>검증된 제보만 보기</b> 토글도 있고, 같은 식장 제보가 여러 건 모여 일치할 때만 신뢰도를 높게 봅니다. 그래도 이상한 값이 보이면 신고해 주세요.</div></details>
   <details><summary>총 결혼식 비용은 어떻게 계산하나요?</summary><div class="a">가장 큰 항목은 <b>식대 × 보증인원 + 대관료</b>입니다. 여기에 꽃·예식·스드메·사회/주례 등이 추가됩니다. 위 계산기로 식대·대관료 기준 핵심 비용을 먼저 잡아보세요.</div></details>
 </main>
 
@@ -174,7 +186,8 @@
         iV=idx(['rental','대관료']), iG=idx(['guarantee','보증인원']),
         iVen=idx(['venue','식장명','식장','예식장명']), iH=idx(['hall','홀','홀이름']),
         iS=idx(['slot','시간대','요일']), iMo=idx(['month','시기','월']),
-        iVat=idx(['vat','부가세','부가세포함']);
+        iVat=idx(['vat','부가세','부가세포함']),
+        iVer=idx(['verified','검증','견적서','사진','photo']);
     var out=[];
     for(var i=1;i<lines.length;i++){
       var c=lines[i].split(','); if(c.length<2) continue;
@@ -183,14 +196,25 @@
       // ⚠️ 부가세 함정 보정: "미포함/별도"면 포함가(×1.1)로 통일해 비교 가능하게
       var vat=String(iVat>=0?(c[iVat]||''):'').trim();
       if(/미포함|별도|no|n$/i.test(vat)) meal=Math.round(meal*1.1);
+      var verRaw=String(iVer>=0?(c[iVer]||''):'').trim();
+      var verified=/^(y|yes|예|o|네|true|1|http|사진|있)/i.test(verRaw);
       var r={ region:(c[iR]||'기타').trim(), type:(c[iT]||'기타').trim(),
         venue:(iVen>=0?(c[iVen]||''):'').trim(), hall:(iH>=0?(c[iH]||''):'').trim(),
         slot:normSlot(iS>=0?c[iS]:''), month:(iMo>=0?(c[iMo]||''):'').trim(),
-        meal:meal, rental:num(iV), guarantee:num(iG)||200, sample:false };
-      // 이상치 필터: 식대 2만~30만 범위만(오타·단위실수 제거)
-      if(r.meal>=20000 && r.meal<=300000) out.push(r);
+        meal:meal, rental:num(iV), guarantee:num(iG)||200, verified:verified, sample:false };
+      if(plausible(r)) out.push(r);
     }
     return out;
+  }
+
+  // 1차 방어: 명백히 비상식적인 값 제거(단위실수·장난). 미세 이상치는 통계로 처리.
+  var TYPE_BAND={ '호텔':[60000,260000], '하우스웨딩':[50000,220000], '컨벤션':[40000,160000],
+    '일반예식장':[35000,130000], '채플/성당':[40000,160000] };
+  function plausible(d){
+    if(!(d.meal>=20000 && d.meal<=300000)) return false;            // 식대 글로벌 범위
+    if(d.guarantee && (d.guarantee<50 || d.guarantee>600)) return false; // 보증인원 상식
+    if(d.rental<0 || d.rental>100000000) return false;              // 대관료 1억 초과 컷
+    return true;
   }
   if(typeof SHEET_CSV_URL==='string' && SHEET_CSV_URL){
     fetch(SHEET_CSV_URL).then(function(r){return r.text();}).then(function(t){
@@ -200,13 +224,36 @@
     }).catch(function(){ /* 예시 데이터 유지 */ });
   }
 
+  var MIN_N=3;            // 최소 표본: 이보다 적으면 신뢰 낮음 표시
+  var fVerifiedOnly=false; // "검증된 제보만" 토글
+
   function filtered(){
     return DATA.filter(function(d){
       return (fRegion==='전체'||d.region===fRegion) && (fType==='전체'||d.type===fType)
-        && (fSlot==='전체'||d.slot===fSlot);
+        && (fSlot==='전체'||d.slot===fSlot) && (!fVerifiedOnly || d.verified);
     });
   }
   function uniq(key){ var s={}; DATA.forEach(function(d){s[d[key]]=1;}); return Object.keys(s).sort(); }
+
+  // ── 강건 통계: 가짜 1건이 결과를 흔들지 못하게 ──
+  function median(arr){
+    if(!arr.length) return 0;
+    var a=arr.slice().sort(function(x,y){return x-y;}), m=Math.floor(a.length/2);
+    return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+  }
+  function quantile(arr,q){
+    var s=arr.slice().sort(function(x,y){return x-y;}), pos=(s.length-1)*q, b=Math.floor(pos), r=pos-b;
+    return s[b+1]!==undefined ? s[b]+r*(s[b+1]-s[b]) : s[b];
+  }
+  // IQR 1.5배 밖 이상치를 제외한 중앙값 + 제외건수
+  function robust(vals){
+    if(!vals.length) return {median:0,n:0,kept:0,dropped:0};
+    var q1=quantile(vals,0.25), q3=quantile(vals,0.75), iqr=q3-q1;
+    var lo=q1-1.5*iqr, hi=q3+1.5*iqr;
+    var kept=vals.filter(function(v){return v>=lo && v<=hi;});
+    if(!kept.length) kept=vals.slice();
+    return {median:median(kept), n:vals.length, kept:kept.length, dropped:vals.length-kept.length, q1:q1, q3:q3};
+  }
 
   function buildPills(){
     function fill(elId, vals, cur, on){
@@ -220,30 +267,53 @@
     fill('regionPills', uniq('region'), fRegion, function(v){ fRegion=v; buildPills(); render(); });
     fill('typePills', uniq('type'), fType, function(v){ fType=v; buildPills(); render(); });
     fill('slotPills', uniq('slot'), fSlot, function(v){ fSlot=v; buildPills(); render(); });
+    // 검증 토글
+    var vp=document.getElementById('verifyPills'); vp.innerHTML='';
+    [['전체',false],['✅ 검증된 제보만',true]].forEach(function(o){
+      var b=document.createElement('button'); b.textContent=o[0]; if(fVerifiedOnly===o[1]) b.className='on';
+      b.addEventListener('click',function(){ fVerifiedOnly=o[1]; buildPills(); render(); });
+      vp.appendChild(b);
+    });
   }
 
-  function groupAvg(rows, key, valKey){
+  // 그룹별 강건 중앙값 + 표본수/이상치 제외수
+  function groupStat(rows, key, valKey){
     var g={}; rows.forEach(function(d){ (g[d[key]]=g[d[key]]||[]).push(d[valKey]); });
-    return Object.keys(g).map(function(k){ return {label:k, value:avg(g[k]), n:g[k].length}; })
-      .sort(function(a,b){ return b.value-a.value; });
+    return Object.keys(g).map(function(k){
+      var r=robust(g[k]);
+      return {label:k, value:r.median, n:r.n, dropped:r.dropped, low:r.n<MIN_N};
+    }).sort(function(a,b){ return b.value-a.value; });
+  }
+  function barData(stats, hiLabel){
+    return stats.map(function(d){
+      return {label:d.label, value:d.value, hi:d.label===hiLabel,
+        sub:'n='+d.n+(d.low?' ⚠':'')+(d.dropped?' (이상치 '+d.dropped+' 제외)':'')};
+    });
   }
 
   function render(){
     var rows=filtered();
+    var rMeal=robust(rows.map(function(d){return d.meal;}));
+    var rRent=robust(rows.map(function(d){return d.rental;}));
     document.getElementById('nCount').textContent=rows.length;
-    document.getElementById('avgMeal').textContent= rows.length? won(avg(rows.map(function(d){return d.meal;}))) : '–';
-    document.getElementById('avgRental').textContent= rows.length? won(avg(rows.map(function(d){return d.rental;}))) : '–';
+    var enough = rows.length>=MIN_N;
+    document.getElementById('avgMeal').textContent= enough? won(rMeal.median) : (rows.length? '표본 부족' : '–');
+    document.getElementById('avgRental').textContent= enough? won(rRent.median) : '–';
+    var vCount=rows.filter(function(d){return d.verified;}).length;
+    var meta=document.getElementById('qualMeta');
+    if(meta){
+      meta.textContent = enough
+        ? ('검증 '+vCount+'건 · 미검증 '+(rows.length-vCount)+'건'+(rMeal.dropped?' · 식대 이상치 '+rMeal.dropped+'건 제외':''))
+        : ('신뢰할 만한 통계를 내려면 최소 '+MIN_N+'건 필요(현재 '+rows.length+'건)');
+    }
 
-    // 차트는 전체 데이터 기준(비교 목적), 단 지역필터는 반영
-    var base=DATA.filter(function(d){ return fRegion==='전체'||d.region===fRegion; });
-    Charts.bars(document.getElementById('chartTypeMeal'), {
-      data: groupAvg(base,'type','meal').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fType}; }) });
-    Charts.bars(document.getElementById('chartRegionMeal'), {
-      data: groupAvg(DATA,'region','meal').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fRegion}; }) });
-    Charts.bars(document.getElementById('chartTypeRental'), {
-      data: groupAvg(base,'type','rental').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fType}; }) });
-    Charts.bars(document.getElementById('chartSlotRental'), {
-      data: groupAvg(base,'slot','rental').map(function(d){ return {label:d.label,value:d.value,sub:'n='+d.n,hi:d.label===fSlot}; }) });
+    // 차트는 전체 데이터 기준(비교 목적), 단 지역/검증필터는 반영
+    var base=DATA.filter(function(d){ return (fRegion==='전체'||d.region===fRegion) && (!fVerifiedOnly||d.verified); });
+    var baseAll=DATA.filter(function(d){ return !fVerifiedOnly||d.verified; });
+    Charts.bars(document.getElementById('chartTypeMeal'), { data: barData(groupStat(base,'type','meal'), fType) });
+    Charts.bars(document.getElementById('chartRegionMeal'), { data: barData(groupStat(baseAll,'region','meal'), fRegion) });
+    Charts.bars(document.getElementById('chartTypeRental'), { data: barData(groupStat(base,'type','rental'), fType) });
+    Charts.bars(document.getElementById('chartSlotRental'), { data: barData(groupStat(base,'slot','rental'), fSlot) });
     Charts.scatter(document.getElementById('chartScatter'), {
       points: rows.map(function(d){ return {x:d.guarantee, y:d.meal*d.guarantee+d.rental, label:d.type}; }),
       xfmt:function(v){return v+'명';}, yfmt:function(v){return manwon(v)+'원';},
@@ -259,12 +329,13 @@
     if(!g||!m){ document.getElementById('myTotal').textContent='–'; document.getElementById('verdict').textContent=''; last=null; return; }
     var total=m*g+rt;
     document.getElementById('myTotal').textContent=won(total);
-    // 비교 기준: 현재 필터(지역/타입) 표본의 평균 식대
+    // 비교 기준: 현재 필터 표본의 강건 중앙값(이상치 제외) — 가짜 1건에 안 흔들림
     var rows=filtered();
-    var baseMeal= rows.length? avg(rows.map(function(d){return d.meal;})) : avg(DATA.map(function(d){return d.meal;}));
+    var baseMeal= rows.length>=MIN_N ? robust(rows.map(function(d){return d.meal;})).median
+                                     : robust(DATA.map(function(d){return d.meal;})).median;
     var diff= (m-baseMeal)/baseMeal*100;
     var v=document.getElementById('verdict');
-    var label=(fRegion==='전체'?'':fRegion+' ')+(fType==='전체'?'평균':fType);
+    var label=(fRegion==='전체'?'':fRegion+' ')+(fType==='전체'?'중앙값':fType);
     if(diff>3){ v.className='verdict exp'; v.textContent='💸 '+label+'보다 식대 '+Math.round(diff)+'% 비싸요'; }
     else if(diff<-3){ v.className='verdict cheap'; v.textContent='✅ '+label+'보다 식대 '+Math.round(-diff)+'% 저렴해요'; }
     else { v.className='verdict'; v.textContent='👌 '+label+'과 비슷한 수준이에요'; }
