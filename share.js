@@ -1,60 +1,61 @@
 /*
  * share.js — 결과를 카드 이미지(PNG)로 저장 + 공유 (외부 라이브러리 0)
- * 사용:  ShareCard.mount(containerEl, function(){ return {title, big, lines:[..], site}; })
- *  - "이미지로 저장" : Canvas로 카드 PNG 생성 후 다운로드
- *  - "공유하기"     : navigator.share(파일) 지원 시 네이티브 공유, 아니면 저장으로 폴백
- * 이 비-SEO 유입 장치가 강자들과의 차별점입니다(카톡·커뮤니티 바이럴).
+ *  ShareCard.mount(el, getData)  : 저장/공유 버튼 mount
+ *  ShareCard.drawCard(data)      : 카드 canvas 생성 (data.ratio: "1:1" 기본 | "9:16")
+ *  ShareCard.download(canvas,nm) : PNG 다운로드
+ * data = { title, big, lines:[{k,v}], site, fileName, ratio, theme }
+ * 비-SEO 바이럴 장치(카톡·인스타 스토리·쇼츠). 강자들과의 차별점.
  */
 (function (root) {
   "use strict";
 
   function drawCard(data) {
-    var W = 1080, H = 1080;
+    data = data || {};
+    var W = 1080, H = data.ratio === "9:16" ? 1920 : 1080;
     var c = document.createElement("canvas");
     c.width = W; c.height = H;
     var x = c.getContext("2d");
 
-    // 배경 그라데이션
     var g = x.createLinearGradient(0, 0, W, H);
     g.addColorStop(0, "#0e1117"); g.addColorStop(1, "#1c2230");
     x.fillStyle = g; x.fillRect(0, 0, W, H);
 
-    // 상단 악센트 바
     var g2 = x.createLinearGradient(0, 0, W, 0);
-    g2.addColorStop(0, "#3b82f6"); g2.addColorStop(1, "#22d3ee");
-    x.fillStyle = g2; x.fillRect(0, 0, W, 14);
+    if (data.theme === "wedding") { g2.addColorStop(0, "#f472b6"); g2.addColorStop(1, "#fb7185"); }
+    else { g2.addColorStop(0, "#3b82f6"); g2.addColorStop(1, "#22d3ee"); }
+    x.fillStyle = g2; x.fillRect(0, 0, W, 16);
 
     var KR = '"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
     x.textAlign = "center";
 
     // 타이틀
     x.fillStyle = "#9aa4ba";
-    x.font = "bold 44px " + KR;
-    x.fillText(data.title || "", W / 2, 220);
+    x.font = "bold 48px " + KR;
+    x.fillText(data.title || "", W / 2, H * 0.18);
 
-    // 큰 숫자(그라데이션 텍스트)
-    x.font = "900 120px " + KR;
+    // 큰 숫자
+    x.font = "900 132px " + KR;
     x.fillStyle = g2;
-    wrapCenter(x, data.big || "", W / 2, 360, 980, 120);
+    wrapCenter(x, data.big || "", W / 2, H * 0.30, 980, 132);
 
     // 라인들
-    x.font = "40px " + KR;
-    var y = 560;
-    (data.lines || []).forEach(function (ln) {
-      x.fillStyle = "#283041"; x.fillRect(140, y - 36, 800, 2);
-      x.textAlign = "left";  x.fillStyle = "#9aa4ba"; x.fillText(ln.k || "", 150, y + 30);
-      x.textAlign = "right"; x.fillStyle = "#e9edf6";
-      x.font = "bold 44px " + KR; x.fillText(ln.v || "", 930, y + 30);
-      x.font = "40px " + KR;
-      y += 110;
+    var lines = data.lines || [];
+    x.font = "42px " + KR;
+    var y = H * 0.46, step = Math.min(120, (H * 0.40) / Math.max(1, lines.length));
+    lines.forEach(function (ln) {
+      x.fillStyle = "#283041"; x.fillRect(120, y - 38, 840, 2);
+      x.textAlign = "left"; x.fillStyle = "#9aa4ba"; x.font = "40px " + KR; x.fillText(ln.k || "", 130, y + 28);
+      x.textAlign = "right"; x.fillStyle = "#e9edf6"; x.font = "bold 46px " + KR; x.fillText(ln.v || "", 950, y + 28);
+      y += step;
     });
 
     // 푸터
     x.textAlign = "center";
-    x.fillStyle = "#22d3ee"; x.font = "bold 38px " + KR;
-    x.fillText(data.site || "계산기허브", W / 2, H - 80);
-    x.fillStyle = "#6b7280"; x.font = "30px " + KR;
-    x.fillText("내 결과도 확인해보세요 →", W / 2, H - 36);
+    x.fillStyle = data.theme === "wedding" ? "#fb7185" : "#22d3ee";
+    x.font = "bold 40px " + KR;
+    x.fillText(data.site || "계산기허브", W / 2, H - 92);
+    x.fillStyle = "#6b7280"; x.font = "32px " + KR;
+    x.fillText(data.cta || "내 결과도 확인해보세요 →", W / 2, H - 44);
 
     return c;
   }
@@ -113,5 +114,5 @@
     });
   }
 
-  root.ShareCard = { mount: mount, drawCard: drawCard };
+  root.ShareCard = { mount: mount, drawCard: drawCard, download: download, toBlob: toBlob };
 })(typeof window !== "undefined" ? window : this);

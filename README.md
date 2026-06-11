@@ -13,10 +13,18 @@
 ```
 index.html    ← 연봉 실수령액 / 퇴직금 / 시급·주휴수당 (3-in-1) + 결과 공유
 silup.html    ← 실업급여(구직급여) 계산기 2026  ★틈새 + 공유훅
-wedding.html  ← 결혼식장 비용 공개(식대·대관료 그래프)  ★데이터 투명화 + 크라우드소싱
-wedding-data.js / wedding-data.gen.js  ← 결혼식장 예시(합성) 데이터 + 생성기
+wedding.html  ← 결혼식장 비용 허브(식대·대관료 그래프 + 지역 링크)  ★데이터 투명화
+region/*.html ← 지역별 랜딩(answer-first, build.js가 자동 생성)  ★구글 SEO 유입
+method.html   ← 방법론·신뢰 페이지(데이터 수집·검증·면책)
+studio.html   ← 운영자 SNS 카드 스튜디오(9:16 쇼츠·릴스 시딩, noindex)
+seed.html     ← 운영자 시드 입력 도구(noindex)
+build.js      ← 지역 페이지 정적 생성기 + sitemap 자동화 (node build.js)
+stats.js      ← 강건 통계 엔진(중앙값·이상치 제외·백분위, Node+브라우저 공용)
+regions.js    ← 지역명↔슬러그 맵 (build.js·wedding.html 공용)
+region.js     ← 지역 페이지 클라이언트(차트·백분위 비교·게이트)
 charts.js     ← 의존성 0 미니 차트(가로막대·산점도)
-WEDDING_SETUP.md  ← 결혼식장 페이지 제보(구글폼)·실데이터(구글시트) 연동 가이드
+wedding-data.js / wedding-data.gen.js  ← 결혼식장 예시(합성) 데이터 + 생성기
+WEDDING_SETUP.md / LEGAL_NOTES.md / PLAN.md  ← 운영·법무·전략 문서
 daechul.html  ← 대출 이자 계산기 (원리금균등·원금균등·만기일시)  ★수익 핵심
 man-nai.html  ← 만 나이 계산기 (검색량 최상위 — 트래픽 미끼)
 pyeong.html   ← 평수 계산기 (평 ↔ ㎡)

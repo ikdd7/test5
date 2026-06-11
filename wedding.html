@@ -56,6 +56,13 @@
     <div class="pill-row" id="verifyPills"></div>
   </div>
 
+  <!-- 지역별 보기 (구글 검색 유입용 랜딩) -->
+  <div class="chart-card">
+    <h3>📍 지역별 가격 자세히 보기</h3>
+    <div class="pill-row" id="regionLinks"></div>
+    <p class="cap" id="regionLinksNote" style="margin:6px 0 0">데이터가 5건 이상 모인 지역만 상세 페이지가 열립니다.</p>
+  </div>
+
   <!-- 요약 통계 -->
   <div class="result">
     <div class="lbl">선택 조건 식대 중앙값 (1인) <span class="hint">이상치 제외</span></div>
@@ -146,10 +153,11 @@
 
 <footer class="wrap">
   <p>표시 데이터는 참고용이며 실제 계약 조건과 다를 수 있습니다. 제보 데이터는 제보자 입력에 근거합니다.</p>
-  <p style="margin-top:6px">© <span id="year"></span> 계산기허브 · 웨딩 가격 투명화 프로젝트</p>
+  <p style="margin-top:6px"><a href="method.html">방법론·신뢰</a> · © <span id="year"></span> 계산기허브 · 웨딩 가격 투명화 프로젝트</p>
 </footer>
 
 <script src="wedding-data.js"></script>
+<script src="regions.js"></script>
 <script src="charts.js"></script>
 <script src="share.js"></script>
 <script>
@@ -379,6 +387,18 @@
     document.head.appendChild(s); document.getElementById('ad1').textContent='';
   }
 
+  // 지역별 상세 페이지 링크(데이터 5건 이상 + 슬러그 보유)
+  (function(){
+    var SLUGS=window.REGION_SLUGS||{}, cnt={};
+    DATA.forEach(function(d){ cnt[d.region]=(cnt[d.region]||0)+1; });
+    var regions=Object.keys(cnt).filter(function(r){ return SLUGS[r] && cnt[r]>=5; })
+      .sort(function(a,b){ return cnt[b]-cnt[a]; });
+    var el=document.getElementById('regionLinks');
+    if(!regions.length){ el.innerHTML='<span class="cap">아직 충분한 지역이 없어요.</span>'; return; }
+    el.innerHTML=regions.map(function(r){
+      return '<a class="pill-link" href="region/'+SLUGS[r]+'.html">'+r+' <i>'+cnt[r]+'</i></a>';
+    }).join('');
+  })();
   document.getElementById('dataBadge').textContent='예시 데이터 '+DATA.length+'건';
   document.getElementById('year').textContent=new Date().getFullYear();
   buildPills();

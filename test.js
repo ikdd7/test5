@@ -214,6 +214,53 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(recs.some((r) => r.verified === false), "미검증 표본 존재");
 }
 
+// ── 11.7 강건 통계 엔진(stats.js) ──
+{
+  const S = require("./stats.js").Stats;
+  ok(S.median([1, 2, 3, 4, 5]) === 3, "median 홀수");
+  ok(S.median([1, 2, 3, 4]) === 2.5, "median 짝수");
+  ok(S.median([]) === 0, "median 빈배열 방어");
+  // 트롤 방어: 1억 2건 주입해도 중앙값은 정상범위 유지(평균은 폭발)
+  const base = [60000, 62000, 65000, 67000, 70000];
+  const poisoned = base.concat([100000000, 100000000]);
+  const mean = poisoned.reduce((s, x) => s + x, 0) / poisoned.length;
+  ok(S.median(poisoned) <= 70000, "중앙값은 거대 이상치에도 정상범위 유지");
+  ok(mean > 1000000, "대조: 평균은 이상치에 폭발");
+  const r = S.robust(base.concat([100000000]));
+  ok(r.dropped >= 1, "robust 이상치 제외");
+  ok(r.median >= 60000 && r.median <= 70000, "robust 중앙값 정상범위");
+  // 백분위
+  ok(S.percentileBelow([1, 2, 3, 4], 4) >= 80, "percentileBelow 상단");
+  ok(S.percentileBelow([1, 2, 3, 4], 1) <= 30, "percentileBelow 하단");
+  ok(S.percentileBelow([], 5) === null, "percentileBelow 빈배열 null");
+  ok(S.plausible({ meal: 65000, guarantee: 200, rental: 0 }) === true, "plausible 정상");
+  ok(S.plausible({ meal: 5000, guarantee: 200, rental: 0 }) === false, "plausible 식대 비상식 컷");
+  ok(typeof S.manwon(68000) === "string" && S.manwon(68000).indexOf("만") >= 0, "manwon 포맷");
+}
+
+// ── 11.8 지역 페이지 생성기(build.js) 산출물 ──
+{
+  const SLUGS = require("./regions.js").REGION_SLUGS;
+  ok(fs.existsSync(path.join(__dirname, "region")), "region 폴더 생성됨");
+  ok(fs.existsSync(path.join(__dirname, "regions.js")), "regions.js 존재");
+  ok(fs.existsSync(path.join(__dirname, "stats.js")), "stats.js 존재");
+  ok(fs.existsSync(path.join(__dirname, "region.js")), "region.js 존재");
+  ok(fs.existsSync(path.join(__dirname, "build.js")), "build.js 존재");
+  const files = fs.existsSync(path.join(__dirname, "region")) ? fs.readdirSync(path.join(__dirname, "region")).filter((f) => f.endsWith(".html")) : [];
+  ok(files.length >= 1, `지역 페이지 생성됨(${files.length}개)`);
+  files.forEach((f) => {
+    const slug = f.replace(".html", "");
+    ok(Object.values(SLUGS).includes(slug), `${f}: 유효한 슬러그`);
+    const h = fs.readFileSync(path.join(__dirname, "region", f), "utf8");
+    [["<!DOCTYPE html>", "DOCTYPE"], ['rel="canonical"', "canonical"], ["application/ld+json", "구조화데이터"],
+     ["중앙값", "answer-first 중앙값"], ['id="compare"', "비교 앵커"], ["../stats.js", "stats 연결"],
+     ["../region.js", "region.js 연결"], ["</html>", "html 닫힘"]].forEach(([n, name]) => ok(h.includes(n), `${f}: ${name}`));
+    // H1에 만원 숫자가 정적으로 박혀 있는지(SEO 즉답)
+    ok(/[0-9.]+만원<\/span>/.test(h), `${f}: H1에 중앙값 숫자 정적 노출`);
+    ok((h.match(/<script/g) || []).length === (h.match(/<\/script>/g) || []).length, `${f}: script 짝`);
+  });
+}
+
 // ── 12. HTML 페이지 구조 검증 (전 페이지) ──
 const pages = ["index.html", "silup.html", "wedding.html", "daechul.html", "man-nai.html", "pyeong.html"];
 const calcPages = pages.filter((p) => p !== "wedding.html"); // wedding은 charts.js 사용

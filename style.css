@@ -122,10 +122,30 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .pill-row button{background:var(--card2);border:1px solid var(--line);color:var(--muted);font-weight:700;
   font-size:.82rem;padding:7px 13px;border-radius:999px;cursor:pointer}
 .pill-row button.on{background:rgba(59,130,246,.16);border-color:var(--brand);color:var(--text)}
+.pill-link{background:var(--card2);border:1px solid var(--line);color:var(--text);font-weight:700;
+  font-size:.85rem;padding:8px 14px;border-radius:999px;display:inline-block}
+.pill-link:hover{border-color:#fb7185;background:rgba(244,114,182,.12)}
+.pill-link i{color:var(--muted);font-style:normal;font-size:.78rem}
 .samplebadge{display:inline-block;background:rgba(251,191,36,.14);border:1px solid var(--warn);color:var(--warn);
   font-weight:800;font-size:.74rem;padding:4px 10px;border-radius:999px}
 .verdict{font-weight:800;font-size:1.05rem;margin-top:6px}
 .verdict.cheap{color:var(--good)} .verdict.exp{color:var(--bad)}
+
+/* 지역 랜딩 (answer-first) */
+.crumb{font-size:.82rem;color:var(--muted)}
+.crumb a{color:var(--muted)}
+.hero{font-size:clamp(2.4rem,11vw,3.6rem);font-weight:900;background:linear-gradient(135deg,#f472b6,#fb7185);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.heroin{color:var(--muted);font-size:1rem;font-weight:700}
+.metaline{color:var(--muted);font-size:.82rem;margin-top:8px}
+.summary{color:var(--text);font-size:.98rem;margin-top:10px}
+.cta{display:inline-block;margin-top:16px;background:linear-gradient(135deg,#f472b6,#fb7185);color:#fff;
+  font-weight:800;padding:13px 22px;border-radius:999px}
+/* 소프트 게이트 */
+.gatewrap{position:relative}
+.gate.locked{filter:blur(7px);pointer-events:none;user-select:none;max-height:240px;overflow:hidden}
+.gateover{position:absolute;left:0;right:0;bottom:16px;text-align:center;padding:0 16px}
+.gateover .sharebtn{max-width:300px;margin:0 auto}
 
 footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
 @media(max-width:520px){ .grid2{grid-template-columns:1fr} .hub{grid-template-columns:1fr} }

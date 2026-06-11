@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>🔒 카드 스튜디오 (운영자 전용) — SNS 시딩</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .studio{display:grid;gap:12px}
+  .studio label{font-size:.82rem;color:var(--muted);font-weight:700}
+  .studio select{width:100%;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px;font-size:.95rem;font-family:inherit}
+  .preview{display:flex;justify-content:center;margin:14px 0}
+  .preview canvas{width:270px;height:480px;border-radius:14px;border:1px solid var(--line);box-shadow:0 8px 30px rgba(0,0,0,.4)}
+  .headline{background:var(--card2);border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--text);font-size:.95rem}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <span class="y">🔒 운영자 전용 · 색인 제외</span>
+  <h1>SNS 카드 스튜디오</h1>
+  <p>지역·컷을 고르면 <b>9:16 인사이트 카드</b>를 만들어 줍니다. 인스타 릴스·스토리·쇼츠에 올려 카페 밖 유입을 만드세요.</p>
+</header>
+
+<main class="wrap">
+  <div class="card studio">
+    <div><label>지역</label><select id="region"></select></div>
+    <div><label>카드 종류</label><select id="cut">
+      <option value="overview">지역 요약 (식대 중앙값 + 핵심 수치)</option>
+      <option value="type">홀 타입별 식대 비교</option>
+      <option value="slot">시간대별 대관료 비교</option>
+      <option value="gap">두 지역 가격 차이</option>
+    </select></div>
+    <div id="region2Wrap" style="display:none"><label>비교 지역</label><select id="region2"></select></div>
+    <div><label>후킹 헤드라인 (수정 가능)</label><div class="headline" id="headline" contenteditable="true"></div></div>
+  </div>
+
+  <div class="preview"><canvas id="cv" width="1080" height="1920"></canvas></div>
+  <div class="seedrow" style="display:flex;gap:8px;margin:0 0 24px">
+    <button type="button" class="sharebtn alt" id="dl" style="flex:1">⬇️ 9:16 카드 저장 (PNG)</button>
+  </div>
+  <p class="note">팁: 같은 카드를 인스타 스토리/릴스 커버 + 유튜브 쇼츠 썸네일로 재활용하세요. 캡션엔 “우리 지역 평균은? → 프로필 링크”.</p>
+</main>
+
+<footer class="wrap"><p>운영자 전용. 카드 수치는 현재 데이터(예시/제보) 기준.</p></footer>
+
+<script src="wedding-data.js"></script>
+<script src="regions.js"></script>
+<script src="stats.js"></script>
+<script src="share.js"></script>
+<script>
+(function(){
+  var S=window.Stats, SLUGS=window.REGION_SLUGS;
+  var D=(window.WEDDING_SAMPLE||[]).filter(S.plausible);
+  var $=function(id){return document.getElementById(id);};
+  var byRegion={}; D.forEach(function(d){(byRegion[d.region]=byRegion[d.region]||[]).push(d);});
+  var regions=Object.keys(byRegion).filter(function(r){return SLUGS[r]&&byRegion[r].length>=5;})
+    .sort(function(a,b){return byRegion[b].length-byRegion[a].length;});
+  function opts(sel,arr){ $(sel).innerHTML=arr.map(function(r){return '<option>'+r+'</option>';}).join(''); }
+  opts('region',regions); opts('region2',regions);
+
+  function gm(rows,key,vk){ var g={}; rows.forEach(function(d){(g[d[key]]=g[d[key]]||[]).push(d[vk]);});
+    return Object.keys(g).map(function(k){return {label:k,median:S.robust(g[k]).median};}).sort(function(a,b){return b.median-a.median;}); }
+
+  function build(){
+    var region=$('region').value, cut=$('cut').value, recs=byRegion[region]||[];
+    $('region2Wrap').style.display = cut==='gap'?'':'none';
+    var med=S.robust(recs.map(function(d){return d.meal;})).median;
+    var data={ ratio:'9:16', theme:'wedding', site:'결혼식장 가격 · 계산기허브', cta:'우리 지역 평균은? → 프로필 링크',
+      title:region+' 웨딩홀 식대', big:S.manwon(med)+'원', lines:[] };
+    var head='';
+    if(cut==='overview'){
+      var byType=gm(recs,'type','meal');
+      data.lines=byType.slice(0,4).map(function(t){return {k:t.label,v:S.manwon(t.median)+'원'};});
+      head=region+' 결혼식장, 1인 식대 진짜 얼마일까? 👀';
+    } else if(cut==='type'){
+      data.title=region+' 홀타입별 식대';
+      var bt=gm(recs,'type','meal'); data.big=S.manwon(bt[0].median)+'원';
+      data.lines=bt.map(function(t){return {k:t.label,v:S.manwon(t.median)+'원'};});
+      head=region+' 어디가 비쌀까? 홀타입별 식대 비교 💸';
+    } else if(cut==='slot'){
+      data.title=region+' 시간대별 대관료';
+      var bs=gm(recs,'slot','rental'); data.big=S.manwon(bs[0].median)+'원';
+      data.lines=bs.map(function(t){return {k:t.label,v:S.manwon(t.median)+'원'};});
+      head='시간대만 바꿔도 수백만원? '+region+' 대관료 차이 🕐';
+    } else if(cut==='gap'){
+      var r2=$('region2').value;
+      var m1=S.robust(byRegion[region].map(function(d){return d.meal;})).median;
+      var m2=S.robust((byRegion[r2]||[]).map(function(d){return d.meal;})).median;
+      var ratio=m2?(Math.max(m1,m2)/Math.min(m1,m2)):1;
+      data.title=region+' vs '+r2+' 식대'; data.big=(Math.round(ratio*10)/10)+'배 차이';
+      data.lines=[{k:region,v:S.manwon(m1)+'원'},{k:r2,v:S.manwon(m2)+'원'}];
+      head=region+' vs '+r2+', 식대 '+(Math.round(ratio*10)/10)+'배 차이 😱';
+    }
+    if(!$('headline').dataset.touched) $('headline').textContent=head;
+    data.title=$('headline').textContent || data.title;
+    // 헤드라인을 카드 타이틀로 사용(빅넘버는 유지)
+    var card=ShareCard.drawCard({ ratio:'9:16', theme:'wedding', title:$('headline').textContent||data.title,
+      big:data.big, lines:data.lines, site:data.site, cta:data.cta });
+    var cv=$('cv'), ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height); ctx.drawImage(card,0,0);
+    window._card=card;
+  }
+  ['region','cut','region2'].forEach(function(id){ $(id).addEventListener('change',function(){ $('headline').dataset.touched=''; build(); }); });
+  $('headline').addEventListener('input',function(){ this.dataset.touched='1'; build(); });
+  $('dl').addEventListener('click',function(){ if(window._card) ShareCard.download(window._card, ($('region').value)+'_카드'); });
+  build();
+})();
+</script>
+</body>
+</html>
