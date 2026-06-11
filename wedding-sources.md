@@ -42,6 +42,38 @@
 - [ ] 클리앙 “웨딩홀 가격 올랐네요” — https://www.clien.net/service/board/park/18914024
 > 다결·인스타는 로그인 후 “지역명 웨딩홀 견적” 검색 → 견적 캡처 글이 가장 많습니다.
 
+## ⑥ 🌐 공개 웨딩홀 DB — 지역별로 식장 페이지 순회 (로그인 불필요·최대 수율)
+식장마다 페이지가 있고 식대·대관이 적힌 경우가 많아 **지역 필터로 쭉 순회**하면 대량 수집됩니다.
+- [ ] 다이렉트결혼준비 **웨딩홀 DB**(카페 아님, 공개) — 예: https://www.directwedding.co.kr/weddinghall/hall0440 (제주해비치) · https://www.directwedding.co.kr/weddinghall/hall0103 (대구칼라디움). 지역 필터로 식장 페이지 순회
+- [ ] 아이웨딩 지역별 — https://www.iwedding.co.kr/dl/djhall (대전) · 엔터프라이즈 페이지 /enterprise/info/번호
+- [ ] 웨딩북 — https://www.weddingbook.com/weddinghall/ (전주 웨딩의전당 등)
+- [ ] 신부야 / 신부야 울산점 — https://www.sinbuya.com/product/hall/wedding · https://sinbuyaulsan.com/product/hall/wedding
+
+## ⑦ 지역별 추가 소스 (확인용)
+**대전·충청** — 충청 식대 6만 육박
+- [ ] 대전 웨딩 가격 기사(실수치: 대관 470만/식대 4.6만, 대관 480만/식대 5.2만) — https://www.dailycc.net/news/articleView.html?idxno=775613 · https://v.daum.net/v/20250930185611871
+- [ ] 대전 인기웨딩홀(아이웨딩) — https://www.iwedding.co.kr/dl/djhall
+
+**광주·전라**
+- [ ] 전북권 비교견적센터 — https://jweddinghall.com/
+- [ ] 웨딩의전당 전주(웨딩북) — https://www.weddingbook.com/weddinghall/
+
+**부산·울산·경남**
+- [ ] 신부야 울산점 — https://sinbuyaulsan.com/product/hall/wedding
+
+**경기(수원·일산)·인천**
+- [ ] 경기 수원 웨딩홀 목록 정리 — https://blog.weddingfairschedule.kr/경기도-수원-웨딩홀결혼식장-추천-목록-정리/
+
+**제주** — 호텔·리조트 중심
+- [ ] 제주해비치호텔앤리조트(식대 12~14만·대관 440만) — https://www.directwedding.co.kr/weddinghall/hall0440
+- [ ] 엘리시안제주(식대 8~9.9만)·씨에스호텔(식대 10만+) — https://www.iwedding.co.kr/enterprise/info/1477040993
+- [ ] 서귀포 웨딩홀 3곳 정리 — https://startup.publicworkjob.com/31515/
+
+**대구·경북**
+- [ ] 웨딩 메르디앙 견적공유(라테라스: 식대 5만·대관 350→245만) — https://4.mjella.com/entry/웨딩-메르디앙-24년4월-견적공유
+- [ ] 대구 웨딩홀 투어 리스트 — https://blog.weddinglast.com/대구-웨딩홀-투어-리스트/
+- [ ] 대구 칼라디움(식대 4.5만·대관 150~200만) — https://www.directwedding.co.kr/weddinghall/hall0103
+
 ---
 
 ## 입력 팁 (품질 = 사이트의 전부)
