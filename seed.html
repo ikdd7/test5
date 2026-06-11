@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>🔒 시드 입력 도구 (운영자 전용) — 결혼식장 비용</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  .seedform{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seedform .full{grid-column:1/-1}
+  .seedform label{font-size:.8rem;color:var(--muted);font-weight:700;display:block;margin-bottom:4px}
+  .seedform input,.seedform select{width:100%;background:var(--card2);border:1px solid var(--line);
+    color:var(--text);border-radius:10px;padding:11px;font-size:.95rem;font-family:inherit}
+  .seedform input:focus,.seedform select:focus{outline:0;border-color:var(--brand)}
+  .seedrow{display:flex;gap:8px;margin:14px 0}
+  .seedrow button{flex:1;border:0;border-radius:12px;padding:13px;font-weight:800;cursor:pointer;font-size:.95rem}
+  .badd{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+  .bexp{background:var(--card2);border:1px solid var(--line)!important;color:var(--text)}
+  .bclr{background:rgba(248,113,113,.12);border:1px solid var(--bad)!important;color:var(--bad)}
+  table.seedtbl{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:8px}
+  table.seedtbl th,table.seedtbl td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;white-space:nowrap}
+  table.seedtbl th{color:var(--muted)}
+  table.seedtbl .del{color:var(--bad);cursor:pointer;font-weight:800}
+  .warn-inline{color:var(--warn);font-size:.78rem;margin-top:4px;min-height:1em}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;padding:4px 10px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <span class="y">🔒 운영자 전용 · 색인 제외</span>
+  <h1>결혼식장 시드 입력</h1>
+  <p>카페·블로그 견적을 빠르게 키인 → <b>CSV 내보내기</b> → 구글시트에 붙여넣기.</p>
+  <p style="margin-top:8px"><span class="samplebadge" id="cnt">0건 입력됨</span></p>
+</header>
+
+<main class="wrap">
+  <div class="card">
+    <form id="f" class="seedform" autocomplete="off">
+      <div class="full">
+        <label>예식장 이름 *</label>
+        <input id="venue" placeholder="예: ○○컨벤션 강남" required />
+      </div>
+      <div>
+        <label>지역 *</label>
+        <select id="region"></select>
+      </div>
+      <div>
+        <label>홀 타입 *</label>
+        <select id="type"></select>
+      </div>
+      <div>
+        <label>홀 이름</label>
+        <input id="hall" placeholder="예: 그랜드홀" />
+      </div>
+      <div>
+        <label>시간대</label>
+        <select id="slot"></select>
+      </div>
+      <div>
+        <label>1인 식대(원) *</label>
+        <input id="meal" inputmode="numeric" placeholder="65000" required />
+      </div>
+      <div>
+        <label>부가세·봉사료</label>
+        <select id="vat">
+          <option value="포함">식대에 포함</option>
+          <option value="미포함">미포함(별도) → ×1.1 보정</option>
+        </select>
+      </div>
+      <div>
+        <label>대관료(원)</label>
+        <input id="rental" inputmode="numeric" placeholder="0" />
+      </div>
+      <div>
+        <label>보증인원(명)</label>
+        <input id="guarantee" inputmode="numeric" placeholder="200" />
+      </div>
+      <div>
+        <label>예식 시기(년-월)</label>
+        <input id="month" placeholder="2025-10" />
+      </div>
+      <div>
+        <label>출처(링크·메모)</label>
+        <input id="source" placeholder="카페글 URL 등" />
+      </div>
+      <div class="full warn-inline" id="warn"></div>
+      <div class="full seedrow" style="margin:4px 0 0">
+        <button type="submit" class="badd">➕ 추가 (Enter)</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="seedrow">
+    <button type="button" class="bexp" id="exportCsv">📄 CSV 내보내기</button>
+    <button type="button" class="bexp" id="exportJson">{ } JSON 내보내기</button>
+    <button type="button" class="bclr" id="clearAll">🗑 전체 삭제</button>
+  </div>
+  <p class="note">CSV 헤더는 <code>venue,region,type,hall,meal,vat,rental,guarantee,slot,month,source</code> — 구글시트에 그대로 붙여넣으면 사이트가 자동 인식합니다. 입력 내용은 이 브라우저(localStorage)에 자동 저장돼 새로고침해도 유지됩니다.</p>
+
+  <div class="tblwrap">
+    <table class="seedtbl">
+      <thead><tr><th>#</th><th>식장</th><th>지역</th><th>타입</th><th>홀</th><th>식대</th><th>대관료</th><th>보증</th><th>시간대</th><th>시기</th><th></th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<footer class="wrap"><p>운영자 전용 도구. 수집 시 출처를 기록하고, 실명 공개는 제보 3건+견적서 기준을 따르세요.</p></footer>
+
+<script>
+(function(){
+  var REGIONS=['서울','경기','인천','부산','대구','대전','광주','대전','울산','세종','제주','강원','충북','충남','전북','전남','경북','경남','기타'];
+  // 중복 제거(대전 실수 방지)
+  REGIONS=REGIONS.filter(function(v,i){return REGIONS.indexOf(v)===i;});
+  var TYPES=['일반예식장','컨벤션','호텔','하우스웨딩','채플/성당','야외/가든','스몰웨딩'];
+  var SLOTS=['토요일 낮','토요일 저녁','일요일','평일'];
+  function opts(sel,arr){ document.getElementById(sel).innerHTML=arr.map(function(v){return '<option>'+v+'</option>';}).join(''); }
+  opts('region',REGIONS); opts('type',TYPES); opts('slot',SLOTS);
+
+  var KEY='wedding_seed_rows';
+  var rows=[]; try{ rows=JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ rows=[]; }
+  var $=function(id){return document.getElementById(id);};
+  var num=function(v){ return parseInt(String(v).replace(/[^0-9]/g,''),10)||0; };
+
+  function save(){ localStorage.setItem(KEY, JSON.stringify(rows)); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function fmtWon(n){ return n? n.toLocaleString('ko-KR') : '0'; }
+
+  function rowMeal(r){ // 부가세 보정 후 식대
+    return r.vat==='미포함' ? Math.round(r.meal*1.1) : r.meal;
+  }
+
+  function renderTable(){
+    $('cnt').textContent=rows.length+'건 입력됨';
+    $('tbody').innerHTML=rows.map(function(r,i){
+      return '<tr><td>'+(i+1)+'</td><td>'+esc(r.venue)+'</td><td>'+esc(r.region)+'</td><td>'+esc(r.type)+
+        '</td><td>'+esc(r.hall)+'</td><td>'+fmtWon(rowMeal(r))+(r.vat==='미포함'?'<i style="color:var(--warn)">*</i>':'')+
+        '</td><td>'+fmtWon(r.rental)+'</td><td>'+esc(r.guarantee)+'</td><td>'+esc(r.slot)+
+        '</td><td>'+esc(r.month)+'</td><td class="del" data-i="'+i+'">✕</td></tr>';
+    }).join('');
+    [].forEach.call(document.querySelectorAll('.del'),function(el){
+      el.onclick=function(){ rows.splice(+el.getAttribute('data-i'),1); save(); renderTable(); };
+    });
+  }
+
+  $('meal').addEventListener('input',function(){
+    var m=num($('meal').value);
+    $('warn').textContent = (m && (m<20000||m>300000)) ? '⚠️ 식대가 2만~30만원 범위 밖이에요. 단위 확인(예: 6.5만 → 65000)' : '';
+  });
+
+  $('f').addEventListener('submit',function(e){
+    e.preventDefault();
+    var venue=$('venue').value.trim(); var meal=num($('meal').value);
+    if(!venue||!meal){ $('warn').textContent='⚠️ 식장명과 식대는 필수예요.'; return; }
+    rows.push({
+      venue:venue, region:$('region').value, type:$('type').value, hall:$('hall').value.trim(),
+      meal:meal, vat:$('vat').value, rental:num($('rental').value),
+      guarantee:num($('guarantee').value)||200, slot:$('slot').value,
+      month:$('month').value.trim(), source:$('source').value.trim()
+    });
+    save(); renderTable();
+    // 빠른 연속 입력: 식장/홀/금액만 비우고 지역·타입·시간대는 유지
+    ['venue','hall','meal','rental','source'].forEach(function(id){ $(id).value=''; });
+    $('warn').textContent=''; $('venue').focus();
+  });
+
+  function dl(name, text, mime){
+    var b=new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+    var a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download=name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+  $('exportCsv').onclick=function(){
+    if(!rows.length){ alert('입력된 데이터가 없어요.'); return; }
+    var head=['venue','region','type','hall','meal','vat','rental','guarantee','slot','month','source'];
+    var csv=head.join(',')+'\n'+rows.map(function(r){
+      return head.map(function(k){ return csvCell(r[k]); }).join(',');
+    }).join('\n');
+    dl('wedding-seed.csv', '﻿'+csv, 'text/csv;charset=utf-8'); // BOM: 엑셀 한글 깨짐 방지
+  };
+  $('exportJson').onclick=function(){
+    if(!rows.length){ alert('입력된 데이터가 없어요.'); return; }
+    // wedding-data.js 형식(부가세 보정·필수필드만)으로 내보내기 → 시드 직접 교체용
+    var clean=rows.map(function(r,i){ return {
+      id:'seed'+(i+1), region:r.region, type:r.type, venue:r.venue, hall:r.hall,
+      meal:rowMeal(r), rental:r.rental, guarantee:r.guarantee, slot:r.slot, month:r.month, sample:false
+    };});
+    dl('wedding-data.js', 'window.WEDDING_SAMPLE = '+JSON.stringify(clean)+';\n', 'application/javascript');
+  };
+  $('clearAll').onclick=function(){
+    if(rows.length && confirm('정말 전체 삭제할까요? ('+rows.length+'건)')){ rows=[]; save(); renderTable(); }
+  };
+
+  renderTable(); $('venue').focus();
+})();
+</script>
+</body>
+</html>
