@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보청기 완전 가이드 2026 — 등급·가격·지원금·등록 절차·숨은 비용</title>
+<meta name="description" content="2026년 보청기 등급(채널)별 가격대, 정부지원금(최대 131만원)과 청각장애 등록·환급 절차, 계약 전 꼭 확인할 숨은 비용 체크리스트와 FAQ를 한 곳에 정리했습니다.">
+<meta property="og:title" content="보청기 완전 가이드 2026">
+<meta property="og:description" content="등급·가격·지원금·등록 절차·숨은 비용까지 한 번에.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .nav { text-align:center; padding:14px 0; }
+  .nav a { color:#fff; text-decoration:none; font-weight:600; opacity:.92; }
+  .tier td, .tier th { padding:10px 8px; border-bottom:1px solid var(--line); font-size:14px; text-align:left; vertical-align:top; }
+  .tier th { color:var(--muted); font-weight:600; }
+  .tier td.price { white-space:nowrap; font-variant-numeric:tabular-nums; }
+  ol.steps { margin:0; padding-left:20px; }
+  ol.steps li { margin-bottom:12px; }
+  ol.steps b { display:block; }
+  ol.steps span { color:var(--muted); font-size:14px; }
+  .check li { margin-bottom:14px; list-style:none; padding-left:26px; position:relative; }
+  .check li:before { content:'✓'; position:absolute; left:0; color:var(--brand); font-weight:800; }
+  .check li span { display:block; color:var(--muted); font-size:13px; }
+  .faq dt { font-weight:700; margin-top:14px; }
+  .faq dd { margin:6px 0 0; color:#333; }
+  .brandgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .brandgrid .b { border:1px solid var(--line); border-radius:10px; padding:12px; }
+  .brandgrid .b b { font-size:15px; }
+  .brandgrid .b span { display:block; color:var(--muted); font-size:13px; }
+  @media (max-width:520px){ .brandgrid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">2026 최신 · 광고 아닌 정리</span>
+    <h1>보청기 완전 가이드</h1>
+    <p>등급·가격·지원금·등록 절차·숨은 비용까지, 사기 전에 꼭 알아야 할 것.</p>
+    <div class="nav"><a href="index.html">→ 내 견적 1분 진단하러 가기</a></div>
+  </div>
+</header>
+
+<main><div class="wrap">
+
+  <section class="card">
+    <h2>1. 등급(채널)별 가격대와 차이</h2>
+    <p class="sub">브랜드보다 <b>등급(채널·기능)</b>이 가격을 좌우합니다. 아래는 한쪽(편측) 참고 기준가.</p>
+    <table class="tier" id="tiers"></table>
+  </section>
+
+  <section class="card">
+    <h2>2. 정부지원금 핵심</h2>
+    <ul id="subsidy"></ul>
+  </section>
+
+  <section class="card">
+    <h2>3. 청각장애 등록 절차</h2>
+    <ol class="steps" id="register"></ol>
+  </section>
+
+  <section class="card">
+    <h2>4. 보청기 지원금(급여) 신청·환급 절차</h2>
+    <ol class="steps" id="claim"></ol>
+  </section>
+
+  <section class="card">
+    <h2>5. 계약 전 ‘숨은 비용’ 체크리스트</h2>
+    <ul class="check" id="cautions"></ul>
+  </section>
+
+  <section class="card">
+    <h2>6. 주요 브랜드 특징</h2>
+    <div class="brandgrid" id="brands"></div>
+  </section>
+
+  <section class="card">
+    <h2>7. 자주 묻는 질문</h2>
+    <dl class="faq" id="faq"></dl>
+  </section>
+
+  <section class="cta-box card">
+    <h2>그래서, 내 견적은 비싼 걸까?</h2>
+    <p>등급·자격을 넣으면 지원금·실부담금과 함께 적정 가격인지 1분 만에 진단해드려요.</p>
+    <a class="btn" href="index.html">내 견적 진단하기</a>
+  </section>
+
+  <p class="disclaimer" id="foot"></p>
+</div></main>
+
+<footer><div class="wrap"><a href="index.html">보청기 진단기</a> · 광고 아닌 실사용자 데이터를 지향합니다</div></footer>
+
+<script src="data.js"></script>
+<script>
+(function(){
+  var D = window.HAData, $ = function(s){ return document.querySelector(s); };
+  function won(n){ return (n||0).toLocaleString('ko-KR'); }
+
+  // 등급표
+  var t = $('#tiers');
+  t.innerHTML = '<tr><th>등급</th><th>채널</th><th>가격대(편측)</th><th>특징 / 추천</th></tr>';
+  D.TIERS.forEach(function(x){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><b>'+x.label+'</b><br><span style="color:var(--muted);font-size:12px">'+x.alias+'</span></td>'
+      + '<td>'+x.channels+'</td>'
+      + '<td class="price">'+won(x.priceLow)+'~'+won(x.priceHigh)+'원</td>'
+      + '<td>'+x.features.join(' · ')+'<br><span style="color:var(--muted);font-size:12px">추천: '+x.fit+'</span></td>';
+    t.appendChild(tr);
+  });
+
+  // 지원금
+  var s = D.SUBSIDY_FACTS;
+  $('#subsidy').innerHTML = [
+    ['지원 주기', s.cycle],['지원 범위', s.side],
+    ['일반 가입자', s.general],['차상위·수급', s.lowincome],['필수 조건', s.require]
+  ].map(function(r){ return '<li><b>'+r[0]+'</b> — '+r[1]+'</li>'; }).join('');
+
+  // 절차
+  function steps(sel, arr){
+    $(sel).innerHTML = arr.map(function(x){ return '<li><b>'+x.t+'</b><span>'+x.d+'</span></li>'; }).join('');
+  }
+  steps('#register', D.REGISTER_STEPS);
+  steps('#claim', D.CLAIM_STEPS);
+
+  // 체크리스트
+  $('#cautions').innerHTML = D.CAUTIONS.map(function(c){
+    return '<li>'+c.q+'<span>'+c.why+'</span></li>'; }).join('');
+
+  // 브랜드
+  $('#brands').innerHTML = D.BRANDS.map(function(b){
+    return '<div class="b"><b>'+b.name+'</b><span>'+b.origin+' · '+b.tone+'</span></div>'; }).join('');
+
+  // FAQ
+  $('#faq').innerHTML = D.FAQ.map(function(f){
+    return '<dt>Q. '+f.q+'</dt><dd>'+f.a+'</dd>'; }).join('');
+
+  $('#foot').textContent = '안내: 가격은 ' + D.updated + ' 기준 참고치이며 개인 청력·자격·센터에 따라 달라집니다. '
+    + '최종 금액은 국민건강보험공단/등록 보청기판매업소에서 확인하세요. 실제 결제가 제보가 쌓이면 가격대를 보정합니다.';
+})();
+</script>
+</body>
+</html>
