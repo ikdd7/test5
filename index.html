@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>보청기 지원금·실부담금 진단기 | 내 견적, 비싼 걸까?</title>
+<meta name="description" content="보청기 정부지원금(최대 131만원)과 실제 내야 할 돈을 1분 만에 계산하고, 받은 견적이 비싼지 같은 등급 평균과 비교해드립니다. 광고 아닌 실사용자 데이터.">
+<meta property="og:title" content="보청기 지원금·실부담금 진단기">
+<meta property="og:description" content="내 보청기 견적, 비싼 걸까? 지원금 받으면 진짜 얼마 낼까? 1분 진단.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">광고 아닌 · 실사용자 데이터 기반</span>
+    <h1>보청기 견적, 비싼 걸까?<br>지원금 받으면 진짜 얼마 낼까?</h1>
+    <p>1분이면 정부지원금과 실제 부담금, 그리고 내 견적이 적정한지 알려드려요.</p>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+
+  <!-- 입력 -->
+  <section class="card" id="form">
+    <h2>1분 진단 시작</h2>
+    <p class="sub">센터에서 받은 견적서가 있으면 더 정확해요. 없어도 지원금은 계산됩니다.</p>
+
+    <label class="field">
+      <span class="q">청각장애로 등록되어 있나요?</span>
+      <div class="seg" data-group="registered">
+        <button type="button" data-val="yes" aria-pressed="false">네, 등록됨</button>
+        <button type="button" data-val="no" aria-pressed="false">아니오 / 모름</button>
+      </div>
+      <span class="hint">정부지원금은 청각장애 등록자에게만 나와요. ‘모름’이면 등록 절차도 안내해드려요.</span>
+    </label>
+
+    <label class="field">
+      <span class="q">건강보험 자격 구분</span>
+      <div class="seg" data-group="income">
+        <button type="button" data-val="general" aria-pressed="false">일반 가입자</button>
+        <button type="button" data-val="lowincome" aria-pressed="false">차상위 / 기초수급</button>
+      </div>
+    </label>
+
+    <label class="field">
+      <span class="q">구매 형태</span>
+      <div class="seg" data-group="ears">
+        <button type="button" data-val="one" aria-pressed="false">한쪽(편측)</button>
+        <button type="button" data-val="both" aria-pressed="false">양쪽(양측)</button>
+      </div>
+      <span class="hint">만 19세 미만은 자동으로 양측 지원이 적용돼요.</span>
+    </label>
+
+    <label class="field">
+      <span class="q">보청기 등급 <span style="font-weight:400;color:var(--muted)">(선택)</span></span>
+      <select id="grade">
+        <option value="">모르겠어요 / 일반형</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <span class="q">받은 견적가 — 한쪽 1대 기준 <span style="font-weight:400;color:var(--muted)">(선택)</span></span>
+      <input type="number" id="quote" inputmode="numeric" placeholder="예: 1800000" min="0" step="10000">
+      <span class="hint">견적가를 넣으면 ‘비싼지’까지 진단해드려요. (단위: 원)</span>
+    </label>
+
+    <button class="btn" id="run">진단 결과 보기</button>
+  </section>
+
+  <!-- 결과 -->
+  <section class="card" id="result">
+    <div class="verdict info" id="verdictBox">
+      <div id="verdictLabel">진단 결과</div>
+      <div class="big" id="verdictBig"></div>
+      <div id="verdictSub"></div>
+    </div>
+
+    <div id="barWrap" style="display:none;">
+      <div class="bar"><i id="barPin"></i></div>
+      <div class="bar-labels"><span id="barLow"></span><span id="barHigh"></span></div>
+      <p class="note" id="barNote"></p>
+    </div>
+
+    <table class="rows" id="rows"></table>
+    <p class="note" id="resultNote"></p>
+
+    <button class="btn secondary" id="share">결과 카드 공유하기</button>
+  </section>
+
+  <!-- give-to-get 제보 -->
+  <section class="cta-box card" id="cta">
+    <h2>같은 등급, 다른 사람들은 얼마 냈을까?</h2>
+    <p>이 진단의 ‘평균’은 실제 결제 데이터로 점점 정확해져요.<br>
+       내가 받은 견적(또는 결제 내역)을 1건 공유하면,<br>
+       우리 동네 <b>실제 결제가 전체</b>를 볼 수 있어요.</p>
+    <a class="btn" id="reportBtn" href="#" target="_blank" rel="noopener">내 견적 공유하고 실결제가 보기</a>
+    <p class="lock">🔒 익명 집계. 견적서 사진을 함께 올리면 신뢰 데이터로 우선 반영돼요.</p>
+  </section>
+
+  <p class="disclaimer">
+    안내: 지원금 수치는 2026년 건강보험 보장구(보청기) 급여 기준(편측 기준액 131만원,
+    일반 가입자 최대 117.9만원·차상위/기초수급 최대 131만원, 5년 1회)을 따릅니다.
+    적합관리비 지급 방식·개인 자격에 따라 실제 금액은 달라질 수 있으니
+    최종 금액은 국민건강보험공단 또는 등록 보청기판매업소에서 확인하세요.
+    등급별 시중가 범위는 초기 추정치이며 실제 제보가 쌓이면 보정됩니다.
+  </p>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    보청기 진단기 · 광고 아닌 실사용자 데이터를 지향합니다<br>
+    <a href="#" id="aboutLink">제도·계산 근거 보기</a>
+  </div>
+</footer>
+
+<script src="subsidy.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
