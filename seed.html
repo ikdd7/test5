@@ -192,9 +192,10 @@
   function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
   $('exportCsv').onclick=function(){
     if(!rows.length){ alert('입력된 데이터가 없어요.'); return; }
-    var head=['venue','region','type','hall','meal','vat','rental','guarantee','slot','month','verified','source'];
+    var head=['venue','region','type','hall','meal','vat','rental','guarantee','slot','month','verified','approved','source'];
     var csv=head.join(',')+'\n'+rows.map(function(r){
-      return head.map(function(k){ return csvCell(r[k]); }).join(',');
+      // 운영자가 직접 입력한 행은 검토를 거친 것이므로 approved=y 기본
+      return head.map(function(k){ return csvCell(k==='approved'?(r.approved||'y'):r[k]); }).join(',');
     }).join('\n');
     dl('wedding-seed.csv', '﻿'+csv, 'text/csv;charset=utf-8'); // BOM: 엑셀 한글 깨짐 방지
   };

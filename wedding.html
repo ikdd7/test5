@@ -187,8 +187,10 @@
         iVen=idx(['venue','식장명','식장','예식장명']), iH=idx(['hall','홀','홀이름']),
         iS=idx(['slot','시간대','요일']), iMo=idx(['month','시기','월']),
         iVat=idx(['vat','부가세','부가세포함']),
-        iVer=idx(['verified','검증','견적서','사진','photo']);
-    var out=[];
+        iVer=idx(['verified','검증','견적서','사진','photo']),
+        iApr=idx(['approved','승인','공개','게시']);
+    var moderationOn = iApr>=0; // 승인 열이 있으면 '운영자 승인된 행만' 공개
+    var out=[], pending=0;
     for(var i=1;i<lines.length;i++){
       var c=lines[i].split(','); if(c.length<2) continue;
       var num=function(j){ return parseInt(String(c[j]||'').replace(/[^0-9]/g,''),10)||0; };
@@ -198,12 +200,17 @@
       if(/미포함|별도|no|n$/i.test(vat)) meal=Math.round(meal*1.1);
       var verRaw=String(iVer>=0?(c[iVer]||''):'').trim();
       var verified=/^(y|yes|예|o|네|true|1|http|사진|있)/i.test(verRaw);
+      var aprRaw=String(moderationOn?(c[iApr]||''):'').trim();
+      var approved=!moderationOn || /^(y|yes|예|o|true|1|승인|공개|게시)/i.test(aprRaw);
       var r={ region:(c[iR]||'기타').trim(), type:(c[iT]||'기타').trim(),
         venue:(iVen>=0?(c[iVen]||''):'').trim(), hall:(iH>=0?(c[iH]||''):'').trim(),
         slot:normSlot(iS>=0?c[iS]:''), month:(iMo>=0?(c[iMo]||''):'').trim(),
         meal:meal, rental:num(iV), guarantee:num(iG)||200, verified:verified, sample:false };
-      if(plausible(r)) out.push(r);
+      if(!plausible(r)) continue;
+      if(!approved){ pending++; continue; } // 미승인은 비공개(검토 대기)
+      out.push(r);
     }
+    out._pending = pending; out._moderation = moderationOn;
     return out;
   }
 
@@ -219,7 +226,9 @@
   if(typeof SHEET_CSV_URL==='string' && SHEET_CSV_URL){
     fetch(SHEET_CSV_URL).then(function(r){return r.text();}).then(function(t){
       var real=parseCSV(t);
-      if(real.length){ DATA=real; document.getElementById('dataBadge').textContent='제보 데이터 '+real.length+'건';
+      if(real.length){ DATA=real;
+        var label='제보 데이터 '+real.length+'건' + (real._moderation? ' (검토 대기 '+real._pending+')':'');
+        document.getElementById('dataBadge').textContent=label;
         document.getElementById('dataBadge').classList.remove('samplebadge'); buildPills(); render(); }
     }).catch(function(){ /* 예시 데이터 유지 */ });
   }
