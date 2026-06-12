@@ -1,0 +1,40 @@
+name: Harvest venues (전국 웨딩홀 수확)
+
+# Actions 탭 → 이 워크플로 → "Run workflow"로 실행
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: claude/vibe-coding-revenue-page-k8dg72
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Harvest nationwide venues (Kakao)
+        env:
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+        run: node harvest.js
+      - name: Rebuild region pages & sitemap
+        run: node build.js
+      - name: Run tests
+        run: node test.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add venues.js region/ sitemap.xml
+          if git diff --staged --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "전국 웨딩홀 수확: 카카오 장소검색 (Actions)"
+            git push origin HEAD:claude/vibe-coding-revenue-page-k8dg72
+          fi
