@@ -59,4 +59,45 @@ window.WEDDING_VENUES = [
   { name: "그랜드힐컨벤션", region: "서울", district: "강남구", type: "컨벤션", meal: 110000, rental: 12000000, lat: 37.4960, lng: 127.0300, verified: false, source: "smartwedding/grandhill" },
   { name: "명품웨딩프로포즈", region: "서울", district: "구로구", type: "컨벤션", meal: 65000, rental: 5500000, lat: 37.5030, lng: 126.8820, verified: false, source: "smartwedding/weddingpropose" },
   { name: "빌라드지디 수서", region: "서울", district: "강남구", type: "하우스웨딩", meal: 63000, rental: 3000000, guarantee: 250, slot: "토요일 낮", lat: 37.4870, lng: 127.1010, verified: false, source: "kgwed.com 빌라드지디수서" },
+
+  // ── 전국 디렉토리(가격 미확인 포함) — 좌표는 시/구 근사 ──
+  // 세종
+  { name: "세종블리스가든", region: "세종", district: "전동면", type: "컨벤션", meal: null, lat: 36.6300, lng: 127.2700, verified: false, source: "directwedding/hall0299" },
+  // 전남
+  { name: "목포 남악스카이웨딩컨벤션", region: "전남", district: "무안군 남악", type: "컨벤션", meal: null, lat: 34.8170, lng: 126.4470, verified: false, source: "theplanner.co.kr" },
+  { name: "디오션리조트 여수", region: "전남", district: "여수시", type: "호텔", meal: null, lat: 34.7560, lng: 127.6660, verified: false, source: "weddingcrowd/985" },
+  { name: "마띠유 여수", region: "전남", district: "여수시", type: "호텔", meal: null, lat: 34.7430, lng: 127.7350, verified: false, source: "matthieuyeosu.com" },
+  { name: "채림웨딩홀 순천", region: "전남", district: "순천시", type: "일반예식장", meal: null, lat: 34.9500, lng: 127.4870, verified: false, source: "chaerimwedding.com" },
+  // 인천
+  { name: "메리빌리아 송도", region: "인천", district: "연수구", type: "컨벤션", meal: null, lat: 37.3855, lng: 126.6580, verified: false, source: "smartwedding/marryvilia" },
+  { name: "인천아시아드웨딩컨벤션", region: "인천", district: "서구", type: "컨벤션", meal: null, lat: 37.5520, lng: 126.6900, verified: false, source: "asiadwed.co.kr" },
+  { name: "그랜드오스티엄", region: "인천", district: "미추홀구", type: "채플/성당", meal: null, lat: 37.4350, lng: 126.6890, verified: false, source: "grandostium.co.kr" },
+  { name: "그레이스파티 인천", region: "인천", district: "부평구", type: "컨벤션", meal: null, lat: 37.4900, lng: 126.7240, verified: false, source: "incheon.wedding" },
+  // 제주
+  { name: "메종글래드 제주", region: "제주", district: "제주시", type: "호텔", meal: null, lat: 33.4890, lng: 126.4900, verified: false, source: "glad-hotels.com" },
+  { name: "씨에스호텔 제주", region: "제주", district: "서귀포시", type: "호텔", meal: null, lat: 33.2530, lng: 126.4100, verified: false, source: "iwedding/1579250358" },
+  { name: "엘리시안 제주", region: "제주", district: "제주시", type: "컨벤션", meal: null, lat: 33.4150, lng: 126.6800, verified: false, source: "iwedding/1477040993" },
+  // 서울(디렉토리)
+  { name: "아펠가모 반포", region: "서울", district: "서초구", type: "컨벤션", meal: null, lat: 37.5045, lng: 127.0115, verified: false, source: "iwedding/1350290898" },
+  { name: "그랜드컨벤션센터", region: "서울", district: "영등포구", type: "컨벤션", meal: null, lat: 37.5260, lng: 126.8960, verified: false, source: "ihall/1318298275" },
+  { name: "웨딩시티 신도림", region: "서울", district: "구로구", type: "컨벤션", meal: null, lat: 37.5088, lng: 126.8910, verified: false, source: "smartwedding/tmwedding" },
+  // 경기(디렉토리)
+  { name: "킨텍스신세계그래머시", region: "경기", district: "고양시", type: "컨벤션", meal: null, lat: 37.6680, lng: 126.7450, verified: false, source: "directwedding/hall0474" },
+  { name: "WI컨벤션 수원", region: "경기", district: "수원시", type: "컨벤션", meal: null, lat: 37.2620, lng: 127.0300, verified: false, source: "wicon.wdgbook.com" },
+  { name: "더파티움 안양", region: "경기", district: "안양시", type: "컨벤션", meal: null, lat: 37.3940, lng: 126.9560, verified: false, source: "smartwedding/ThepartyumAnyang" },
+  // 대구(디렉토리)
+  { name: "MH컨벤션 대구", region: "대구", district: "동구", type: "컨벤션", meal: null, lat: 35.8580, lng: 128.6230, verified: false, source: "weddingbook 대구MH" },
+  { name: "노비아갈라", region: "대구", district: "수성구", type: "컨벤션", meal: null, lat: 35.8570, lng: 128.6300, verified: false, source: "iwedding 대구" },
+  // 부산(디렉토리)
+  { name: "부산벡스코웨딩", region: "부산", district: "해운대구", type: "컨벤션", meal: null, lat: 35.1690, lng: 129.1380, verified: false, source: "iwedding/1569375448" },
+  { name: "웨스틴조선 부산", region: "부산", district: "해운대구", type: "호텔", meal: null, lat: 35.1580, lng: 129.1620, verified: false, source: "iwedding 웨스틴조선" },
+  // 대전·광주·울산
+  { name: "롯데시티호텔 대전", region: "대전", district: "유성구", type: "호텔", meal: null, lat: 36.3900, lng: 127.3200, verified: false, source: "imskyian.com/169" },
+  { name: "김대중컨벤션 데일리웨딩", region: "광주", district: "서구", type: "컨벤션", meal: null, lat: 35.1530, lng: 126.8480, verified: false, source: "weddingbook 데일리웨딩" },
+  { name: "더엠컨벤션 울산", region: "울산", district: "남구", type: "컨벤션", meal: null, lat: 35.5380, lng: 129.3300, verified: false, source: "umw.co.kr" },
+  // 충남·충북·강원
+  { name: "천안S컨벤션", region: "충남", district: "천안시", type: "컨벤션", meal: null, lat: 36.8150, lng: 127.1130, verified: false, source: "chcoswedding.co.kr" },
+  { name: "그레이스K 청주", region: "충북", district: "청주시", type: "하우스웨딩", meal: null, lat: 36.6400, lng: 127.4800, verified: false, source: "grace-k.co.kr" },
+  { name: "더테라리움 춘천", region: "강원", district: "춘천시", type: "하우스웨딩", meal: null, lat: 37.8810, lng: 127.7300, verified: false, source: "theterrarium.co.kr" },
+  { name: "원주웨딩타운", region: "강원", district: "원주시", type: "일반예식장", meal: null, lat: 37.3500, lng: 127.9450, verified: false, source: "itwed.co.kr" },
 ];

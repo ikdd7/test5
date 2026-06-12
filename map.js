@@ -4,11 +4,12 @@
   var S = window.Stats, SLUGS = window.REGION_SLUGS || {};
   var won = S.won, manwon = S.manwon;
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
-  // 같은 식장 관측치를 평균으로 합침(3건+면 신뢰 평균)
-  var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng && S.plausible(d); }));
+  // 좌표만 있으면 표시(가격 없어도 OK). 같은 식장은 평균 병합.
+  var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng; }));
   var fType = "전체", fSlot = "전체", fVer = false;
   var map, layer;
   var $ = function (id) { return document.getElementById(id); };
+  function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
 
   function visible() {
     return DATA.filter(function (d) {
@@ -18,19 +19,24 @@
   function priceColor(m, lo, hi) { var v = hi > lo ? (m - lo) / (hi - lo) : 0.5; return "hsl(" + Math.round(120 * (1 - v)) + ",70%,46%)"; }
 
   function renderStats(rows) {
+    var priced = rows.filter(hasPrice);
     $("mStatN").textContent = rows.length;
-    $("mStatMeal").textContent = rows.length ? won(S.robust(rows.map(function (d) { return d.meal; })).median) : "–";
-    $("mStatRent").textContent = rows.length ? won(S.robust(rows.map(function (d) { return d.rental; })).median) : "–";
+    $("mStatMeal").textContent = priced.length ? won(S.robust(priced.map(function (d) { return d.meal; })).median) : "–";
+    var rents = priced.filter(function (d) { return d.rental; }).map(function (d) { return d.rental; });
+    $("mStatRent").textContent = rents.length ? won(S.robust(rents).median) : "–";
   }
 
   function drawMarkers() {
-    var rows = visible(), meals = DATA.map(function (d) { return d.meal; });
-    var lo = Math.min.apply(null, meals), hi = Math.max.apply(null, meals);
+    var rows = visible();
+    var pm = DATA.filter(hasPrice).map(function (d) { return d.meal; });
+    var lo = pm.length ? Math.min.apply(null, pm) : 40000, hi = pm.length ? Math.max.apply(null, pm) : 200000;
     if (layer) layer.clearLayers();
     rows.forEach(function (d) {
-      var slug = SLUGS[d.region];
-      var mk = L.circleMarker([d.lat, d.lng], { radius: 8, weight: 2, color: "#fff", fillColor: priceColor(d.meal, lo, hi), fillOpacity: .9 });
-      mk.bindTooltip((d.name ? d.name + " " : "") + manwon(d.meal), { direction: "top" });
+      var slug = SLUGS[d.region], priced = hasPrice(d);
+      var mk = priced
+        ? L.circleMarker([d.lat, d.lng], { radius: 8, weight: 2, color: "#fff", fillColor: priceColor(d.meal, lo, hi), fillOpacity: .9 })
+        : L.circleMarker([d.lat, d.lng], { radius: 6, weight: 2, color: "#9aa4ba", fillColor: "#9aa4ba", fillOpacity: .15 });
+      mk.bindTooltip((d.name ? d.name + " " : "") + (priced ? manwon(d.meal) : "가격 미확인"), { direction: "top" });
       var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
       var line3 = [];
       if (d.slot) line3.push(d.slot);
@@ -38,11 +44,12 @@
       if (d.obs >= 3) line3.push("📊평균 " + d.obs + "건");
       else if (d.obs === 2) line3.push("평균 2건");
       if (d.verified) line3.push("✅검증");
-      mk.bindPopup('<div class="mpop">' + (d.name ? "<b>" + d.name + "</b>" : "<b>" + sub + "</b>") +
-        (d.name ? '<div class="msub">' + sub + "</div>" : "") +
-        '<div class="big">' + won(d.meal) + " <span>/1인</span></div>" +
-        "<div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
-        (line3.length ? "<div>" + line3.join(" · ") + "</div>" : "") +
+      var body = priced
+        ? '<div class="big">' + won(d.meal) + " <span>/1인</span></div><div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
+          (line3.length ? "<div>" + line3.join(" · ") + "</div>" : "")
+        : '<div class="big" style="font-size:.95rem;color:#888">가격 정보 수집 중</div><div style="color:#888">아는 가격이 있다면 제보해 주세요 🙏</div>';
+      mk.bindPopup('<div class="mpop"><b>' + (d.name || sub) + "</b>" +
+        (d.name ? '<div class="msub">' + sub + "</div>" : "") + body +
         (slug ? '<a href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") + "</div>");
       layer.addLayer(mk);
     });

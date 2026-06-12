@@ -182,8 +182,9 @@
   function commaize(el){ var v=intnum(el); el.value=v?v.toLocaleString('ko-KR'):''; }
   function avg(a){ return a.length? a.reduce(function(s,x){return s+x;},0)/a.length : 0; }
 
-  // 실데이터(전국 식장) 우선, 없으면 예시
-  var DATA = (window.WEDDING_VENUES && window.WEDDING_VENUES.length ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE||[])).slice();
+  // 실데이터(전국 식장) 우선. 허브 통계는 가격 있는 식장만(무가격은 지도에만 표시).
+  var DATA = (window.WEDDING_VENUES && window.WEDDING_VENUES.length ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE||[]))
+    .filter(function(d){ return typeof d.meal==='number' && d.meal>0; });
   var fRegion='전체', fType='전체', fSlot='전체';
 
   // 자유입력 시간대 → 정규 시간대 변환(제보 데이터 품질 통일)
@@ -432,7 +433,7 @@
       return '<a class="pill-link" href="region/'+SLUGS[r]+'.html">'+r+' <i>'+cnt[r]+'</i></a>';
     }).join('');
   })();
-  document.getElementById('dataBadge').textContent='전국 식장 '+DATA.length+'곳 (수집 중)';
+  document.getElementById('dataBadge').textContent='가격 '+DATA.length+'곳 · 지도 '+(window.WEDDING_VENUES||[]).length+'곳';
   document.getElementById('year').textContent=new Date().getFullYear();
   buildPills();
   myGuests.value='250'; myMeal.value='65,000'; myRental.value='0';

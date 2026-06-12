@@ -22,7 +22,7 @@
     var S = root.Stats;
     var data = opts.data || [], slugs = opts.slugs || {}, MIN = opts.minPage || 5, onPick = opts.onPick;
     var g = {};
-    data.forEach(function (d) { if (d && d.region) (g[d.region] = g[d.region] || []).push(d.meal); });
+    data.forEach(function (d) { if (d && d.region && typeof d.meal === "number") (g[d.region] = g[d.region] || []).push(d.meal); });
     var meds = {}, counts = {}, vals = [];
     Object.keys(g).forEach(function (r) {
       var m = S ? S.robust(g[r]).median : g[r][0];

@@ -288,7 +288,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   venues.forEach((v, i) => {
     ok(typeof v.name === "string" && v.name, `식장#${i} 이름`);
     ok(v.lat >= 33 && v.lat <= 39 && v.lng >= 124 && v.lng <= 132, `식장#${i} 좌표 한반도`);
-    ok(v.meal >= 20000 && v.meal <= 300000, `식장#${i} 식대 범위`);
+    ok(v.meal == null || (v.meal >= 20000 && v.meal <= 300000), `식장#${i} 식대 범위(또는 미확인)`);
     vregions[v.region] = 1;
   });
   ok(Object.keys(vregions).length >= 5, `전국성: ${Object.keys(vregions).length}개 지역`);
