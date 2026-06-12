@@ -68,7 +68,7 @@
   <div class="chart-card">
     <h3>📍 지역별 가격 자세히 보기</h3>
     <div class="pill-row" id="regionLinks"></div>
-    <p class="cap" id="regionLinksNote" style="margin:6px 0 0">데이터가 5건 이상 모인 지역만 상세 페이지가 열립니다.</p>
+    <p class="cap" id="regionLinksNote" style="margin:6px 0 0">식장 3곳 이상 모인 지역만 상세 페이지가 열립니다.</p>
   </div>
 
   <!-- 요약 통계 -->
@@ -153,7 +153,7 @@
   </div>
 
   <h2 style="margin:26px 0 12px;font-size:1.2rem">자주 묻는 질문</h2>
-  <details open><summary>이 가격은 진짜인가요?</summary><div class="a">현재 표시되는 데이터는 통계 흐름을 보여주기 위한 <b>예시(합성) 데이터</b>이며 실제 식장이 아닙니다. 사용자 제보가 쌓이면 실제 값으로 대체됩니다. 특정 식장의 가격을 임의로 단정해 게시하지 않습니다.</div></details>
+  <details open><summary>이 가격은 진짜인가요?</summary><div class="a">현재는 공개된 가격정보(스마트웨딩·다이렉트결혼준비·아이웨딩 등)에서 모은 <b>실제 식장 데이터</b>입니다. 다만 가격은 시작가/범위 근사이고 <b>견적서로 검증되기 전</b>이라 참고용입니다. 제보가 쌓이면 검증·정정됩니다.</div></details>
   <details><summary>식대·대관료는 보통 얼마인가요?</summary><div class="a">일반예식장은 1인 5만~7만원대, 컨벤션 6만~8만원대, 호텔은 9만~16만원대가 흔합니다. 대관료는 보증인원을 채우면 면제되는 경우도 많지만, 호텔·하우스웨딩은 수백만~수천만원이 들기도 합니다. (지역·시즌·요일에 따라 차이)</div></details>
   <details><summary>거짓 정보가 섞이면 어떡하죠?</summary><div class="a">가짜 한두 건이 결과를 흔들지 못하도록 <b>평균이 아닌 중앙값</b>으로 표시하고, IQR 기준 이상치는 통계에서 자동 제외합니다. 견적서로 <b>검증된 제보만 보기</b> 토글도 있고, 같은 식장 제보가 여러 건 모여 일치할 때만 신뢰도를 높게 봅니다. 그래도 이상한 값이 보이면 신고해 주세요.</div></details>
   <details><summary>총 결혼식 비용은 어떻게 계산하나요?</summary><div class="a">가장 큰 항목은 <b>식대 × 보증인원 + 대관료</b>입니다. 여기에 꽃·예식·스드메·사회/주례 등이 추가됩니다. 위 계산기로 식대·대관료 기준 핵심 비용을 먼저 잡아보세요.</div></details>
@@ -165,6 +165,7 @@
 </footer>
 
 <script src="wedding-data.js"></script>
+<script src="venues.js"></script>
 <script src="regions.js"></script>
 <script src="stats.js"></script>
 <script src="koreamap.js"></script>
@@ -181,7 +182,8 @@
   function commaize(el){ var v=intnum(el); el.value=v?v.toLocaleString('ko-KR'):''; }
   function avg(a){ return a.length? a.reduce(function(s,x){return s+x;},0)/a.length : 0; }
 
-  var DATA = (window.WEDDING_SAMPLE||[]).slice();
+  // 실데이터(전국 식장) 우선, 없으면 예시
+  var DATA = (window.WEDDING_VENUES && window.WEDDING_VENUES.length ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE||[])).slice();
   var fRegion='전체', fType='전체', fSlot='전체';
 
   // 자유입력 시간대 → 정규 시간대 변환(제보 데이터 품질 통일)
@@ -260,7 +262,7 @@
         && (fSlot==='전체'||d.slot===fSlot) && (!fVerifiedOnly || d.verified);
     });
   }
-  function uniq(key){ var s={}; DATA.forEach(function(d){s[d[key]]=1;}); return Object.keys(s).sort(); }
+  function uniq(key){ var s={}; DATA.forEach(function(d){ if(d[key]) s[d[key]]=1; }); return Object.keys(s).sort(); }
 
   // ── 강건 통계: 가짜 1건이 결과를 흔들지 못하게 ──
   function median(arr){
@@ -340,11 +342,16 @@
     Charts.bars(document.getElementById('chartTypeMeal'), { data: barData(groupStat(base,'type','meal'), fType) });
     Charts.bars(document.getElementById('chartRegionMeal'), { data: barData(groupStat(baseAll,'region','meal'), fRegion) });
     Charts.bars(document.getElementById('chartTypeRental'), { data: barData(groupStat(base,'type','rental'), fType) });
-    Charts.bars(document.getElementById('chartSlotRental'), { data: barData(groupStat(base,'slot','rental'), fSlot) });
-    Charts.scatter(document.getElementById('chartScatter'), {
-      points: rows.map(function(d){ return {x:d.guarantee, y:d.meal*d.guarantee+d.rental, label:d.type}; }),
+    // 시간대·보증인원은 데이터가 있는 식장만(실데이터는 일부만 보유)
+    var withSlot=base.filter(function(d){return d.slot;});
+    if(withSlot.length>=MIN_N) Charts.bars(document.getElementById('chartSlotRental'), { data: barData(groupStat(withSlot,'slot','rental'), fSlot) });
+    else document.getElementById('chartSlotRental').innerHTML='<p class="cap">시간대별 데이터를 모으는 중이에요.</p>';
+    var withGuar=rows.filter(function(d){return d.guarantee;});
+    if(withGuar.length>=MIN_N) Charts.scatter(document.getElementById('chartScatter'), {
+      points: withGuar.map(function(d){ return {x:d.guarantee, y:d.meal*d.guarantee+d.rental, label:d.type}; }),
       xfmt:function(v){return v+'명';}, yfmt:function(v){return manwon(v)+'원';},
       xlabel:'보증인원(명)', ylabel:'총비용' });
+    else document.getElementById('chartScatter').innerHTML='<p class="cap">보증인원 데이터를 모으는 중이에요.</p>';
     compare();
   }
 
@@ -401,7 +408,7 @@
   function renderMap(){
     if(!window.KoreaMap) return;
     window.KoreaMap.render(document.getElementById('koreaMap'), {
-      data: DATA, slugs: window.REGION_SLUGS||{}, minPage: 5,
+      data: DATA, slugs: window.REGION_SLUGS||{}, minPage: 3,
       onPick: function(region, eligible, slug){
         if(eligible && slug){ location.href='region/'+slug+'.html'; return; }
         var n=DATA.filter(function(d){return d.region===region;}).length;
@@ -417,7 +424,7 @@
   (function(){
     var SLUGS=window.REGION_SLUGS||{}, cnt={};
     DATA.forEach(function(d){ cnt[d.region]=(cnt[d.region]||0)+1; });
-    var regions=Object.keys(cnt).filter(function(r){ return SLUGS[r] && cnt[r]>=5; })
+    var regions=Object.keys(cnt).filter(function(r){ return SLUGS[r] && cnt[r]>=3; })
       .sort(function(a,b){ return cnt[b]-cnt[a]; });
     var el=document.getElementById('regionLinks');
     if(!regions.length){ el.innerHTML='<span class="cap">아직 충분한 지역이 없어요.</span>'; return; }
@@ -425,7 +432,7 @@
       return '<a class="pill-link" href="region/'+SLUGS[r]+'.html">'+r+' <i>'+cnt[r]+'</i></a>';
     }).join('');
   })();
-  document.getElementById('dataBadge').textContent='예시 데이터 '+DATA.length+'건';
+  document.getElementById('dataBadge').textContent='전국 식장 '+DATA.length+'곳 (수집 중)';
   document.getElementById('year').textContent=new Date().getFullYear();
   buildPills();
   myGuests.value='250'; myMeal.value='65,000'; myRental.value='0';

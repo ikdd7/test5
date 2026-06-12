@@ -41,7 +41,7 @@
         var v = (meds[r] - min) / (max - min), hue = Math.round(120 * (1 - v));
         style += "background:hsl(" + hue + ",62%,42%);border-color:hsl(" + hue + ",62%,50%);";
       }
-      var tip = r + (has ? " · " + counts[r] + "건 · 중앙값 " + manwon(meds[r]) + "원" + (eligible ? " · 클릭" : " (5건↑ 시 페이지 열림)") : " · 데이터 수집중");
+      var tip = r + (has ? " · " + counts[r] + "곳 · 중앙값 " + manwon(meds[r]) + "원" + (eligible ? " · 클릭" : " (" + MIN + "곳↑ 시 페이지)") : " · 데이터 수집중");
       html += '<button type="button" class="kmap-cell' + (has ? "" : " empty") + (eligible ? " link" : "") + '"' +
         ' data-r="' + r + '" data-e="' + (eligible ? 1 : 0) + '" style="' + style + '" title="' + tip + '">' +
         "<b>" + r + "</b>" + (has ? "<i>" + manwon(meds[r]) + "</i>" : '<i class="soon">수집중</i>') + "</button>";

@@ -13,13 +13,14 @@ const Stats = require("./stats.js").Stats;
 const SLUGS = require("./regions.js").REGION_SLUGS;
 
 const SITE = "https://example.com";
-const MIN_PAGE = 5; // 이보다 적으면 페이지 생성 안 함(빈 껍데기 방지)
+const MIN_PAGE = 3; // 식장 3곳 이상인 지역만 페이지 생성(통계 신뢰 최소선)
 const ROOT = __dirname;
 
 function loadData() {
-  const raw = fs.readFileSync(path.join(ROOT, "wedding-data.js"), "utf8");
-  const json = raw.slice(raw.indexOf("=") + 1, raw.lastIndexOf(";")).trim();
-  return JSON.parse(json).filter(Stats.plausible);
+  const vm = require("vm");
+  const sandbox = { window: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(ROOT, "venues.js"), "utf8"), sandbox);
+  return (sandbox.window.WEDDING_VENUES || []).filter(Stats.plausible);
 }
 function groupMedian(rows, key, valKey) {
   const g = {};
@@ -46,7 +47,7 @@ function regionPage(region, recs, allRegions) {
 
   const medTxt = Stats.manwon(medMeal) + "원";
   const summary = `${region} 웨딩홀 식대는 중앙값 ${medTxt}, 대부분 ${Stats.manwon(q1)}~${Stats.manwon(q3)}원 사이입니다.` +
-    (topType ? ` ${topType}이 가장 비싸고, ${topSlot} 시간대 대관료가 높은 경향입니다.` : "");
+    (topType ? ` ${topType}이 가장 비싼 편입니다. (식장 ${recs.length}곳 기준)` : "");
   const title = `${region} 웨딩홀 식대 ${medTxt} (중앙값) — 결혼식장 비용 비교`;
   const desc = `${region} 결혼식장 1인 식대 중앙값 ${medTxt}, 대관료·시간대별 비교. 실제 제보 ${recs.length}건 기준 그래프와 내 견적 비교.`;
 
@@ -55,8 +56,8 @@ function regionPage(region, recs, allRegions) {
     .map((r) => `<a href="${SLUGS[r]}.html">${esc(r)}</a>`).join(" · ");
 
   // 게이트(식장별 상세 — 예시 데이터는 익명 표본으로 표시)
-  const gateRows = recs.slice(0, 12).map((d) =>
-    `<tr><td>${esc(d.type)}</td><td>${esc(d.slot || "-")}</td><td>${Stats.won(d.meal)}</td><td>${Stats.won(d.rental)}</td><td>${d.verified ? "✅" : "–"}</td></tr>`
+  const gateRows = recs.slice(0, 20).map((d) =>
+    `<tr><td>${esc(d.name || "-")}</td><td>${esc(d.type)}</td><td>${Stats.won(d.meal)}</td><td>${d.rental ? Stats.won(d.rental) : "—"}</td><td>${d.verified ? "✅" : "–"}</td></tr>`
   ).join("");
 
   const ld = {
@@ -78,7 +79,7 @@ function regionPage(region, recs, allRegions) {
     ],
   };
 
-  const embed = JSON.stringify(recs.map((d) => ({ type: d.type, slot: d.slot, meal: d.meal, rental: d.rental, guarantee: d.guarantee, verified: !!d.verified })));
+  const embed = JSON.stringify(recs.map((d) => ({ name: d.name, type: d.type, slot: d.slot, meal: d.meal, rental: d.rental, guarantee: d.guarantee, verified: !!d.verified })));
 
   return `<!DOCTYPE html>
 <html lang="ko">
@@ -141,7 +142,7 @@ function regionPage(region, recs, allRegions) {
   <div class="chart-card gatewrap">
     <h3>🏛️ ${esc(region)} 식장별 상세 (표본)</h3>
     <div id="gate" class="gate">
-      <table class="seedtbl"><thead><tr><th>타입</th><th>시간대</th><th>식대</th><th>대관료</th><th>검증</th></tr></thead>
+      <table class="seedtbl"><thead><tr><th>식장</th><th>타입</th><th>식대</th><th>대관료</th><th>검증</th></tr></thead>
       <tbody>${gateRows}</tbody></table>
     </div>
     <div class="gateover"><button type="button" class="sharebtn alt" id="gateBtn">🔓 제보 1건 남기고 전체 보기</button>
@@ -192,6 +193,8 @@ function main() {
 
   const dir = path.join(ROOT, "region");
   if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  // 오래된(자격 미달이 된) 지역 페이지 정리
+  fs.readdirSync(dir).filter((f) => f.endsWith(".html")).forEach((f) => fs.unlinkSync(path.join(dir, f)));
   eligible.forEach((r) => {
     fs.writeFileSync(path.join(dir, SLUGS[r] + ".html"), regionPage(r, byRegion[r], eligible), "utf8");
   });

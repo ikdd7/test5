@@ -17,7 +17,9 @@
   }
 
   C.bars($("cType"), { data: bd(groupMedian(D, "type", "meal")) });
-  C.bars($("cSlot"), { data: bd(groupMedian(D, "slot", "rental")) });
+  var withSlot = D.filter(function (d) { return d.slot; });
+  if (withSlot.length >= 2) C.bars($("cSlot"), { data: bd(groupMedian(withSlot, "slot", "rental")) });
+  else $("cSlot").innerHTML = '<p class="cap">시간대별 데이터를 모으는 중이에요.</p>';
 
   // 식대 분포(1만원 구간)
   var buckets = {};
