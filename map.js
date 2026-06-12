@@ -28,18 +28,26 @@
   function popupHtml(d) {
     var slug = SLUGS[d.region];
     var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
-    var line = [];
-    if (d.halls > 1) line.push("홀 " + d.halls + "개");
-    if (d.slot) line.push(d.slot);
-    if (d.guarantee) line.push("보증 " + d.guarantee + "명");
-    if (d.verified) line.push("✅검증");
-    var body = hasPrice(d)
-      ? '<div class="big">' + won(d.meal) + " <span>/1인</span></div><div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
-        (line.length ? "<div>" + line.join(" · ") + "</div>" : "")
-      : '<div class="big" style="font-size:.95rem;color:#888">가격 정보 수집 중</div><div style="color:#888">아는 가격이 있다면 제보해 주세요 🙏</div>';
-    return '<div class="mpop"><b>' + (d.name || sub) + "</b>" +
-      (d.name ? '<div class="msub">' + sub + "</div>" : "") + body +
-      (slug ? '<a href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") + "</div>";
+    var chips = [];
+    if (d.halls > 1) chips.push("홀 " + d.halls + "개");
+    if (d.slot) chips.push(d.slot);
+    if (d.guarantee) chips.push("보증 " + d.guarantee + "명");
+    if (d.verified) chips.push("✅ 검증");
+    var chipHtml = chips.length ? '<div class="kk-chips">' + chips.map(function (c) { return "<span>" + c + "</span>"; }).join("") + "</div>" : "";
+    var body;
+    if (hasPrice(d)) {
+      body = '<div class="kk-price"><b>' + won(d.meal) + '</b><span>/ 1인 식대</span></div>' +
+        '<div class="kk-rent">대관료 ' + (d.rental ? won(d.rental) : "정보 없음") + "</div>" + chipHtml;
+    } else {
+      body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
+    }
+    return '<div class="kkcard">' +
+      '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
+      '<div class="kk-name">' + (d.name || sub) + "</div>" +
+      '<div class="kk-sub">' + sub + "</div>" +
+      body +
+      (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") +
+      '<div class="kk-tail"></div></div>';
   }
 
   // ── 필터 UI ──
@@ -85,7 +93,12 @@
         position: new kakao.maps.LatLng(d.lat, d.lng), image: markerImage(d, lo, hi),
         title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
       });
-      kakao.maps.event.addListener(mk, "click", function () { info.setContent('<div class="kkpop">' + popupHtml(d) + "</div>"); info.open(map, mk); });
+      kakao.maps.event.addListener(mk, "click", function () {
+        info.setContent(popupHtml(d));
+        info.setPosition(mk.getPosition());
+        info.setMap(map);
+        map.panTo(mk.getPosition());
+      });
       return mk;
     });
     clusterer.addMarkers(markers);
@@ -95,7 +108,9 @@
     map = new kakao.maps.Map($("map"), { center: new kakao.maps.LatLng(36.3, 127.8), level: 13 });
     map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
     clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 7, gridSize: 70, disableClickZoom: false });
-    info = new kakao.maps.InfoWindow({ removable: true, zIndex: 2 });
+    info = new kakao.maps.CustomOverlay({ yAnchor: 1.28, zIndex: 3, clickable: true });
+    window.__closePop = function () { info.setMap(null); };
+    kakao.maps.event.addListener(map, "click", window.__closePop);
     buildFilters(drawKakao); drawKakao();
     try {
       var b = new kakao.maps.LatLngBounds();
