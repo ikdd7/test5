@@ -286,7 +286,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(fs.existsSync(path.join(__dirname, "map.html")), "map.html 존재");
   ok(fs.existsSync(path.join(__dirname, "map.js")), "map.js 존재");
   const mh = fs.readFileSync(path.join(__dirname, "map.html"), "utf8");
-  ["leaflet", "map.js", "koreamap.js", "stats.js", "id=\"leaflet\"", "id=\"mapFallback\""].forEach((n) =>
+  ["map.js", "koreamap.js", "stats.js", "venues.js", "KAKAO_JS_KEY", 'id="map"', 'id="mapFallback"'].forEach((n) =>
     ok(mh.includes(n), `map.html: ${n}`));
   ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("map.html"), "wedding.html→map.html 링크");
   // 전국 예식장 리스트(좌표 포함)

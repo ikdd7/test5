@@ -4,27 +4,26 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>전국 웨딩홀 지도 — 식장 위치·가격 한눈에 | 결혼식장 비용</title>
-<meta name="description" content="전국 결혼식장을 지도 위에서 위치와 1인 식대·대관료로 확인하세요. 홀타입·시간대로 필터하고, 가격 색상으로 비싼 지역을 한눈에." />
+<meta name="description" content="전국 결혼식장을 카카오 지도 위에서 위치와 1인 식대·대관료로 확인하세요. 홀타입·시간대·가격으로 필터." />
 <link rel="canonical" href="https://example.com/map.html" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="전국 웨딩홀 지도 — 식장 위치·가격" />
 <meta property="og:locale" content="ko_KR" />
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script>
+  // 카카오 지도 JavaScript 키 (공개 키 — 도메인 제한으로 보호됨). 비우면 히트맵으로 폴백.
+  // 발급: developers.kakao.com → 내 애플리케이션 → 앱 키 → JavaScript 키
+  // 도메인 등록 필수: 앱 → 플랫폼 → Web → 사이트 도메인에 https://ikdd7.github.io 추가
+  window.KAKAO_JS_KEY = "";
+</script>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body class="mapbody">
 
-<div id="leaflet"></div>
+<div id="map"></div>
 <div id="mapFallback"><div style="margin:auto;width:100%;max-width:420px"><div id="fbMap"></div></div></div>
 
-<div id="offlineBanner">🌐 지도 타일을 불러오지 못해 ‘전국 히트맵’으로 표시 중이에요. 인터넷 연결 시 상세 지도가 뜹니다.</div>
+<div id="offlineBanner">🗺️ 카카오 지도를 불러오지 못해 ‘전국 히트맵’으로 표시 중이에요. (지도 키 설정/도메인 등록 후 표시)</div>
 
 <div class="map-top">
   <div class="row1">

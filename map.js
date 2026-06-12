@@ -1,13 +1,11 @@
-/* map.js — 풀스크린 지도(식장 위치+가격). Leaflet 사용, 없으면 시도 히트맵으로 폴백. */
+/* map.js — 카카오 지도 기반 전국 식장 지도 (클러스터·필터·팝업). SDK 미설정/실패 시 히트맵 폴백. */
 (function () {
   "use strict";
   var S = window.Stats, SLUGS = window.REGION_SLUGS || {};
   var won = S.won, manwon = S.manwon;
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
-  // 좌표만 있으면 표시(가격 없어도 OK). 같은 식장은 평균 병합.
   var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng; }));
   var fType = "전체", fSlot = "전체", fVer = false, fPriced = false;
-  var map, layer;
   var $ = function (id) { return document.getElementById(id); };
   function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
 
@@ -27,37 +25,24 @@
     $("mStatRent").textContent = rents.length ? won(S.robust(rents).median) : "–";
   }
 
-  function drawMarkers() {
-    var rows = visible();
-    var pm = DATA.filter(hasPrice).map(function (d) { return d.meal; });
-    var lo = pm.length ? Math.min.apply(null, pm) : 40000, hi = pm.length ? Math.max.apply(null, pm) : 200000;
-    if (layer) layer.clearLayers();
-    rows.forEach(function (d) {
-      var slug = SLUGS[d.region], priced = hasPrice(d);
-      var mk = priced
-        ? L.circleMarker([d.lat, d.lng], { radius: 8, weight: 2, color: "#fff", fillColor: priceColor(d.meal, lo, hi), fillOpacity: .9 })
-        : L.circleMarker([d.lat, d.lng], { radius: 6, weight: 2, color: "#9aa4ba", fillColor: "#9aa4ba", fillOpacity: .15 });
-      mk.bindTooltip((d.name ? d.name + " " : "") + (priced ? manwon(d.meal) : "가격 미확인"), { direction: "top" });
-      var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
-      var line3 = [];
-      if (d.halls > 1) line3.push("홀 " + d.halls + "개");
-      if (d.slot) line3.push(d.slot);
-      if (d.guarantee) line3.push("보증 " + d.guarantee + "명");
-      if (d.obs >= 3) line3.push("📊평균 " + d.obs + "건");
-      else if (d.obs === 2) line3.push("평균 2건");
-      if (d.verified) line3.push("✅검증");
-      var body = priced
-        ? '<div class="big">' + won(d.meal) + " <span>/1인</span></div><div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
-          (line3.length ? "<div>" + line3.join(" · ") + "</div>" : "")
-        : '<div class="big" style="font-size:.95rem;color:#888">가격 정보 수집 중</div><div style="color:#888">아는 가격이 있다면 제보해 주세요 🙏</div>';
-      mk.bindPopup('<div class="mpop"><b>' + (d.name || sub) + "</b>" +
-        (d.name ? '<div class="msub">' + sub + "</div>" : "") + body +
-        (slug ? '<a href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") + "</div>");
-      layer.addLayer(mk);
-    });
-    renderStats(rows);
+  function popupHtml(d) {
+    var slug = SLUGS[d.region];
+    var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
+    var line = [];
+    if (d.halls > 1) line.push("홀 " + d.halls + "개");
+    if (d.slot) line.push(d.slot);
+    if (d.guarantee) line.push("보증 " + d.guarantee + "명");
+    if (d.verified) line.push("✅검증");
+    var body = hasPrice(d)
+      ? '<div class="big">' + won(d.meal) + " <span>/1인</span></div><div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
+        (line.length ? "<div>" + line.join(" · ") + "</div>" : "")
+      : '<div class="big" style="font-size:.95rem;color:#888">가격 정보 수집 중</div><div style="color:#888">아는 가격이 있다면 제보해 주세요 🙏</div>';
+    return '<div class="mpop"><b>' + (d.name || sub) + "</b>" +
+      (d.name ? '<div class="msub">' + sub + "</div>" : "") + body +
+      (slug ? '<a href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") + "</div>";
   }
 
+  // ── 필터 UI ──
   function chips(elId, vals, cur, on) {
     var el = $(elId); el.innerHTML = "";
     ["전체"].concat(vals).forEach(function (v) {
@@ -65,39 +50,82 @@
       b.onclick = function () { on(v); }; el.appendChild(b);
     });
   }
-  function buildFilters() {
+  function buildFilters(onChange) {
     var types = {}, slots = {}; DATA.forEach(function (d) { if (d.type) types[d.type] = 1; if (d.slot) slots[d.slot] = 1; });
-    chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(); refresh(); });
-    chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(); refresh(); });
-    var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(); refresh(); };
-    var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(); refresh(); }; }
+    chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(onChange); onChange(); });
+    chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(onChange); onChange(); });
+    var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
+    var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
   }
-  function refresh() { if (map) drawMarkers(); else renderStats(visible()); }
 
-  function initLeaflet() {
-    map = L.map("leaflet", { zoomControl: true }).setView([36.3, 127.8], 7);
-    // 깔끔한 미니멀 베이스맵(CartoDB Positron) — 라벨 적어 핀이 잘 보임. 키·도메인 불필요.
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
-      maxZoom: 19, subdomains: "abcd", attribution: "© OpenStreetMap © CARTO",
-    }).addTo(map);
-    // 핀이 많으므로 클러스터링(플러그인 있으면), 없으면 일반 레이어
-    layer = (typeof L.markerClusterGroup === "function")
-      ? L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, spiderfyOnMaxZoom: true, showCoverageOnHover: false })
-      : L.layerGroup();
-    layer.addTo(map);
-    buildFilters(); drawMarkers();
-    try { map.fitBounds(L.latLngBounds(DATA.map(function (d) { return [d.lat, d.lng]; })).pad(0.12)); } catch (e) {}
+  // ── 카카오 지도 ──
+  var map, clusterer, info, imgCache = {};
+  function markerImage(d, lo, hi) {
+    var priced = hasPrice(d);
+    var key = priced ? "p" + Math.round((d.meal - lo) / (hi - lo) * 10) : "g";
+    if (imgCache[key]) return imgCache[key];
+    var svg, size;
+    if (priced) {
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"><circle cx="9" cy="9" r="6.5" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="2"/></svg>';
+      size = 18;
+    } else {
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13"><circle cx="6.5" cy="6.5" r="4.5" fill="#9aa4ba" fill-opacity="0.25" stroke="#9aa4ba" stroke-width="1.5"/></svg>';
+      size = 13;
+    }
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml;base64," + btoa(svg), new kakao.maps.Size(size, size));
+    imgCache[key] = img; return img;
   }
+  function drawKakao() {
+    var rows = visible();
+    var pm = DATA.filter(hasPrice).map(function (d) { return d.meal; });
+    var lo = pm.length ? Math.min.apply(null, pm) : 40000, hi = pm.length ? Math.max.apply(null, pm) : 200000;
+    clusterer.clear();
+    var markers = rows.map(function (d) {
+      var mk = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(d.lat, d.lng), image: markerImage(d, lo, hi),
+        title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
+      });
+      kakao.maps.event.addListener(mk, "click", function () { info.setContent('<div class="kkpop">' + popupHtml(d) + "</div>"); info.open(map, mk); });
+      return mk;
+    });
+    clusterer.addMarkers(markers);
+    renderStats(rows);
+  }
+  function initKakao() {
+    map = new kakao.maps.Map($("map"), { center: new kakao.maps.LatLng(36.3, 127.8), level: 13 });
+    map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+    clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 7, gridSize: 70, disableClickZoom: false });
+    info = new kakao.maps.InfoWindow({ removable: true, zIndex: 2 });
+    buildFilters(drawKakao); drawKakao();
+    try {
+      var b = new kakao.maps.LatLngBounds();
+      DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); });
+      map.setBounds(b);
+    } catch (e) {}
+  }
+
+  // ── 폴백(히트맵) ──
   function initFallback() {
-    $("leaflet").style.display = "none";
+    $("map").style.display = "none";
     $("offlineBanner").style.display = "block";
     var fb = $("mapFallback"); fb.style.display = "flex";
     if (window.KoreaMap) window.KoreaMap.render($("fbMap"), {
-      data: DATA, slugs: SLUGS, minPage: 5,
+      data: DATA, slugs: SLUGS, minPage: 3,
       onPick: function (r, e, slug) { if (e && slug) location.href = "region/" + slug + ".html"; },
     });
-    buildFilters(); renderStats(visible());
+    buildFilters(function () { renderStats(visible()); }); renderStats(visible());
   }
 
-  if (typeof L !== "undefined") initLeaflet(); else initFallback();
+  // ── SDK 로드 ──
+  function loadKakaoSDK(ok, fail) {
+    var s = document.createElement("script");
+    s.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=" + window.KAKAO_JS_KEY + "&libraries=clusterer&autoload=false";
+    s.onload = function () { if (window.kakao && kakao.maps) kakao.maps.load(ok); else fail(); };
+    s.onerror = fail;
+    document.head.appendChild(s);
+    setTimeout(function () { if (!map) { /* 로드 지연/실패 대비 */ } }, 9000);
+  }
+
+  if (window.KAKAO_JS_KEY) loadKakaoSDK(initKakao, initFallback);
+  else initFallback();
 })();
