@@ -237,6 +237,19 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(S.plausible({ meal: 65000, guarantee: 200, rental: 0 }) === true, "plausible 정상");
   ok(S.plausible({ meal: 5000, guarantee: 200, rental: 0 }) === false, "plausible 식대 비상식 컷");
   ok(typeof S.manwon(68000) === "string" && S.manwon(68000).indexOf("만") >= 0, "manwon 포맷");
+  // 같은 식장 3건+ 평균 규칙
+  const agg = S.aggregateByName([
+    { name: "A홀", region: "서울", type: "컨벤션", meal: 60000, rental: 3000000, lat: 37.5, lng: 127, verified: false },
+    { name: "A홀", region: "서울", type: "컨벤션", meal: 70000, rental: 5000000, lat: 37.5, lng: 127, verified: true },
+    { name: "A홀", region: "서울", type: "컨벤션", meal: 80000, rental: 4000000, lat: 37.5, lng: 127, verified: false },
+    { name: "B홀", region: "부산", type: "호텔", meal: 100000, rental: 0, lat: 35.1, lng: 129, verified: false },
+  ]);
+  const a = agg.find((x) => x.name === "A홀"), b = agg.find((x) => x.name === "B홀");
+  ok(agg.length === 2, "식장명 기준 병합(2곳)");
+  ok(a.obs === 3 && a.meal === 70000, "3건 평균 식대(70000)");
+  ok(a.rental === 4000000, "3건 평균 대관료");
+  ok(a.verified === true, "관측 중 검증 있으면 검증");
+  ok(b.obs === 1 && b.meal === 100000, "단일 관측은 원값 유지");
 }
 
 // ── 11.8 지역 페이지 생성기(build.js) 산출물 ──

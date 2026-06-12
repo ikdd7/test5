@@ -4,7 +4,8 @@
   var S = window.Stats, SLUGS = window.REGION_SLUGS || {};
   var won = S.won, manwon = S.manwon;
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
-  var DATA = SRC.filter(function (d) { return d.lat && d.lng && S.plausible(d); });
+  // 같은 식장 관측치를 평균으로 합침(3건+면 신뢰 평균)
+  var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng && S.plausible(d); }));
   var fType = "전체", fSlot = "전체", fVer = false;
   var map, layer;
   var $ = function (id) { return document.getElementById(id); };
@@ -34,6 +35,8 @@
       var line3 = [];
       if (d.slot) line3.push(d.slot);
       if (d.guarantee) line3.push("보증 " + d.guarantee + "명");
+      if (d.obs >= 3) line3.push("📊평균 " + d.obs + "건");
+      else if (d.obs === 2) line3.push("평균 2건");
       if (d.verified) line3.push("✅검증");
       mk.bindPopup('<div class="mpop">' + (d.name ? "<b>" + d.name + "</b>" : "<b>" + sub + "</b>") +
         (d.name ? '<div class="msub">' + sub + "</div>" : "") +

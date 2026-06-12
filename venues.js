@@ -44,4 +44,11 @@ window.WEDDING_VENUES = [
   { name: "대구 웨딩비엔나", region: "대구", district: "대구", type: "컨벤션", meal: 39000, rental: 0, lat: 35.8550, lng: 128.5800, verified: false, source: "iwedding/1382437461" },
   { name: "전주웨딩의전당", region: "전북", district: "전주시", type: "일반예식장", meal: 40000, rental: 300000, guarantee: 150, lat: 35.8240, lng: 127.1480, verified: false, source: "directwedding/hall0435" },
   { name: "그랜드머큐어앰배서더 창원", region: "경남", district: "창원시", type: "호텔", meal: 45000, rental: 0, lat: 35.2280, lng: 128.6810, verified: false, source: "directwedding/hall0059" },
+  // 빈 지역 보강(강원·충남·충북·울산)
+  { name: "아모르컨벤션웨딩 원주", region: "강원", district: "원주시", type: "컨벤션", meal: 45000, rental: 0, lat: 37.3420, lng: 127.9200, verified: false, source: "ihall/1377222636" },
+  { name: "아산터미널웨딩홀", region: "충남", district: "아산시", type: "일반예식장", meal: 48000, rental: 1800000, lat: 36.7900, lng: 127.0040, verified: false, source: "directwedding/hall0338" },
+  { name: "CA웨딩컨벤션 천안", region: "충남", district: "천안시", type: "컨벤션", meal: 45000, rental: 0, lat: 36.7950, lng: 127.1040, verified: false, source: "ca-wedding.co.kr" },
+  { name: "청주더빈웨딩홀", region: "충북", district: "청주시", type: "컨벤션", meal: 57000, rental: 4000000, lat: 36.6420, lng: 127.4890, verified: false, source: "directwedding/hall0453" },
+  { name: "모든날웨딩 청주", region: "충북", district: "청주시", type: "컨벤션", meal: 58000, rental: 4500000, guarantee: 100, lat: 36.6300, lng: 127.4600, verified: false, source: "weddingcrowd/1710" },
+  { name: "울산 컨벤션(참고)", region: "울산", district: "울주군", type: "일반예식장", meal: 38000, rental: 1500000, lat: 35.5380, lng: 129.3110, verified: false, source: "localinfo/울산5곳" },
 ];

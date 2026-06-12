@@ -43,9 +43,29 @@
     var v = (n || 0) / 10000;
     return (Math.round(v * 10) / 10).toLocaleString("ko-KR") + "만";
   }
+  // 같은 식장(name) 관측치를 하나로 합침: 식대·대관료 평균, obs=관측 수
+  // 사용자 규칙: 한 식장에 3건 이상 모이면 평균값으로 신뢰 표기
+  function aggregateByName(rows) {
+    var g = {};
+    rows.forEach(function (r) {
+      var k = r.name || [r.region, r.type, r.lat, r.lng].join("|");
+      (g[k] = g[k] || []).push(r);
+    });
+    return Object.keys(g).map(function (k) {
+      var arr = g[k], n = arr.length, base = arr[0];
+      if (n === 1) { var one = {}; for (var p in base) one[p] = base[p]; one.obs = 1; return one; }
+      var meal = Math.round(arr.reduce(function (s, x) { return s + (x.meal || 0); }, 0) / n);
+      var rent = arr.filter(function (x) { return typeof x.rental === "number"; });
+      var rental = rent.length ? Math.round(rent.reduce(function (s, x) { return s + x.rental; }, 0) / rent.length) : 0;
+      var out = {}; for (var q in base) out[q] = base[q];
+      out.meal = meal; out.rental = rental; out.obs = n;
+      out.verified = arr.some(function (x) { return x.verified; });
+      return out;
+    });
+  }
 
   root.Stats = {
     median: median, quantile: quantile, robust: robust, plausible: plausible,
-    percentileBelow: percentileBelow, won: won, manwon: manwon,
+    percentileBelow: percentileBelow, won: won, manwon: manwon, aggregateByName: aggregateByName,
   };
 })(typeof window !== "undefined" ? window : this);
