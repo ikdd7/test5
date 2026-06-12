@@ -1,4 +1,4 @@
-/* 전국 예식장 리스트 — 가격 채움(2026-06-12, 가격 47곳) */
+/* 전국 예식장 리스트 — 가격 채움(2026-06-12, 가격 49곳) */
 window.WEDDING_VENUES = [
   {"name":"아펠가모","region":"서울","district":"종로구","type":"컨벤션","meal":90000,"lat":37.574586,"lng":126.979029,"verified":false,"source":"kgwed.com","halls":2,"rental":9000000},
   {"name":"더라움","region":"서울","district":"강남구","type":"하우스웨딩","meal":125000,"lat":37.508391,"lng":127.039776,"verified":false,"source":"smartwedding/TheRaum","halls":3,"rental":5500000},
@@ -51,7 +51,7 @@ window.WEDDING_VENUES = [
   {"name":"메리빌리아","region":"인천","district":"연수구","type":"컨벤션","meal":72000,"lat":37.381539,"lng":126.659742,"verified":false,"source":"smartwedding/marryvilia","halls":2,"rental":6300000},
   {"name":"인천아시아드웨딩컨벤션","region":"인천","district":"서구","type":"컨벤션","meal":null,"lat":37.548708,"lng":126.667695,"verified":false,"source":"asiadwed.co.kr"},
   {"name":"그랜드오스티엄","region":"인천","district":"미추홀구","type":"채플/성당","meal":65000,"lat":37.43524,"lng":126.691975,"verified":false,"source":"smartwedding/grandostium","halls":2,"rental":5750000},
-  {"name":"그레이스파티 인천","region":"인천","district":"부평구","type":"컨벤션","meal":null,"lat":37.490005,"lng":126.723288,"verified":false,"source":"incheon.wedding"},
+  {"name":"그레이스파티 인천","region":"인천","district":"부평구","type":"컨벤션","meal":65000,"lat":37.490005,"lng":126.723288,"verified":false,"source":"smartwedding/graceparty","rental":6500000},
   {"name":"메종글래드","region":"제주","district":"제주시","type":"호텔","meal":null,"lat":33.485211,"lng":126.488535,"verified":false,"source":"glad-hotels.com","halls":2},
   {"name":"씨에스호텔 제주","region":"제주","district":"서귀포시","type":"호텔","meal":null,"lat":33.242916,"lng":126.420293,"verified":false,"source":"iwedding/1579250358"},
   {"name":"엘리시안 제주","region":"제주","district":"제주시","type":"컨벤션","meal":null,"lat":33.372334,"lng":126.380847,"verified":false,"source":"iwedding/1477040993"},
@@ -252,7 +252,7 @@ window.WEDDING_VENUES = [
   {"name":"마리앤코 서울역점","region":"서울","district":"용산구","type":"일반예식장","meal":null,"lat":37.55109,"lng":126.972908,"verified":false,"source":"kakao/1036599616"},
   {"name":"한남웨딩부페프라자","region":"서울","district":"용산구","type":"일반예식장","meal":null,"lat":37.530568,"lng":127.007195,"verified":false,"source":"kakao/10948158"},
   {"name":"더브리크 한남","region":"서울","district":"용산구","type":"일반예식장","meal":null,"lat":37.534956,"lng":126.996702,"verified":false,"source":"kakao/1081684899"},
-  {"name":"크레스트72","region":"서울","district":"중구","type":"일반예식장","meal":null,"lat":37.551184,"lng":127.002725,"verified":false,"source":"kakao/1835474515"},
+  {"name":"크레스트72","region":"서울","district":"중구","type":"일반예식장","meal":66000,"lat":37.551184,"lng":127.002725,"verified":false,"source":"smartwedding/Crust72","rental":7700000},
   {"name":"라비두스","region":"서울","district":"중구","type":"일반예식장","meal":null,"lat":37.556694,"lng":126.996277,"verified":false,"source":"kakao/768355207","halls":2},
   {"name":"PJ호텔예식장","region":"서울","district":"중구","type":"호텔","meal":null,"lat":37.564828,"lng":126.995749,"verified":false,"source":"kakao/26887653"},
   {"name":"서울신라호텔","region":"서울","district":"중구","type":"호텔","meal":null,"lat":37.556128,"lng":127.006302,"verified":false,"source":"kakao/10528218","halls":4},

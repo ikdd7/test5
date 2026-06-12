@@ -8,10 +8,8 @@ const fs = require("fs"), path = require("path"), vm = require("vm");
 
 // 이번 라운드 수집(출처: 스마트웨딩 등 공개 가격정보)
 const PRICES = [
-  { name: "메리빌리아 송도", region: "인천", meal: 72000, rental: 6300000, source: "smartwedding/marryvilia" },
-  { name: "그랜드오스티엄", region: "인천", meal: 65000, rental: 5750000, source: "smartwedding/grandostium" },
-  { name: "킨텍스신세계그래머시", region: "경기", meal: 90000, rental: 3300000, source: "iwedding 킨텍스그래머시" },
-  { name: "롯데시티호텔 대전", region: "대전", meal: 85000, rental: 0, source: "iwedding/1514451611" },
+  { name: "크레스트72", region: "서울", meal: 66000, rental: 7700000, source: "smartwedding/Crust72" },
+  { name: "그레이스파티 인천", region: "인천", meal: 65000, rental: 6500000, source: "smartwedding/graceparty" },
 ];
 
 const norm = (s) => String(s || "").replace(/[\s()\-·_]/g, "").toLowerCase();
