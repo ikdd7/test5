@@ -38,4 +38,10 @@ window.WEDDING_VENUES = [
   { name: "광주웨딩시대 (홀리데이인)", region: "광주", district: "광주", type: "컨벤션", meal: 45000, rental: 0, lat: 35.1600, lng: 126.8510, verified: false, source: "iwedding/1537518991" },
   // 제주
   { name: "제주해비치 호텔앤리조트", region: "제주", district: "서귀포시", type: "호텔", meal: 130000, rental: 4400000, lat: 33.3240, lng: 126.8400, verified: false, source: "directwedding/hall0440" },
+  // 지방 보강
+  { name: "부산 W스퀘어", region: "부산", district: "부산진구", type: "일반예식장", meal: 42000, rental: 2950000, guarantee: 150, lat: 35.1630, lng: 129.0530, verified: false, source: "directwedding/hall0225" },
+  { name: "대구 파라다이스컨벤션", region: "대구", district: "달서구", type: "컨벤션", meal: 45000, rental: 0, lat: 35.8290, lng: 128.5320, verified: false, source: "directwedding/hall0105" },
+  { name: "대구 웨딩비엔나", region: "대구", district: "대구", type: "컨벤션", meal: 39000, rental: 0, lat: 35.8550, lng: 128.5800, verified: false, source: "iwedding/1382437461" },
+  { name: "전주웨딩의전당", region: "전북", district: "전주시", type: "일반예식장", meal: 40000, rental: 300000, guarantee: 150, lat: 35.8240, lng: 127.1480, verified: false, source: "directwedding/hall0435" },
+  { name: "그랜드머큐어앰배서더 창원", region: "경남", district: "창원시", type: "호텔", meal: 45000, rental: 0, lat: 35.2280, lng: 128.6810, verified: false, source: "directwedding/hall0059" },
 ];
