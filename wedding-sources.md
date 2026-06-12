@@ -74,6 +74,16 @@
 - [ ] 대구 웨딩홀 투어 리스트 — https://blog.weddinglast.com/대구-웨딩홀-투어-리스트/
 - [ ] 대구 칼라디움(식대 4.5만·대관 150~200만) — https://www.directwedding.co.kr/weddinghall/hall0103
 
+## ⑧ 추가 발견 소스 (2차)
+- [ ] 웨닥 — 인천·부천 웨딩홀 대관료·식비 **한눈에 보는 파일**(다수) — http://wedak.co.kr/kwa-38873-73
+- [ ] 아이홀 견적 상세(메리빌리아 인천 등) — https://ihall.co.kr/estimate/estimate_detail?no=149170
+- [ ] 더퍼스트홀(다르미앙 등 식대·대관 안내) — https://thewedd.com/hall-161/
+- [ ] 스마트웨딩 가격정보(식대&대관료) per 식장 — https://smartwedding-besthall.com/hotelritzkr
+- [ ] 웨딩북 식장 서브도메인(WI컨벤션 수원 등) — https://wicon.wdgbook.com/
+- [ ] 용인 웨딩홀 TOP6 견적비교 — https://blog.weddinglast.com/용인-웨딩홀-추천/
+- [ ] 더채플앳청담 견적공유 — https://wedlast.com/더채플앳청담/
+- [ ] 지역정보꿀통 인천 5곳(식대) — https://localinfo.kr/인천-결혼식장-웨딩홀-예식장-추천-5곳식대-주차장-홀/
+
 ---
 
 ## 입력 팁 (품질 = 사이트의 전부)
