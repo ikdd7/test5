@@ -1,0 +1,15 @@
+{
+  "asOf": "예시 데이터 (실데이터로 교체 전)",
+  "source": "스키마는 심평원 비급여 진료비용 공개와 동일. 아래 항목은 합성 예시이며 실제 치과·가격이 아님.",
+  "priceField": "임플란트 1개(식립+보철) 비급여 가격",
+  "items": [
+    { "name": "예시치과의원 A", "region": "서울 강남구", "addr": "서울 강남구 테헤란로", "lat": 37.4979, "lng": 127.0276, "implant": 1450000, "material": "지르코니아", "sample": true },
+    { "name": "예시치과의원 B", "region": "서울 강남구", "addr": "서울 강남구 강남대로", "lat": 37.4960, "lng": 127.0290, "implant": 1900000, "material": "지르코니아", "sample": true },
+    { "name": "예시치과의원 C", "region": "서울 송파구", "addr": "서울 송파구 올림픽로", "lat": 37.5145, "lng": 127.1059, "implant": 1100000, "material": "PFM", "sample": true },
+    { "name": "예시치과의원 D", "region": "서울 노원구", "addr": "서울 노원구 노해로", "lat": 37.6542, "lng": 127.0568, "implant": 980000, "material": "지르코니아", "sample": true },
+    { "name": "예시치과의원 E", "region": "서울 마포구", "addr": "서울 마포구 양화로", "lat": 37.5563, "lng": 126.9236, "implant": 1300000, "material": "지르코니아", "sample": true },
+    { "name": "예시치과의원 F", "region": "경기 성남시", "addr": "경기 성남시 분당구 정자일로", "lat": 37.3660, "lng": 127.1080, "implant": 1250000, "material": "지르코니아", "sample": true },
+    { "name": "예시치과의원 G", "region": "부산 해운대구", "addr": "부산 해운대구 센텀중앙로", "lat": 35.1693, "lng": 129.1306, "implant": 1050000, "material": "PFM", "sample": true },
+    { "name": "예시치과의원 H", "region": "대구 수성구", "addr": "대구 수성구 동대구로", "lat": 35.8580, "lng": 128.6300, "implant": 1180000, "material": "지르코니아", "sample": true }
+  ]
+}

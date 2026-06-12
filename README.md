@@ -33,9 +33,32 @@
 - **지원금 수치 갱신**: 제도가 바뀌면 `subsidy.js`의 `SUBSIDY` 상수만 고치면 전체 반영.
 - **시중가 범위 보정**: 제보가 쌓이면 `subsidy.js`의 `GRADES` min/max를 실데이터로 교체.
 
+## 임플란트 (별도 도구)
+보청기와 반대로 식립가가 심평원에 공개돼, raw 가격이 아니라 추가비용·65세 보험·실결제가가 깜깜이.
+| 파일 | 역할 |
+|---|---|
+| `implant.html` / `implant-app.js` / `implant.js` | 임플란트 견적 진단기(65세 보험·추가시술·총비용) |
+| `map.html` | 임플란트 가격 지도(Leaflet+OSM, 키 불필요) |
+| `clinics.json` | 지도 데이터(현재 **예시/합성**, 실데이터로 교체) |
+| `tools/build-clinics.js` | 심평원 CSV → clinics.json 변환기 |
+| `test-implant.js` | 임플란트 로직 검증 — `node test-implant.js` |
+
+### 임플란트 가격 지도에 실데이터 채우기
+1. **데이터 받기**: 공공데이터포털 `건강보험심사평가원_비급여진료비정보조회서비스`
+   (https://www.data.go.kr/data/15001700/openapi.do, 발급키 필요) 또는 심평원
+   보건의료빅데이터개방시스템(opendata.hira.or.kr)에서 CSV 다운로드.
+   ※ OpenAPI는 '병원급 이상'이 기본 — 치과'의원' 임플란트는 의원급 비급여 공개 파일을 받을 것.
+2. **좌표 캐시 만들기**: 심평원 데이터엔 주소만 있고 좌표가 없다. 카카오/네이버 지오코딩으로
+   `{ "주소": {lat,lng} }` 형태 캐시 JSON 생성.
+3. **변환**: `node tools/build-clinics.js <심평원CSV> <좌표캐시.json>` → `clinics.json` 생성.
+4. `map.html`을 열면 실제 치과 가격 지도가 뜬다.
+
+주의: 실제 치과명+가격을 임의로 입력해 게시하면 허위사실 리스크가 있으므로,
+반드시 공식 공개데이터로만 채운다. 현재 `clinics.json`은 명확히 표시된 예시다.
+
 ## 실행
-빌드 불필요. `index.html`을 브라우저로 열면 동작.
-로직 검증은 `node test.js`.
+빌드 불필요. `index.html`(보청기) / `implant.html` / `map.html`을 브라우저로 열면 동작.
+로직 검증은 `node test.js`, `node test-implant.js`.
 
 ## 면책
 지원금 수치는 2026년 건강보험 보장구(보청기) 급여 기준이며 개인 자격에 따라
