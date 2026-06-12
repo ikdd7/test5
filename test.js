@@ -267,6 +267,19 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(merged.filter((x) => /아펠가모/.test(x.name)).length === 2, "멀리 떨어진 동일브랜드는 분리 유지");
 }
 
+// ── 11.10 가격 다중소스 평균(pricemerge) ──
+{
+  const { addPrice } = require("./pricemerge.js");
+  const v = { name: "X", meal: 60000, rental: 4000000, source: "a" };
+  ok(addPrice(v, { meal: 80000, rental: 6000000, source: "b" }) === "averaged", "다른 소스 → 평균");
+  ok(v.meal === 70000 && v.rental === 5000000, "식대/대관 평균값");
+  ok(v.nobs === 2, "관측 수 2");
+  ok(addPrice(v, { meal: 99999, source: "b" }) === "dup", "같은 소스 → 스킵");
+  ok(v.meal === 70000, "스킵 후 값 불변");
+  const w = { name: "Y" };
+  ok(addPrice(w, { meal: 55000, source: "c" }) === "filled" && w.meal === 55000, "처음 가격 채움");
+}
+
 // ── 11.8 지역 페이지 생성기(build.js) 산출물 ──
 {
   const SLUGS = require("./regions.js").REGION_SLUGS;

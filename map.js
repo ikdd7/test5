@@ -57,6 +57,7 @@
     var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
     var chips = [];
     if (d.halls > 1) chips.push("홀 " + d.halls + "개");
+    if (d.nobs > 1) chips.push(d.nobs + "개 소스 평균");
     if (d.slot) chips.push(d.slot);
     if (d.guarantee) chips.push("보증 " + d.guarantee + "명");
     if (d.verified) chips.push("✅ 검증");

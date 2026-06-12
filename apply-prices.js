@@ -5,6 +5,7 @@
  * PRICES 배열만 채워서 돌리면 됨(매 검색 라운드마다 갱신).
  */
 const fs = require("fs"), path = require("path"), vm = require("vm");
+const { addPrice } = require("./pricemerge.js");
 
 // 이번 라운드 수집(출처: 스마트웨딩 등 공개 가격정보)
 const PRICES = [
@@ -24,20 +25,21 @@ const sandbox = { window: {} };
 vm.runInNewContext(fs.readFileSync(FILE, "utf8"), sandbox);
 const venues = sandbox.window.WEDDING_VENUES || [];
 
-let filled = 0; const missed = [];
+let filled = 0, averaged = 0; const missed = [];
 PRICES.forEach((p) => {
-  const v = venues.find((x) => match(x, p) && !(typeof x.meal === "number" && x.meal));
+  const v = venues.find((x) => match(x, p));
   if (v) {
-    v.meal = p.meal; if (p.rental) v.rental = p.rental; v.source = p.source; v.verified = false;
-    filled++;
+    const res = addPrice(v, p);
+    if (res === "filled") filled++;
+    else if (res === "averaged") averaged++;
+    else missed.push(p.name + " (" + res + ")");
   } else {
-    const exists = venues.find((x) => match(x, p));
-    missed.push(p.name + (exists ? " (이미 가격 있음)" : " (지도에 없음)"));
+    missed.push(p.name + " (지도에 없음)");
   }
 });
 
 const header = "/* 전국 예식장 리스트 — 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
 const body = "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n";
 fs.writeFileSync(FILE, header + body, "utf8");
-console.log("가격 채움: " + filled + "곳" + (missed.length ? " / 미매칭: " + missed.join(", ") : ""));
+console.log("새로 채움: " + filled + "곳, 평균 추가: " + averaged + "곳" + (missed.length ? " / 미적용: " + missed.join(", ") : ""));
 console.log("총 가격 보유: " + venues.filter((v) => v.meal).length + "곳");

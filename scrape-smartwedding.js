@@ -8,6 +8,7 @@
  */
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const { chromium } = require("playwright");
+const { addPrice } = require("./pricemerge.js");
 
 const BASE = "https://smartwedding-besthall.com/";
 const SEED = ["eltower", "TheRaum", "noblevalentidaechi", "swtower", "withus", "YeouidoWeddingConvention",
@@ -61,12 +62,13 @@ function parsePrice(t) {
       const pr = parsePrice(text), region = parseRegion(text);
       scraped++;
       if (!name || !pr.meal) { report.push(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
-      const v = venues.find((x) => match(x, { name: name, region: region }) && !(typeof x.meal === "number" && x.meal));
+      const v = venues.find((x) => match(x, { name: name, region: region }));
       if (v) {
-        v.meal = pr.meal; if (pr.rental) v.rental = pr.rental; v.source = "smartwedding/" + slug; v.verified = false;
-        filled++; report.push("✓ " + slug + " → " + name + " : " + pr.meal + (pr.rental ? "/" + pr.rental : ""));
+        var res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "smartwedding/" + slug });
+        if (res === "filled" || res === "averaged") { filled++; report.push((res === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : "")); }
+        else report.push("- " + slug + " → " + name + " (" + res + ")");
       } else {
-        report.push("- " + slug + " → " + name + " (매칭없음/이미가격)");
+        report.push("? " + slug + " → " + name + " (지도에 없음)");
       }
     } catch (e) { report.push("! " + slug + " 오류"); }
     await new Promise((r) => setTimeout(r, 800)); // rate limit
