@@ -211,7 +211,12 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-soonsub{font-size:.78rem;color:#9aa1ad;margin-top:2px}
 .kk-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
 .kk-chips span{background:#f1f3f7;color:#5a6273;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:999px}
-.kk-link{display:inline-block;margin-top:11px;color:#d6336c;font-weight:800;font-size:.86rem}
+.kk-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px}
+.kk-fav{border:1.5px solid #f3b8cd;background:#fff;color:#d6336c;font-weight:800;font-size:.82rem;
+  padding:7px 12px;border-radius:999px;cursor:pointer;font-family:inherit;transition:.15s}
+.kk-fav:hover{background:#fff0f5}
+.kk-fav.on{background:#ffe3ee;border-color:#f48fb1}
+.kk-link{color:#d6336c;font-weight:800;font-size:.84rem;white-space:nowrap}
 .kk-tail{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
   width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:9px solid #fff;
   filter:drop-shadow(0 2px 1px rgba(0,0,0,.08))}

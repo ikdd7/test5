@@ -5,14 +5,30 @@
   var won = S.won, manwon = S.manwon;
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
   var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng; }));
-  var fType = "전체", fSlot = "전체", fVer = false, fPriced = false;
+  var fType = "전체", fSlot = "전체", fVer = false, fPriced = false, fFav = false;
   var $ = function (id) { return document.getElementById(id); };
   function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
+
+  // ── 찜(favorite) ──
+  var FAVS = {};
+  try { FAVS = JSON.parse(localStorage.getItem("wedding_favs") || "{}"); } catch (e) { FAVS = {}; }
+  function favKey(d) { return String(d.name || "").replace(/[^\wㄱ-힣]/g, "") + Math.round(d.lat * 1000); }
+  function saveFavs() { try { localStorage.setItem("wedding_favs", JSON.stringify(FAVS)); } catch (e) {} }
+  function favCount() { return Object.keys(FAVS).length; }
+  function updateFavChip() { var c = $("fFav"); if (c) c.textContent = "💗 찜" + (favCount() ? " (" + favCount() + ")" : ""); }
+  window.__toggleFav = function (key, el) {
+    if (FAVS[key]) delete FAVS[key]; else FAVS[key] = 1;
+    saveFavs();
+    if (el) { el.className = "kk-fav" + (FAVS[key] ? " on" : ""); el.textContent = FAVS[key] ? "💗 찜됨" : "🤍 찜하기"; }
+    updateFavChip();
+    if (fFav && currentRefresh) currentRefresh();
+  };
+  var currentRefresh = null;
 
   function visible() {
     return DATA.filter(function (d) {
       return (fType === "전체" || d.type === fType) && (fSlot === "전체" || d.slot === fSlot)
-        && (!fVer || d.verified) && (!fPriced || hasPrice(d));
+        && (!fVer || d.verified) && (!fPriced || hasPrice(d)) && (!fFav || FAVS[favKey(d)]);
     });
   }
   function priceColor(m, lo, hi) { var v = hi > lo ? (m - lo) / (hi - lo) : 0.5; return "hsl(" + Math.round(120 * (1 - v)) + ",70%,46%)"; }
@@ -41,12 +57,16 @@
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
     }
+    var key = favKey(d), on = !!FAVS[key];
+    var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
+      (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
     return '<div class="kkcard">' +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
       body +
-      (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") +
+      '<div class="kk-actions">' + fav +
+      (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 →</a>" : "") + "</div>" +
       '<div class="kk-tail"></div></div>';
   }
 
@@ -59,11 +79,14 @@
     });
   }
   function buildFilters(onChange) {
+    currentRefresh = onChange;
     var types = {}, slots = {}; DATA.forEach(function (d) { if (d.type) types[d.type] = 1; if (d.slot) slots[d.slot] = 1; });
     chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(onChange); onChange(); });
     chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(onChange); onChange(); });
+    var ff = $("fFav"); if (ff) { ff.className = "chip" + (fFav ? " on" : ""); ff.onclick = function () { fFav = !fFav; buildFilters(onChange); onChange(); }; }
     var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
+    updateFavChip();
   }
 
   // ── 카카오 지도 ──
@@ -107,7 +130,17 @@
   function initKakao() {
     map = new kakao.maps.Map($("map"), { center: new kakao.maps.LatLng(36.3, 127.8), level: 13 });
     map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
-    clusterer = new kakao.maps.MarkerClusterer({ map: map, averageCenter: true, minLevel: 7, gridSize: 70, disableClickZoom: false });
+    var cstyle = function (sz, fs) {
+      return {
+        width: sz + "px", height: sz + "px", background: "rgba(214,51,108,.88)", borderRadius: (sz / 2) + "px",
+        color: "#fff", textAlign: "center", lineHeight: sz + "px", fontSize: fs + "px", fontWeight: "700",
+        border: "2px solid #fff", boxShadow: "0 3px 12px rgba(214,51,108,.35)",
+      };
+    };
+    clusterer = new kakao.maps.MarkerClusterer({
+      map: map, averageCenter: true, minLevel: 7, gridSize: 70, disableClickZoom: false,
+      calculator: [10, 30, 100], styles: [cstyle(34, 13), cstyle(40, 14), cstyle(48, 15), cstyle(58, 17)],
+    });
     info = new kakao.maps.CustomOverlay({ yAnchor: 1.28, zIndex: 3, clickable: true });
     window.__closePop = function () { info.setMap(null); };
     kakao.maps.event.addListener(map, "click", window.__closePop);
