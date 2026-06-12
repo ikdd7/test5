@@ -6,14 +6,15 @@
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
   // 좌표만 있으면 표시(가격 없어도 OK). 같은 식장은 평균 병합.
   var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng; }));
-  var fType = "전체", fSlot = "전체", fVer = false;
+  var fType = "전체", fSlot = "전체", fVer = false, fPriced = false;
   var map, layer;
   var $ = function (id) { return document.getElementById(id); };
   function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
 
   function visible() {
     return DATA.filter(function (d) {
-      return (fType === "전체" || d.type === fType) && (fSlot === "전체" || d.slot === fSlot) && (!fVer || d.verified);
+      return (fType === "전체" || d.type === fType) && (fSlot === "전체" || d.slot === fSlot)
+        && (!fVer || d.verified) && (!fPriced || hasPrice(d));
     });
   }
   function priceColor(m, lo, hi) { var v = hi > lo ? (m - lo) / (hi - lo) : 0.5; return "hsl(" + Math.round(120 * (1 - v)) + ",70%,46%)"; }
@@ -69,6 +70,7 @@
     chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(); refresh(); });
     chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(); refresh(); });
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(); refresh(); };
+    var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(); refresh(); }; }
   }
   function refresh() { if (map) drawMarkers(); else renderStats(visible()); }
 
