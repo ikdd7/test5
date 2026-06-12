@@ -44,6 +44,8 @@
 
 ## ⑥ 🌐 공개 웨딩홀 DB — 지역별로 식장 페이지 순회 (로그인 불필요·최대 수율)
 식장마다 페이지가 있고 식대·대관이 적힌 경우가 많아 **지역 필터로 쭉 순회**하면 대량 수집됩니다.
+- [ ] ⭐ **스마트웨딩 가격정보**(per-식장 정확 식대&대관, 강추) — https://smartwedding-besthall.com/eltower 형식. `/{식장영문명}`으로 수백 개: 더라움·노블발렌티·서울웨딩타워·여의도웨딩컨벤션·FKI플라자·보타닉파크·더뉴컨벤션·라루체·W힐스 등
+- [ ] 결직웨딩(아펠가모 등 견적공유) — https://kgwed.com/
 - [ ] 다이렉트결혼준비 **웨딩홀 DB**(카페 아님, 공개) — 예: https://www.directwedding.co.kr/weddinghall/hall0440 (제주해비치) · https://www.directwedding.co.kr/weddinghall/hall0103 (대구칼라디움). 지역 필터로 식장 페이지 순회
 - [ ] 아이웨딩 지역별 — https://www.iwedding.co.kr/dl/djhall (대전) · 엔터프라이즈 페이지 /enterprise/info/번호
 - [ ] 웨딩북 — https://www.weddingbook.com/weddinghall/ (전주 웨딩의전당 등)
