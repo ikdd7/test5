@@ -74,7 +74,11 @@
   function initLeaflet() {
     map = L.map("leaflet", { zoomControl: true }).setView([36.3, 127.8], 7);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
-    layer = L.layerGroup().addTo(map);
+    // 핀이 많으므로 클러스터링(플러그인 있으면), 없으면 일반 레이어
+    layer = (typeof L.markerClusterGroup === "function")
+      ? L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, spiderfyOnMaxZoom: true, showCoverageOnHover: false })
+      : L.layerGroup();
+    layer.addTo(map);
     buildFilters(); drawMarkers();
     try { map.fitBounds(L.latLngBounds(DATA.map(function (d) { return [d.lat, d.lng]; })).pad(0.12)); } catch (e) {}
   }
