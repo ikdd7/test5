@@ -39,6 +39,7 @@
       mk.bindTooltip((d.name ? d.name + " " : "") + (priced ? manwon(d.meal) : "가격 미확인"), { direction: "top" });
       var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
       var line3 = [];
+      if (d.halls > 1) line3.push("홀 " + d.halls + "개");
       if (d.slot) line3.push(d.slot);
       if (d.guarantee) line3.push("보증 " + d.guarantee + "명");
       if (d.obs >= 3) line3.push("📊평균 " + d.obs + "건");

@@ -252,6 +252,21 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(b.obs === 1 && b.meal === 100000, "단일 관측은 원값 유지");
 }
 
+// ── 11.9 같은 식장 다른 홀 병합(dedupe) ──
+{
+  const { dedupeVenues } = require("./dedupe.js");
+  const merged = dedupeVenues([
+    { name: "라마다송도호텔 신의정원", region: "인천", type: "호텔", meal: null, lat: 37.3850, lng: 126.6580 },
+    { name: "라마다송도호텔 컨벤션센터", region: "인천", type: "호텔", meal: null, lat: 37.3851, lng: 126.6581 },
+    { name: "아펠가모 광화문", region: "서울", type: "컨벤션", meal: 90000, lat: 37.5705, lng: 126.9770 },
+    { name: "아펠가모 반포", region: "서울", type: "컨벤션", meal: null, lat: 37.5045, lng: 127.0115 }, // 멀리 떨어짐
+  ]);
+  ok(merged.length === 3, "라마다 2홀→1, 아펠가모 2지점 유지(총3)");
+  const ramada = merged.find((x) => /라마다/.test(x.name));
+  ok(ramada && ramada.halls === 2, "라마다 홀 2개로 병합");
+  ok(merged.filter((x) => /아펠가모/.test(x.name)).length === 2, "멀리 떨어진 동일브랜드는 분리 유지");
+}
+
 // ── 11.8 지역 페이지 생성기(build.js) 산출물 ──
 {
   const SLUGS = require("./regions.js").REGION_SLUGS;

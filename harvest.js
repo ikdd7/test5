@@ -128,8 +128,9 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     }
   }
 
-  const all = existing.concat(added);
-  const header = "/* 전국 예식장 리스트 — 카카오 장소검색 수확 포함(" + new Date().toISOString().slice(0, 10) + ", " + all.length + "곳) */\n";
+  const { dedupeVenues } = require("./dedupe.js");
+  const all = dedupeVenues(existing.concat(added)); // 같은 식장 다른 홀 병합
+  const header = "/* 전국 예식장 리스트 — 카카오 수확+중복병합(" + new Date().toISOString().slice(0, 10) + ", " + all.length + "곳) */\n";
   const body = "window.WEDDING_VENUES = [\n" + all.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n";
   fs.writeFileSync(FILE, header + body, "utf8");
 
