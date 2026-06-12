@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>임플란트 견적 진단기 | 비싼 걸까? 65세 보험·추가비용까지</title>
+<meta name="description" content="임플란트 견적이 비싼지 심평원 평균과 비교하고, 만 65세 건강보험(평생 2개) 본인부담과 골이식·상악동거상술 추가비용까지 한 번에 계산합니다.">
+<meta property="og:title" content="임플란트 견적 진단기">
+<meta property="og:description" content="내 임플란트 견적, 비싼 걸까? 65세 보험·추가비용까지 1분 진단.">
+<link rel="stylesheet" href="style.css">
+<style>
+  .check2 { display:flex; flex-direction:column; gap:8px; }
+  .check2 label { display:flex; align-items:center; gap:10px; border:1.5px solid var(--line); border-radius:10px; padding:11px 12px; cursor:pointer; font-size:14px; }
+  .check2 input { width:18px; height:18px; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">광고 아닌 · 실사용자 데이터 기반</span>
+    <h1>임플란트 견적, 비싼 걸까?<br>추가비용까지 진짜 얼마 들까?</h1>
+    <p>심평원 평균과 비교하고, 65세 보험·골이식·상악동거상술까지 1분에 계산해요.</p>
+    <p style="margin-top:12px"><a href="index.html" style="color:#fff;font-weight:600">→ 보청기 진단기</a> &nbsp;·&nbsp; <a href="guide.html" style="color:#fff;font-weight:600">보청기 가이드</a></p>
+  </div>
+</header>
+
+<main><div class="wrap">
+
+  <section class="card" id="form">
+    <h2>1분 진단 시작</h2>
+    <p class="sub">받은 견적서가 있으면 더 정확해요. 없어도 평균 기준으로 예상해드려요.</p>
+
+    <label class="field">
+      <span class="q">만 65세 이상이신가요? <span style="font-weight:400;color:var(--muted)">(부분무치악)</span></span>
+      <div class="seg" data-group="age65">
+        <button type="button" data-val="yes" aria-pressed="false">네 (보험 대상)</button>
+        <button type="button" data-val="no" aria-pressed="false">아니오</button>
+      </div>
+      <span class="hint">만 65세 이상 부분무치악은 평생 2개까지 건강보험이 적용돼요. 완전무치악은 틀니 대상.</span>
+    </label>
+
+    <label class="field" id="coverageField" style="display:none;">
+      <span class="q">건강보험 자격</span>
+      <div class="seg" data-group="coverage">
+        <button type="button" data-val="general" aria-pressed="false">일반 (30%)</button>
+        <button type="button" data-val="medical2" aria-pressed="false">의료급여 2종 (20%)</button>
+        <button type="button" data-val="medical1" aria-pressed="false">의료급여 1종 (10%)</button>
+      </div>
+    </label>
+
+    <label class="field">
+      <span class="q">심을 개수</span>
+      <input type="number" id="count" inputmode="numeric" placeholder="예: 2" min="1" step="1" value="1">
+    </label>
+
+    <label class="field">
+      <span class="q">받은 견적가 — 1개 기준 <span style="font-weight:400;color:var(--muted)">(선택)</span></span>
+      <input type="number" id="quote" inputmode="numeric" placeholder="예: 1500000" min="0" step="10000">
+      <span class="hint">식립+보철 1개 가격. 비우면 심평원 평균으로 계산해요. (단위: 원)</span>
+    </label>
+
+    <label class="field">
+      <span class="q">필요한 추가시술 <span style="font-weight:400;color:var(--muted)">(해당 시 체크 — 비급여 별도)</span></span>
+      <div class="check2" id="addons"></div>
+      <span class="hint">잇몸뼈가 부족하면 골이식/상악동거상술이 붙어 총비용이 크게 오를 수 있어요.</span>
+    </label>
+
+    <button class="btn" id="run">진단 결과 보기</button>
+  </section>
+
+  <section class="card" id="result">
+    <div class="verdict info" id="verdictBox">
+      <div id="verdictLabel">진단 결과</div>
+      <div class="big" id="verdictBig"></div>
+      <div id="verdictSub"></div>
+    </div>
+
+    <div id="barWrap" style="display:none;">
+      <div class="bar"><i id="barPin"></i></div>
+      <div class="bar-labels"><span id="barLow"></span><span id="barHigh"></span></div>
+      <p class="note" id="barNote"></p>
+    </div>
+
+    <table class="rows" id="rows"></table>
+    <p class="note" id="resultNote"></p>
+
+    <button class="btn secondary" id="share">결과 카드 공유하기</button>
+  </section>
+
+  <section class="cta-box card" id="cta">
+    <h2>우리 동네는 실제로 얼마 냈을까?</h2>
+    <p>심평원 ‘평균’은 헤드라인 가격일 뿐, 추가비용을 포함한 <b>실제 총결제가</b>는 아무도 안 보여줘요.<br>
+       내 견적(또는 결제 내역)을 1건 공유하면 동네 실결제가 전체를 볼 수 있어요.</p>
+    <a class="btn" id="reportBtn" href="#" target="_blank" rel="noopener">내 견적 공유하고 실결제가 보기</a>
+    <p class="lock">🔒 익명 집계. 견적서/영수증 사진을 함께 올리면 신뢰 데이터로 우선 반영돼요.</p>
+  </section>
+
+  <p class="disclaimer">
+    안내: 비급여 임플란트 1개 평균은 약 120~139만원이며 치과별 편차가 큽니다(최저 100만~최고 458만).
+    만 65세 이상 부분무치악은 평생 2개 건강보험 적용(공단 산정액 약 39.8만원/개, 본인부담 일반 30%·
+    의료급여 1종 10%·2종 20%). 골이식·상악동거상술은 보험이어도 비급여로 별도 발생합니다.
+    추가시술 비용은 추정 범위이며 실제 결제가 제보로 보정됩니다. 최종 금액은 치과·심평원에서 확인하세요.
+  </p>
+
+</div></main>
+
+<footer><div class="wrap"><a href="index.html">보청기 진단기</a> · <a href="guide.html">보청기 가이드</a> · 광고 아닌 실사용자 데이터를 지향합니다</div></footer>
+
+<script src="implant.js"></script>
+<script src="implant-app.js"></script>
+</body>
+</html>
