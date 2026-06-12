@@ -48,6 +48,15 @@
 
 <div class="map-legend">식대 색상<div class="bar"></div><div style="display:flex;justify-content:space-between"><span>저렴</span><span>비쌈</span></div><div style="margin-top:4px">○ 회색 = 가격 미확인</div></div>
 
+<button id="favOpen" class="favfab">💗 내 찜·비교 <span id="favN">0</span></button>
+
+<div id="favPanel" class="favpanel">
+  <div class="fp-head"><b>💗 내 찜 · 비교</b><button id="favClose" class="fp-x" aria-label="닫기">×</button></div>
+  <div class="fp-guests">하객 <input id="fpGuests" inputmode="numeric" maxlength="4" /> 명 기준 예상 총비용</div>
+  <div id="fpList" class="fp-list"></div>
+  <button id="fpShare" class="fp-share">📤 카톡으로 공유하기</button>
+</div>
+
 <script src="wedding-data.js"></script>
 <script src="venues.js"></script>
 <script src="regions.js"></script>

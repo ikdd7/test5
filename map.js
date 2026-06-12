@@ -21,9 +21,20 @@
     saveFavs();
     if (el) { el.className = "kk-fav" + (FAVS[key] ? " on" : ""); el.textContent = FAVS[key] ? "💗 찜됨" : "🤍 찜하기"; }
     updateFavChip();
+    var fn = document.getElementById("favN"); if (fn) fn.textContent = favCount();
+    if (panelOpen) renderFavPanel();
     if (fFav && currentRefresh) currentRefresh();
   };
   var currentRefresh = null;
+
+  // ── 하객수 / 메모 / 총비용 ──
+  var GUESTS = parseInt(localStorage.getItem("wedding_guests"), 10) || 250;
+  function setGuests(n) { GUESTS = n || 0; try { localStorage.setItem("wedding_guests", GUESTS); } catch (e) {} }
+  function memoKey(d) { return "wedding_memo_" + favKey(d); }
+  function getMemo(d) { try { return localStorage.getItem(memoKey(d)) || ""; } catch (e) { return ""; } }
+  function setMemo(d, t) { try { localStorage.setItem(memoKey(d), t); } catch (e) {} }
+  function totalCost(d) { return hasPrice(d) ? d.meal * GUESTS + (d.rental || 0) : null; }
+  function favList() { return DATA.filter(function (d) { return FAVS[favKey(d)]; }); }
 
   function visible() {
     return DATA.filter(function (d) {
@@ -53,7 +64,8 @@
     var body;
     if (hasPrice(d)) {
       body = '<div class="kk-price"><b>' + won(d.meal) + '</b><span>/ 1인 식대</span></div>' +
-        '<div class="kk-rent">대관료 ' + (d.rental ? won(d.rental) : "정보 없음") + "</div>" + chipHtml;
+        '<div class="kk-rent">대관료 ' + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
+        '<div class="kk-total">하객 ' + GUESTS + "명 ≈ <b>" + manwon(totalCost(d)) + "원</b></div>" + chipHtml;
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
     }
@@ -163,6 +175,52 @@
     });
     buildFilters(function () { renderStats(visible()); }); renderStats(visible());
   }
+
+  // ── 찜 목록·비교 패널 ──
+  var panelOpen = false;
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function renderFavPanel() {
+    var list = favList(), el = $("fpList");
+    var fn = $("favN"); if (fn) fn.textContent = favCount();
+    if (!el) return;
+    if (!list.length) { el.innerHTML = '<div class="fp-empty">아직 찜한 곳이 없어요.<br>지도 핀을 눌러 🤍 를 탭해보세요 💗</div>'; return; }
+    list.sort(function (a, b) { var ta = totalCost(a), tb = totalCost(b); if (ta == null) return 1; if (tb == null) return -1; return ta - tb; });
+    el.innerHTML = list.map(function (d, i) {
+      var k = favKey(d), t = totalCost(d);
+      var cost = hasPrice(d)
+        ? '<div class="fp-cost"><span>식대 ' + manwon(d.meal) + " · 대관 " + (d.rental ? manwon(d.rental) : "-") + "</span><b>" + manwon(t) + "원</b></div>"
+        : '<div class="fp-cost"><span>가격 미확인</span></div>';
+      var rank = (hasPrice(d) && i === 0) ? '<span class="fp-best">최저</span>' : "";
+      return '<div class="fp-item"><div class="fp-top"><div><div class="fp-name">' + esc(d.name) + rank +
+        '</div><div class="fp-sub">' + esc(d.region + (d.district ? " " + d.district : "") + " · " + d.type) + "</div></div>" +
+        "<button class=\"fp-rem\" onclick=\"window.__toggleFav('" + k + "')\">💔</button></div>" + cost +
+        '<input class="fp-memo" data-k="' + k + '" placeholder="메모 (예: 토요일 가능? 주차 OK?)" value="' + esc(getMemo(d)) + '"></div>';
+    }).join("");
+    Array.prototype.forEach.call(el.querySelectorAll(".fp-memo"), function (inp) {
+      inp.addEventListener("input", function () { try { localStorage.setItem("wedding_memo_" + inp.getAttribute("data-k"), inp.value); } catch (e) {} });
+    });
+  }
+  function shareFavs() {
+    var list = favList();
+    if (!list.length) { alert("먼저 마음에 드는 식장을 찜해보세요 💗"); return; }
+    list.sort(function (a, b) { var ta = totalCost(a), tb = totalCost(b); if (ta == null) return 1; if (tb == null) return -1; return ta - tb; });
+    var lines = list.map(function (d) { var t = totalCost(d); return "· " + d.name + (t != null ? " ≈ " + manwon(t) + "원" : " (가격 미확인)"); });
+    var text = "💗 우리 웨딩홀 찜 목록 (하객 " + GUESTS + "명 기준)\n" + lines.join("\n") + "\n\n전국 웨딩홀 지도에서 비교했어요!";
+    if (navigator.share) navigator.share({ title: "내 웨딩홀 찜 목록", text: text }).catch(function () {});
+    else if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { alert("찜 목록을 복사했어요! 카톡에 붙여넣기 하세요 📋"); });
+    else alert(text);
+  }
+  function initPanel() {
+    var openB = $("favOpen"), panel = $("favPanel");
+    if (!openB || !panel) return;
+    openB.onclick = function () { panelOpen = !panelOpen; panel.classList.toggle("open", panelOpen); if (panelOpen) renderFavPanel(); };
+    $("favClose").onclick = function () { panelOpen = false; panel.classList.remove("open"); };
+    var gi = $("fpGuests"); gi.value = GUESTS;
+    gi.addEventListener("input", function () { setGuests(parseInt(gi.value.replace(/[^0-9]/g, ""), 10) || 0); renderFavPanel(); });
+    $("fpShare").onclick = shareFavs;
+    var fn = $("favN"); if (fn) fn.textContent = favCount();
+  }
+  initPanel();
 
   // ── SDK 로드 ──
   function loadKakaoSDK(ok, fail) {
