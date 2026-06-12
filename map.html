@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>전국 웨딩홀 지도 — 식장 위치·가격 한눈에 | 결혼식장 비용</title>
+<meta name="description" content="전국 결혼식장을 지도 위에서 위치와 1인 식대·대관료로 확인하세요. 홀타입·시간대로 필터하고, 가격 색상으로 비싼 지역을 한눈에." />
+<link rel="canonical" href="https://example.com/map.html" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="전국 웨딩홀 지도 — 식장 위치·가격" />
+<meta property="og:locale" content="ko_KR" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body class="mapbody">
+
+<div id="leaflet"></div>
+<div id="mapFallback"><div style="margin:auto;width:100%;max-width:420px"><div id="fbMap"></div></div></div>
+
+<div id="offlineBanner">🌐 지도 타일을 불러오지 못해 ‘전국 히트맵’으로 표시 중이에요. 인터넷 연결 시 상세 지도가 뜹니다.</div>
+
+<div class="map-top">
+  <div class="row1">
+    <a class="back" href="wedding.html">← 허브</a>
+    <span class="ttl">🗺️ 전국 웨딩홀 지도</span>
+    <a class="back" href="method.html" style="margin-left:auto">방법론</a>
+  </div>
+  <div class="mfilters">
+    <div class="grp"><span class="glab">홀타입</span><span id="fType"></span></div>
+    <div class="grp"><span class="glab">시간대</span><span id="fSlot"></span></div>
+    <div class="grp"><button class="chip" id="fVer">✅ 검증만</button></div>
+  </div>
+</div>
+
+<div class="map-stats">
+  <div class="n"><span id="mStatN">–</span><small>곳</small></div>
+  <div><small>식대 중앙값</small> <b id="mStatMeal">–</b></div>
+  <div><small>대관료 중앙값</small> <b id="mStatRent">–</b></div>
+</div>
+
+<div class="map-legend">식대 색상<div class="bar"></div><div style="display:flex;justify-content:space-between"><span>저렴</span><span>비쌈</span></div></div>
+
+<script src="wedding-data.js"></script>
+<script src="regions.js"></script>
+<script src="stats.js"></script>
+<script src="koreamap.js"></script>
+<script src="map.js"></script>
+</body>
+</html>

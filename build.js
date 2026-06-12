@@ -104,8 +104,8 @@ function regionPage(region, recs, allRegions) {
 <nav class="sitenav"><div class="in">
   <span class="brand">🧮 계산기허브</span>
   <a href="../wedding.html">결혼식장 비용</a>
+  <a href="../map.html">지도</a>
   <a href="../method.html">방법론</a>
-  <a href="../index.html">연봉 실수령액</a>
 </div></nav>
 
 <header class="wrap">
@@ -172,7 +172,7 @@ function regionPage(region, recs, allRegions) {
 function sitemap(slugs) {
   const today = new Date().toISOString().slice(0, 10);
   const statics = [
-    ["/", "1.0", "monthly"], ["/wedding.html", "0.9", "weekly"], ["/method.html", "0.5", "monthly"],
+    ["/", "1.0", "monthly"], ["/wedding.html", "0.9", "weekly"], ["/map.html", "0.9", "weekly"], ["/method.html", "0.5", "monthly"],
     ["/silup.html", "0.9", "monthly"], ["/daechul.html", "0.9", "monthly"],
     ["/man-nai.html", "0.8", "monthly"], ["/pyeong.html", "0.7", "monthly"],
   ];

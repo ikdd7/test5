@@ -162,5 +162,41 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kmap-legend .bar{width:110px;height:10px;border-radius:6px;
   background:linear-gradient(90deg,hsl(120,62%,42%),hsl(60,62%,45%),hsl(0,62%,45%))}
 
+/* 풀스크린 지도 페이지 */
+.mapbody{overflow:hidden}
+#leaflet{position:fixed;inset:0;z-index:1;background:#0c1117}
+#mapFallback{display:none;position:fixed;inset:0;z-index:1;overflow:auto;padding:120px 12px 40px}
+#offlineBanner{display:none;position:fixed;top:118px;left:12px;right:12px;z-index:1100;
+  background:rgba(251,191,36,.14);border:1px solid var(--warn);color:var(--warn);
+  padding:9px 12px;border-radius:10px;font-size:.8rem;text-align:center}
+.map-top{position:fixed;top:0;left:0;right:0;z-index:1000;padding:10px 12px 12px;
+  background:linear-gradient(180deg,rgba(14,17,23,.97) 60%,rgba(14,17,23,0))}
+.map-top .row1{display:flex;align-items:center;gap:12px}
+.map-top .ttl{font-weight:900;font-size:1rem}
+.map-top a.back{color:var(--muted);font-weight:700;font-size:.85rem}
+.mfilters{display:flex;gap:14px;overflow-x:auto;margin-top:10px;scrollbar-width:none;padding-bottom:2px}
+.mfilters::-webkit-scrollbar{display:none}
+.mfilters .grp{display:flex;gap:5px;align-items:center;white-space:nowrap}
+.mfilters .glab{color:var(--muted);font-size:.72rem;font-weight:800}
+.mfilters #fType,.mfilters #fSlot{display:flex;gap:5px}
+.chip{background:var(--card2);border:1px solid var(--line);color:var(--muted);font-weight:700;
+  font-size:.8rem;padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit}
+.chip.on{background:rgba(244,114,182,.18);border-color:#fb7185;color:#fff}
+.map-stats{position:fixed;left:12px;bottom:12px;z-index:1000;background:rgba(22,27,36,.95);
+  border:1px solid var(--line);border-radius:14px;padding:11px 15px;backdrop-filter:blur(6px);line-height:1.5}
+.map-stats .n{font-weight:900;font-size:1.3rem}
+.map-stats .n small{font-size:.8rem;color:var(--muted);font-weight:700;margin-left:3px}
+.map-stats small{color:var(--muted)}
+.map-stats b{color:#fb7185}
+.map-legend{position:fixed;right:12px;bottom:12px;z-index:1000;background:rgba(22,27,36,.92);
+  border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:.72rem;color:var(--muted)}
+.map-legend .bar{height:9px;width:118px;border-radius:5px;margin:4px 0 2px;
+  background:linear-gradient(90deg,hsl(120,70%,46%),hsl(60,70%,46%),hsl(0,70%,46%))}
+.mpop b{font-size:.92rem;color:#1c2230}
+.mpop .big{font-weight:900;font-size:1.15rem;color:#d6336c;margin:3px 0}
+.mpop .big span{font-size:.7rem;color:#888}
+.mpop a{display:inline-block;margin-top:7px;color:#d6336c;font-weight:800}
+@media(max-width:520px){ .map-top .ttl{font-size:.9rem} .map-stats .n{font-size:1.1rem} }
+
 footer{border-top:1px solid var(--line);margin-top:28px;padding:24px 0 40px;color:var(--muted);font-size:.82rem;text-align:center}
 @media(max-width:520px){ .grid2{grid-template-columns:1fr} .hub{grid-template-columns:1fr} }

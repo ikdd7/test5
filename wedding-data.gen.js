@@ -16,6 +16,12 @@ const TYPES = {
   "채플/성당":   { meal: [55000, 78000], rental: [1000000, 4500000], guar: [150, 250] },
 };
 const REGIONS = { "서울": 1.15, "경기": 1.0, "인천": 0.95, "부산": 0.96, "대구": 0.9, "대전": 0.9, "광주": 0.88, "제주": 1.06 };
+// 시도 중심 좌표(lat,lng) — 예시 데이터 핀을 이 주변에 흩뿌려 지도에 표시
+const CENTROIDS = {
+  "서울": [37.566, 126.978], "경기": [37.41, 127.25], "인천": [37.456, 126.705],
+  "부산": [35.18, 129.075], "대구": [35.87, 128.60], "대전": [36.35, 127.385],
+  "광주": [35.16, 126.85], "제주": [33.43, 126.55],
+};
 // 정규 시간대 체계 — 토요일 낮이 프라임(대관료 비쌈), 평일이 가장 쌈
 const SLOTS = [
   { name: "토요일 낮", rentalMul: 1.2, w: 0.4 },
@@ -44,6 +50,7 @@ for (let i = 0; i < N; i++) {
   const meal = range(spec.meal, m);
   const rental = range(spec.rental, 1) === 0 ? 0 : range(spec.rental, m * slot.rentalMul);
   const guar = Math.round((spec.guar[0] + rnd() * (spec.guar[1] - spec.guar[0])) / 10) * 10;
+  const ctr = CENTROIDS[r] || [36.5, 127.8];
   rows.push({
     id: "ex" + (i + 1),
     region: r, type: t,
@@ -52,14 +59,16 @@ for (let i = 0; i < N; i++) {
     guarantee: guar,            // 보증인원(명)
     slot: slot.name,            // 정규 시간대(토요일 낮/토요일 저녁/일요일/평일)
     month: "2025-" + String(1 + Math.floor(rnd() * 11)).padStart(2, "0"),
+    lat: +(ctr[0] + (rnd() - 0.5) * 0.30).toFixed(4), // 지도 핀(중심 주변 분산)
+    lng: +(ctr[1] + (rnd() - 0.5) * 0.42).toFixed(4),
     verified: rnd() < 0.55,     // 견적서 사진 등으로 검증된 제보 여부
     sample: true,
   });
 }
 
 // 강건 통계 시연용: 의도적 이상치(저격성 허위) 2건 — IQR 필터/미검증 처리로 걸러져야 함
-rows.push({ id: "ex_out1", region: "서울", type: "호텔", meal: 30000, rental: 0, guarantee: 200, slot: "평일", month: "2025-03", verified: false, sample: true });
-rows.push({ id: "ex_out2", region: "경기", type: "일반예식장", meal: 250000, rental: 0, guarantee: 200, slot: "토요일 낮", month: "2025-08", verified: false, sample: true });
+rows.push({ id: "ex_out1", region: "서울", type: "호텔", meal: 30000, rental: 0, guarantee: 200, slot: "평일", month: "2025-03", lat: 37.55, lng: 126.99, verified: false, sample: true });
+rows.push({ id: "ex_out2", region: "경기", type: "일반예식장", meal: 250000, rental: 0, guarantee: 200, slot: "토요일 낮", month: "2025-08", lat: 37.40, lng: 127.20, verified: false, sample: true });
 
 const out =
   "/* 자동 생성 — wedding-data.gen.js (예시/합성 데이터, 실제 식장 아님) */\n" +

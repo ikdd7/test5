@@ -202,6 +202,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
     ok(r.meal >= 30000 && r.meal <= 300000, `표본#${i} 식대 현실범위`);
     ok(r.rental >= 0, `표본#${i} 대관료 음수아님`);
     ok(r.guarantee >= 50 && r.guarantee <= 500, `표본#${i} 보증인원 범위`);
+    ok(r.lat >= 33 && r.lat <= 39 && r.lng >= 124 && r.lng <= 132, `표본#${i} 좌표 한반도 범위`);
     ok(typeof r.verified === "boolean", `표본#${i} 검증플래그 boolean`);
     ok(r.sample === true, `표본#${i} 예시표시(sample=true)`);
   });
@@ -253,6 +254,13 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(Object.keys(KM.POS).length === 17, "지도 17개 시도");
   sido.forEach((s) => ok(Array.isArray(KM.POS[s]) && KM.POS[s].length === 2, `지도 좌표: ${s}`));
   ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("koreamap.js"), "wedding.html 지도 연결");
+  // 풀스크린 지도 페이지
+  ok(fs.existsSync(path.join(__dirname, "map.html")), "map.html 존재");
+  ok(fs.existsSync(path.join(__dirname, "map.js")), "map.js 존재");
+  const mh = fs.readFileSync(path.join(__dirname, "map.html"), "utf8");
+  ["leaflet", "map.js", "koreamap.js", "stats.js", "id=\"leaflet\"", "id=\"mapFallback\""].forEach((n) =>
+    ok(mh.includes(n), `map.html: ${n}`));
+  ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("map.html"), "wedding.html→map.html 링크");
   const files = fs.existsSync(path.join(__dirname, "region")) ? fs.readdirSync(path.join(__dirname, "region")).filter((f) => f.endsWith(".html")) : [];
   ok(files.length >= 1, `지역 페이지 생성됨(${files.length}개)`);
   files.forEach((f) => {
