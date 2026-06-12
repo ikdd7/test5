@@ -4,42 +4,51 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>임플란트 가격 지도 | 내 주변 치과 가격 비교 (심평원 공개데이터)</title>
-<meta name="description" content="심평원 비급여 공개데이터 기반 임플란트 가격 지도. 내 주변 치과의 임플란트 가격을 지도와 목록으로 비교하세요.">
+<meta name="description" content="심평원 비급여 공개데이터 기반 임플란트 가격 지도(카카오맵). 내 주변 치과의 임플란트 가격을 지도와 목록으로 비교하세요.">
 <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-  .layout { display:grid; grid-template-columns:1fr 1.3fr; gap:14px; }
-  @media (max-width:760px){ .layout{ grid-template-columns:1fr; } #map{ height:340px; } }
-  #map { height:520px; border-radius:14px; border:1px solid var(--line); z-index:0; }
-  .controls { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; }
-  .controls select { flex:1 1 auto; }
-  .list { max-height:520px; overflow:auto; }
-  .clinic { border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:.12s; }
+  /* 지도를 페이지 전면에 */
+  .topbar { background:linear-gradient(160deg,#1f6feb,#1657c0); color:#fff; padding:14px 0; }
+  .topbar .wrap { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .topbar h1 { font-size:18px; margin:0; font-weight:800; }
+  .topbar nav a { color:#fff; opacity:.92; font-weight:600; font-size:13px; margin-left:12px; text-decoration:none; }
+  .controls { display:flex; gap:8px; padding:10px 0; flex-wrap:wrap; align-items:center; }
+  .controls select { flex:0 1 200px; padding:10px 12px; }
+  .controls .count { color:var(--muted); font-size:13px; margin-left:auto; }
+  #map { width:100%; height:62vh; min-height:380px; }
+  .samplebar { background:#fffbeb; color:#92600a; border-bottom:1px solid #fde68a; padding:8px 0; font-size:13px; }
+  .samplebar .wrap { }
+  .keynote { background:#fef2f2; color:#b42318; border:1px solid #fecaca; border-radius:12px; padding:16px; margin:16px 0; font-size:14px; }
+  .keynote code { background:#fff; padding:2px 6px; border-radius:6px; }
+  .list { padding:14px 0 40px; }
+  .clinic { border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; transition:.12s; background:#fff; }
   .clinic:hover { border-color:var(--brand); background:#f7faff; }
   .clinic .top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
   .clinic .name { font-weight:700; font-size:15px; }
   .clinic .price { font-weight:800; color:var(--brand-dark); font-variant-numeric:tabular-nums; white-space:nowrap; }
   .clinic .meta { color:var(--muted); font-size:13px; margin-top:2px; }
-  .rank { display:inline-block; min-width:20px; color:var(--muted); font-size:13px; }
-  .samplebar { background:#fffbeb; color:#92600a; border:1px solid #fde68a; border-radius:10px; padding:10px 12px; font-size:13px; margin-bottom:14px; }
+  .rank { display:inline-block; min-width:22px; color:var(--muted); font-size:13px; }
+  .pricetag { background:#1657c0; color:#fff; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.2); }
 </style>
 </head>
 <body>
 
-<header class="hero">
-  <div class="wrap">
-    <span class="eyebrow">심평원 공개데이터 기반</span>
-    <h1>임플란트 가격 지도</h1>
-    <p>내 주변 치과의 임플란트 가격을 지도와 목록으로 비교하세요.</p>
-    <p style="margin-top:12px">
-      <a href="implant.html" style="color:#fff;font-weight:600">→ 임플란트 견적 진단기</a> &nbsp;·&nbsp;
-      <a href="index.html" style="color:#fff;font-weight:600">보청기 진단기</a>
-    </p>
-  </div>
-</header>
+<div class="topbar"><div class="wrap">
+  <h1>🦷 임플란트 가격 지도</h1>
+  <nav>
+    <a href="implant.html">견적 진단기</a>
+    <a href="index.html">보청기</a>
+    <a href="guide.html">보청기 가이드</a>
+  </nav>
+</div></div>
+
+<div class="samplebar" id="samplebar" style="display:none"><div class="wrap" id="samplebarText"></div></div>
+
+<!-- 지도 전면 -->
+<div id="map"></div>
 
 <main><div class="wrap">
-  <div class="samplebar" id="samplebar"></div>
+  <div id="keynote"></div>
 
   <div class="controls">
     <select id="region"><option value="">전체 지역</option></select>
@@ -47,92 +56,145 @@
       <option value="asc">가격 낮은 순</option>
       <option value="desc">가격 높은 순</option>
     </select>
+    <span class="count" id="count"></span>
   </div>
 
-  <div class="layout">
-    <div class="list" id="list"></div>
-    <div id="map"></div>
-  </div>
+  <div class="list" id="list"></div>
 
-  <p class="disclaimer" id="foot" style="margin-top:14px"></p>
+  <p class="disclaimer" id="foot"></p>
 </div></main>
 
-<footer><div class="wrap">
-  <a href="implant.html">임플란트 진단기</a> · <a href="index.html">보청기</a> · 광고 아닌 실사용자 데이터를 지향합니다
-</div></footer>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!--
+  카카오맵 SDK — 아래 YOUR_KAKAO_JS_KEY 를 카카오 개발자센터의 JavaScript 키로 교체하세요.
+  (https://developers.kakao.com → 내 애플리케이션 → 앱 키 → JavaScript 키)
+  도메인 등록도 필요: 앱 설정 → 플랫폼 → Web 에 사이트 도메인 등록.
+-->
+<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_JS_KEY&libraries=services&autoload=false"></script>
 <script>
 (function(){
   var $ = function(s){ return document.querySelector(s); };
   function won(n){ return (n||0).toLocaleString('ko-KR') + '원'; }
 
-  var map = L.map('map').setView([36.5, 127.8], 7);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19, attribution: '© OpenStreetMap'
-  }).addTo(map);
+  // 키 미설정/SDK 로드 실패 처리
+  function showKeyNotice(){
+    $('#keynote').className = 'keynote';
+    $('#keynote').innerHTML = '⚠️ 카카오맵 키가 설정되지 않았습니다. <br>'
+      + 'map.html 의 <code>YOUR_KAKAO_JS_KEY</code> 를 카카오 개발자센터 JavaScript 키로 교체하고, '
+      + '앱 플랫폼에 이 사이트 도메인을 등록하세요. 목록은 아래에서 그대로 확인할 수 있어요.';
+    $('#map').style.display = 'none';
+  }
 
-  var markers = [], DATA = { items: [] };
+  var DATA = { items: [] }, map = null, geocoder = null, overlays = [], infowindow = null;
+
+  function initMap(){
+    map = new kakao.maps.Map($('#map'), { center: new kakao.maps.LatLng(36.5, 127.8), level: 13 });
+    geocoder = new kakao.maps.services.Geocoder();
+    infowindow = new kakao.maps.InfoWindow({ removable: true });
+  }
+
+  // 좌표 없는 항목을 주소로 지오코딩(순차 처리로 호출 제한 보호)
+  function geocodeMissing(items, done){
+    var queue = items.filter(function(c){ return (!c.lat || !c.lng) && c.addr; });
+    if (!queue.length || !geocoder) { done(); return; }
+    var i = 0;
+    (function next(){
+      if (i >= queue.length) { done(); return; }
+      var c = queue[i++];
+      geocoder.addressSearch(c.addr, function(res, status){
+        if (status === kakao.maps.services.Status.OK && res[0]) {
+          c.lat = parseFloat(res[0].y); c.lng = parseFloat(res[0].x);
+        }
+        setTimeout(next, 60);
+      });
+    })();
+  }
 
   function render(){
     var region = $('#region').value, sort = $('#sort').value;
-    var items = DATA.items.filter(function(c){ return !region || c.region === region; });
+    var items = DATA.items
+      .filter(function(c){ return c.lat && c.lng; })
+      .filter(function(c){ return !region || c.region === region; });
     items.sort(function(a,b){ return sort==='desc' ? b.implant-a.implant : a.implant-b.implant; });
+
+    $('#count').textContent = items.length + '곳';
 
     // 목록
     var list = $('#list'); list.innerHTML = '';
-    items.forEach(function(c, i){
+    items.forEach(function(c, idx){
       var div = document.createElement('div');
       div.className = 'clinic';
-      div.innerHTML = '<div class="top"><span class="name"><span class="rank">'+(i+1)+'.</span> '+c.name+'</span>'
+      div.innerHTML = '<div class="top"><span class="name"><span class="rank">'+(idx+1)+'.</span>'+c.name+'</span>'
         + '<span class="price">'+won(c.implant)+'</span></div>'
-        + '<div class="meta">'+c.region+' · '+(c.material||'')+'</div>';
-      div.addEventListener('click', function(){
-        map.setView([c.lat, c.lng], 14);
-        if (c._marker) c._marker.openPopup();
-      });
+        + '<div class="meta">'+c.region+(c.material?' · '+c.material:'')+'</div>';
+      div.addEventListener('click', function(){ focus(c); });
       list.appendChild(div);
     });
 
-    // 마커
-    markers.forEach(function(m){ map.removeLayer(m); });
-    markers = [];
-    var bounds = [];
+    // 지도 오버레이(가격표)
+    if (!map) return;
+    overlays.forEach(function(o){ o.setMap(null); });
+    overlays = [];
+    var bounds = new kakao.maps.LatLngBounds();
     items.forEach(function(c){
-      var m = L.marker([c.lat, c.lng]).addTo(map)
-        .bindPopup('<b>'+c.name+'</b><br>'+c.region+'<br>임플란트 <b>'+won(c.implant)+'</b><br>'+(c.material||''));
-      c._marker = m; markers.push(m); bounds.push([c.lat, c.lng]);
+      var pos = new kakao.maps.LatLng(c.lat, c.lng);
+      var marker = new kakao.maps.Marker({ position: pos, map: map });
+      var tag = new kakao.maps.CustomOverlay({
+        position: pos, yAnchor: 2.2,
+        content: '<div class="pricetag">'+won(c.implant)+'</div>'
+      });
+      tag.setMap(map);
+      kakao.maps.event.addListener(marker, 'click', function(){ openInfo(c, marker); });
+      c._marker = marker;
+      overlays.push(marker); overlays.push(tag);
+      bounds.extend(pos);
     });
-    if (bounds.length) map.fitBounds(bounds, { padding: [30,30], maxZoom: 13 });
+    if (items.length) map.setBounds(bounds);
+  }
+
+  function openInfo(c, marker){
+    infowindow.setContent('<div style="padding:8px 10px;font-size:13px;min-width:140px">'
+      + '<b>'+c.name+'</b><br>'+c.region+'<br>임플란트 <b style="color:#1657c0">'+won(c.implant)+'</b>'
+      + (c.material?'<br>'+c.material:'')+'</div>');
+    infowindow.open(map, marker);
+  }
+  function focus(c){
+    if (!map || !c._marker) return;
+    map.setLevel(5); map.panTo(new kakao.maps.LatLng(c.lat, c.lng));
+    openInfo(c, c._marker);
   }
 
   function boot(data){
     DATA = data;
-    // 지역 필터 채우기
     var regions = {}; data.items.forEach(function(c){ regions[c.region]=1; });
     var sel = $('#region');
     Object.keys(regions).sort().forEach(function(r){
       var o=document.createElement('option'); o.value=r; o.textContent=r; sel.appendChild(o);
     });
-    // 예시/실데이터 배너
     var isSample = data.items.some(function(c){ return c.sample; });
-    $('#samplebar').textContent = isSample
-      ? '⚠️ 현재는 예시(합성) 데이터입니다. 실제 치과·가격이 아니며, 심평원 공개데이터로 교체하면 실제 지도가 됩니다. (' + (data.asOf||'') + ')'
-      : '심평원 비급여 공개데이터 기준 · 기준시점 ' + (data.asOf||'');
-    $('#foot').textContent = '안내: ' + (data.source||'') + ' 가격은 헤드라인(식립+보철)이며 골이식·상악동거상술 등 추가비용은 별도입니다. 실제 결제가는 진단기 제보로 보정됩니다.';
+    if (isSample) {
+      $('#samplebar').style.display = 'block';
+      $('#samplebarText').textContent = '⚠️ 예시(합성) 데이터입니다. 심평원 공개데이터로 교체하면 실제 지도가 됩니다.';
+    }
+    $('#foot').textContent = '안내: ' + (data.source||'') + ' 가격은 헤드라인(식립+보철)이며 골이식·상악동거상술 등 추가비용은 별도입니다.';
     $('#region').addEventListener('change', render);
     $('#sort').addEventListener('change', render);
-    render();
+
+    if (map) { geocodeMissing(data.items, render); }
+    else { render(); } // 지도 없이 목록만
   }
 
-  fetch('clinics.json').then(function(r){ return r.json(); })
-    .then(boot)
-    .catch(function(){
-      // fetch 실패 시(파일 프로토콜 등) 최소 폴백
-      boot({ asOf:'폴백', source:'clinics.json 로드 실패 — 예시 1건', items:[
-        { name:'예시치과', region:'서울 강남구', addr:'', lat:37.4979, lng:127.0276, implant:1300000, material:'지르코니아', sample:true }
-      ]});
-    });
+  function loadData(){
+    fetch('clinics.json').then(function(r){ return r.json(); }).then(boot)
+      .catch(function(){ boot({ source:'clinics.json 로드 실패', items:[] }); });
+  }
+
+  // SDK 로드 확인
+  if (typeof kakao === 'undefined' || !kakao.maps) {
+    showKeyNotice();
+    loadData();
+  } else {
+    kakao.maps.load(function(){ initMap(); loadData(); });
+  }
 })();
 </script>
 </body>

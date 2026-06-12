@@ -38,20 +38,28 @@
 | 파일 | 역할 |
 |---|---|
 | `implant.html` / `implant-app.js` / `implant.js` | 임플란트 견적 진단기(65세 보험·추가시술·총비용) |
-| `map.html` | 임플란트 가격 지도(Leaflet+OSM, 키 불필요) |
+| `map.html` | 임플란트 가격 지도(**카카오맵**, 전면 표시 + 주소 자동 지오코딩) |
 | `clinics.json` | 지도 데이터(현재 **예시/합성**, 실데이터로 교체) |
-| `tools/build-clinics.js` | 심평원 CSV → clinics.json 변환기 |
+| `tools/build-clinics.js` | 심평원 CSV → clinics.json 변환기(**카카오 REST 지오코딩** 내장) |
 | `test-implant.js` | 임플란트 로직 검증 — `node test-implant.js` |
+
+### 카카오맵 키 설정 (지도 표시용)
+1. https://developers.kakao.com → 내 애플리케이션 생성
+2. **JavaScript 키**를 복사해 `map.html`의 `YOUR_KAKAO_JS_KEY` 자리에 붙여넣기
+3. 앱 설정 → 플랫폼 → **Web**에 사이트 도메인 등록(예: `https://ikdd7.github.io`)
+   - 키가 없으면 지도는 안 뜨고 목록만 표시되며, 안내 문구가 나온다.
+4. `map.html`은 좌표가 없는 항목을 **카카오 지오코딩으로 실행 시 자동 변환**해 표시한다.
 
 ### 임플란트 가격 지도에 실데이터 채우기
 1. **데이터 받기**: 공공데이터포털 `건강보험심사평가원_비급여진료비정보조회서비스`
-   (https://www.data.go.kr/data/15001700/openapi.do, 발급키 필요) 또는 심평원
-   보건의료빅데이터개방시스템(opendata.hira.or.kr)에서 CSV 다운로드.
-   ※ OpenAPI는 '병원급 이상'이 기본 — 치과'의원' 임플란트는 의원급 비급여 공개 파일을 받을 것.
-2. **좌표 캐시 만들기**: 심평원 데이터엔 주소만 있고 좌표가 없다. 카카오/네이버 지오코딩으로
-   `{ "주소": {lat,lng} }` 형태 캐시 JSON 생성.
-3. **변환**: `node tools/build-clinics.js <심평원CSV> <좌표캐시.json>` → `clinics.json` 생성.
-4. `map.html`을 열면 실제 치과 가격 지도가 뜬다.
+   (https://www.data.go.kr/data/15001700/openapi.do) 또는 심평원 의원급 비급여 공개 파일.
+   ※ OpenAPI는 '병원급 이상'이 기본 — 치과'의원' 임플란트는 의원급 파일을 받을 것.
+2. **변환(+지오코딩)**: 카카오 REST 키로 주소를 좌표로 자동 변환하며 생성:
+   ```
+   KAKAO_REST_KEY=발급키 node tools/build-clinics.js <심평원CSV>
+   ```
+   좌표는 `tools/geocache.json`에 캐시돼 재실행 시 호출을 절약한다.
+3. `map.html`을 열면 실제 치과 가격 지도가 뜬다.
 
 주의: 실제 치과명+가격을 임의로 입력해 게시하면 허위사실 리스크가 있으므로,
 반드시 공식 공개데이터로만 채운다. 현재 `clinics.json`은 명확히 표시된 예시다.
