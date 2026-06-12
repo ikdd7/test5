@@ -261,6 +261,25 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ["leaflet", "map.js", "koreamap.js", "stats.js", "id=\"leaflet\"", "id=\"mapFallback\""].forEach((n) =>
     ok(mh.includes(n), `map.html: ${n}`));
   ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("map.html"), "wedding.html→map.html 링크");
+  // 전국 예식장 리스트(좌표 포함)
+  ok(fs.existsSync(path.join(__dirname, "venues.js")), "venues.js 존재");
+  let venues = [];
+  try {
+    const vm = require("vm");
+    const sandbox = { window: {} };
+    vm.runInNewContext(fs.readFileSync(path.join(__dirname, "venues.js"), "utf8"), sandbox);
+    venues = sandbox.window.WEDDING_VENUES || [];
+  } catch (e) { ok(false, "venues.js 실행 파싱: " + e.message); }
+  ok(venues.length >= 15, `예식장 리스트 충분(${venues.length}곳)`);
+  const vregions = {};
+  venues.forEach((v, i) => {
+    ok(typeof v.name === "string" && v.name, `식장#${i} 이름`);
+    ok(v.lat >= 33 && v.lat <= 39 && v.lng >= 124 && v.lng <= 132, `식장#${i} 좌표 한반도`);
+    ok(v.meal >= 20000 && v.meal <= 300000, `식장#${i} 식대 범위`);
+    vregions[v.region] = 1;
+  });
+  ok(Object.keys(vregions).length >= 5, `전국성: ${Object.keys(vregions).length}개 지역`);
+  ok(fs.readFileSync(path.join(__dirname, "map.html"), "utf8").includes("venues.js"), "map.html→venues.js 연결");
   const files = fs.existsSync(path.join(__dirname, "region")) ? fs.readdirSync(path.join(__dirname, "region")).filter((f) => f.endsWith(".html")) : [];
   ok(files.length >= 1, `지역 페이지 생성됨(${files.length}개)`);
   files.forEach((f) => {

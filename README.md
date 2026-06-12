@@ -25,6 +25,8 @@ region.js     ← 지역 페이지 클라이언트(차트·백분위 비교·게
 charts.js     ← 의존성 0 미니 차트(가로막대·산점도)
 koreamap.js   ← 전국 17개 시도 가격 히트맵(스키매틱, 좌표·외부API 불필요)
 map.html / map.js ← 풀스크린 지도(식장 위치+가격 핀). Leaflet+OSM, 오프라인 시 히트맵 폴백
+venues.js     ← 전국 예식장 리스트(실제 식장명·좌표·가격, 지도 핀 소스)
+seed-web.csv  ← 웹 출처 견적 누적 원장(출처 표기, 검증·승인 전)
 wedding-data.js / wedding-data.gen.js  ← 결혼식장 예시(합성) 데이터 + 생성기
 WEDDING_SETUP.md / LEGAL_NOTES.md / PLAN.md  ← 운영·법무·전략 문서
 daechul.html  ← 대출 이자 계산기 (원리금균등·원금균등·만기일시)  ★수익 핵심

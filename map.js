@@ -3,7 +3,8 @@
   "use strict";
   var S = window.Stats, SLUGS = window.REGION_SLUGS || {};
   var won = S.won, manwon = S.manwon;
-  var DATA = (window.WEDDING_SAMPLE || []).filter(function (d) { return d.lat && d.lng && S.plausible(d); });
+  var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
+  var DATA = SRC.filter(function (d) { return d.lat && d.lng && S.plausible(d); });
   var fType = "전체", fSlot = "전체", fVer = false;
   var map, layer;
   var $ = function (id) { return document.getElementById(id); };
@@ -28,10 +29,17 @@
     rows.forEach(function (d) {
       var slug = SLUGS[d.region];
       var mk = L.circleMarker([d.lat, d.lng], { radius: 8, weight: 2, color: "#fff", fillColor: priceColor(d.meal, lo, hi), fillOpacity: .9 });
-      mk.bindTooltip(manwon(d.meal), { direction: "top" });
-      mk.bindPopup('<div class="mpop"><b>' + d.region + " · " + d.type + "</b>" +
+      mk.bindTooltip((d.name ? d.name + " " : "") + manwon(d.meal), { direction: "top" });
+      var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
+      var line3 = [];
+      if (d.slot) line3.push(d.slot);
+      if (d.guarantee) line3.push("보증 " + d.guarantee + "명");
+      if (d.verified) line3.push("✅검증");
+      mk.bindPopup('<div class="mpop">' + (d.name ? "<b>" + d.name + "</b>" : "<b>" + sub + "</b>") +
+        (d.name ? '<div class="msub">' + sub + "</div>" : "") +
         '<div class="big">' + won(d.meal) + " <span>/1인</span></div>" +
-        "<div>대관료 " + won(d.rental) + "</div><div>" + (d.slot || "") + " · 보증 " + d.guarantee + "명 " + (d.verified ? "✅검증" : "") + "</div>" +
+        "<div>대관료 " + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
+        (line3.length ? "<div>" + line3.join(" · ") + "</div>" : "") +
         (slug ? '<a href="region/' + slug + '.html">' + d.region + " 전체 보기 →</a>" : "") + "</div>");
       layer.addLayer(mk);
     });
@@ -46,7 +54,7 @@
     });
   }
   function buildFilters() {
-    var types = {}, slots = {}; DATA.forEach(function (d) { types[d.type] = 1; slots[d.slot] = 1; });
+    var types = {}, slots = {}; DATA.forEach(function (d) { if (d.type) types[d.type] = 1; if (d.slot) slots[d.slot] = 1; });
     chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(); refresh(); });
     chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(); refresh(); });
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(); refresh(); };
