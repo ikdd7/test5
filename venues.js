@@ -51,4 +51,6 @@ window.WEDDING_VENUES = [
   { name: "청주더빈웨딩홀", region: "충북", district: "청주시", type: "컨벤션", meal: 57000, rental: 4000000, lat: 36.6420, lng: 127.4890, verified: false, source: "directwedding/hall0453" },
   { name: "모든날웨딩 청주", region: "충북", district: "청주시", type: "컨벤션", meal: 58000, rental: 4500000, guarantee: 100, lat: 36.6300, lng: 127.4600, verified: false, source: "weddingcrowd/1710" },
   { name: "울산 컨벤션(참고)", region: "울산", district: "울주군", type: "일반예식장", meal: 38000, rental: 1500000, lat: 35.5380, lng: 129.3110, verified: false, source: "localinfo/울산5곳" },
+  { name: "라한호텔 포항", region: "경북", district: "포항시", type: "호텔", meal: 60000, rental: 0, lat: 36.0190, lng: 129.3430, verified: false, source: "lahanhotels/pohang" },
+  { name: "라한셀렉트 경주", region: "경북", district: "경주시", type: "호텔", meal: 50000, rental: 0, lat: 35.8560, lng: 129.2250, verified: false, source: "lahanhotels/gyeongju(2021)" },
 ];
