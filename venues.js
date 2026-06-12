@@ -169,7 +169,7 @@ window.WEDDING_VENUES = [
   {"name":"그랜드워커힐서울 애스톤하우스","region":"경기","district":"구리시","type":"하우스웨딩","meal":null,"lat":37.55993,"lng":127.113284,"verified":false,"source":"kakao/25622223"},
   {"name":"DMC타워웨딩","region":"서울","district":"마포구","type":"일반예식장","meal":88000,"lat":37.576774,"lng":126.897934,"verified":false,"source":"smartwedding/DMCTowerWedding"},
   {"name":"트리니티홀","region":"서울","district":"마포구","type":"일반예식장","meal":null,"lat":37.55239,"lng":126.917206,"verified":false,"source":"kakao/1968679042","halls":2},
-  {"name":"아펠가모 공덕점","region":"서울","district":"마포구","type":"일반예식장","meal":null,"lat":37.542309,"lng":126.952487,"verified":false,"source":"kakao/630786038"},
+  {"name":"아펠가모 공덕점","region":"서울","district":"마포구","type":"일반예식장","meal":75600,"lat":37.542309,"lng":126.952487,"verified":false,"source":"smartwedding/apelgamo"},
   {"name":"월드컵컨벤션","region":"서울","district":"마포구","type":"컨벤션","meal":79000,"lat":37.568424,"lng":126.896143,"verified":false,"source":"smartwedding/wocon"},
   {"name":"케이터틀","region":"서울","district":"마포구","type":"일반예식장","meal":79000,"lat":37.552601,"lng":126.937706,"verified":false,"source":"smartwedding/k-turtle","halls":2},
   {"name":"이룸웨딩컨벤션","region":"서울","district":"마포구","type":"컨벤션","meal":70000,"lat":37.541878,"lng":126.9498,"verified":false,"source":"smartwedding/Irumconvention"},
