@@ -53,4 +53,10 @@ window.WEDDING_VENUES = [
   { name: "울산 컨벤션(참고)", region: "울산", district: "울주군", type: "일반예식장", meal: 38000, rental: 1500000, lat: 35.5380, lng: 129.3110, verified: false, source: "localinfo/울산5곳" },
   { name: "라한호텔 포항", region: "경북", district: "포항시", type: "호텔", meal: 60000, rental: 0, lat: 36.0190, lng: 129.3430, verified: false, source: "lahanhotels/pohang" },
   { name: "라한셀렉트 경주", region: "경북", district: "경주시", type: "호텔", meal: 50000, rental: 0, lat: 35.8560, lng: 129.2250, verified: false, source: "lahanhotels/gyeongju(2021)" },
+  // 서울 추가
+  { name: "더채플앳청담", region: "서울", district: "강남구", type: "채플/성당", meal: 88900, rental: 7500000, lat: 37.5240, lng: 127.0480, verified: false, source: "smartwedding/thechapel" },
+  { name: "더채플앳논현", region: "서울", district: "강남구", type: "채플/성당", meal: 110000, rental: 11000000, lat: 37.5110, lng: 127.0245, verified: false, source: "smartwedding/thechapelnonhyeon" },
+  { name: "그랜드힐컨벤션", region: "서울", district: "강남구", type: "컨벤션", meal: 110000, rental: 12000000, lat: 37.4960, lng: 127.0300, verified: false, source: "smartwedding/grandhill" },
+  { name: "명품웨딩프로포즈", region: "서울", district: "구로구", type: "컨벤션", meal: 65000, rental: 5500000, lat: 37.5030, lng: 126.8820, verified: false, source: "smartwedding/weddingpropose" },
+  { name: "빌라드지디 수서", region: "서울", district: "강남구", type: "하우스웨딩", meal: 63000, rental: 3000000, guarantee: 250, slot: "토요일 낮", lat: 37.4870, lng: 127.1010, verified: false, source: "kgwed.com 빌라드지디수서" },
 ];
