@@ -83,6 +83,9 @@
 - [ ] 용인 웨딩홀 TOP6 견적비교 — https://blog.weddinglast.com/용인-웨딩홀-추천/
 - [ ] 더채플앳청담 견적공유 — https://wedlast.com/더채플앳청담/
 - [ ] 지역정보꿀통 인천 5곳(식대) — https://localinfo.kr/인천-결혼식장-웨딩홀-예식장-추천-5곳식대-주차장-홀/
+- [ ] 노보텔앰배서더 서울강남(다결 DB) — https://www.directwedding.co.kr/weddinghall/hall0080
+- [ ] 대전 후기 좋은 웨딩홀 10곳(스카이하이) — https://imskyian.com/169
+- [ ] 엘타워(양재) 가격 토론(블라인드) — https://www.teamblind.com/kr/post/엘타워-결혼식장-비싸-75F51FuF
 
 ---
 
