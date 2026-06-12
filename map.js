@@ -76,7 +76,10 @@
 
   function initLeaflet() {
     map = L.map("leaflet", { zoomControl: true }).setView([36.3, 127.8], 7);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "© OpenStreetMap" }).addTo(map);
+    // 깔끔한 미니멀 베이스맵(CartoDB Positron) — 라벨 적어 핀이 잘 보임. 키·도메인 불필요.
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
+      maxZoom: 19, subdomains: "abcd", attribution: "© OpenStreetMap © CARTO",
+    }).addTo(map);
     // 핀이 많으므로 클러스터링(플러그인 있으면), 없으면 일반 레이어
     layer = (typeof L.markerClusterGroup === "function")
       ? L.markerClusterGroup({ chunkedLoading: true, maxClusterRadius: 55, spiderfyOnMaxZoom: true, showCoverageOnHover: false })
