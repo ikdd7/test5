@@ -19,9 +19,11 @@ const SEED = ["1527650130","1350290898","1303091158","1378801892","1382437461","
 const FILE = path.join(__dirname, "venues.js");
 const norm = (s) => String(s || "").replace(/[\s()\-·_]/g, "").toLowerCase();
 function match(v, p) {
-  if (p.region && v.region && v.region !== p.region) return false;
   const a = norm(v.name), b = norm(p.name);
-  return a === b || (a.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0));
+  if (a === b) return true; // 이름 완전일치면 지역(오탐 가능) 무시
+  if (a.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0))
+    return !p.region || !v.region || v.region === p.region; // 접두 일치는 지역도 맞아야
+  return false;
 }
 const REGIONS = ["서울","부산","대구","인천","광주","대전","울산","세종","경기","강원","충북","충남","전북","전남","경북","경남","제주"];
 function parseRegion(t) { for (const r of REGIONS) if (t.indexOf(r) >= 0) return r; return null; }
@@ -78,11 +80,14 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
   let scraped = 0, filled = 0, averaged = 0; const report = [];
   for (const id of list) {
     try {
-      await page.goto(INFO + id, { waitUntil: "domcontentloaded", timeout: 18000 });
+      try { await page.goto(INFO + id, { waitUntil: "networkidle", timeout: 20000 }); }
+      catch (e) { /* networkidle 타임아웃이어도 렌더된 내용으로 계속 시도 */ }
       const name = cleanName(await page.title());
       if (!name) { report.push(id + ": 이름 없음"); continue; }
+      // 가격이 JS로 늦게 렌더되는 SPA 대비: 가격 키워드가 보일 때까지 대기
+      await page.waitForFunction(() => /식대|뷔페|대관|보증\s*인원|코스|한식/.test(document.body.innerText), { timeout: 9000 }).catch(() => {});
       const text = await page.evaluate(() => document.body.innerText);
-      const pr = parsePrice(text), region = parseRegion(text);
+      const pr = parsePrice(text), region = parseRegion(name) || parseRegion(text); // 지역은 식장명에서 먼저
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
