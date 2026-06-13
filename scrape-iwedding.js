@@ -48,24 +48,26 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
   const ids = new Set(SEED);
   const MAX = parseInt(process.env.MAX || "500", 10);
   const cat = encodeURIComponent("웨딩홀");
-  const grabIds = async () => page.evaluate(() =>
-    Array.from(document.querySelectorAll('a[href*="/enterprise/info/"]'))
-      .map((a) => (a.getAttribute("href").match(/info\/(\d+)/) || [])[1]).filter(Boolean));
+  // 목록이 JS 렌더라 a[href] 대신 페이지 HTML 전체에서 enterprise/info/<id> 정규식 추출(스크롤로 lazy 로드 유도)
+  const grabIds = async () => {
+    try { await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight)); } catch (e) {}
+    await page.waitForTimeout(800);
+    const html = await page.content();
+    return [...html.matchAll(/enterprise\/info\/(\d+)/g)].map((m) => m[1]);
+  };
   for (const lp of LIST_PAGES) { // best/기본 목록
     try {
-      await page.goto(lp, { waitUntil: "domcontentloaded", timeout: 20000 });
-      await page.waitForSelector('a[href*="/enterprise/info/"]', { timeout: 6000 }).catch(() => {});
+      await page.goto(lp, { waitUntil: "networkidle", timeout: 25000 });
       (await grabIds()).forEach((x) => ids.add(x));
     } catch (e) {}
   }
-  for (let sc = 1; sc <= 8 && ids.size < MAX; sc++) {
+  for (let sc = 1; sc <= 6 && ids.size < MAX; sc++) {
     let empty = 0;
-    for (let pg = 1; pg <= 25 && ids.size < MAX; pg++) {
+    for (let pg = 1; pg <= 20 && ids.size < MAX; pg++) {
       const url = HOST + "/brand/ihall?tab=list&category=" + cat + "&subCategory=" + sc + "&page=" + pg + "&sort=recommendations";
       let found = [];
       try {
-        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
-        await page.waitForSelector('a[href*="/enterprise/info/"]', { timeout: 6000 }).catch(() => {});
+        await page.goto(url, { waitUntil: "networkidle", timeout: 25000 });
         found = await grabIds();
       } catch (e) {}
       const before = ids.size; found.forEach((x) => ids.add(x));

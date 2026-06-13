@@ -7,6 +7,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: venues-write
+  cancel-in-progress: false
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
