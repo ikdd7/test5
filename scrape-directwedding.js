@@ -45,12 +45,14 @@ function cleanName(title) {
   for (let i = START; i <= END; i++) {
     const id = "hall" + String(i).padStart(4, "0");
     try {
-      const resp = await page.goto(BASE + id, { waitUntil: "domcontentloaded", timeout: 18000 });
+      const resp = await page.goto(BASE + id, { waitUntil: "networkidle", timeout: 25000 });
       if (resp && resp.status() >= 400) { empty++; continue; }
-      const title = await page.title();
-      const name = cleanName(title);
-      if (!name || /다이렉트|결혼준비|^웨딩홀$/.test(name)) { empty++; continue; }
       const text = await page.evaluate(() => document.body.innerText);
+      // 식장명: og:title 우선(SPA 렌더 후), 없으면 title
+      let rawName = "";
+      try { rawName = await page.$eval('meta[property="og:title"]', (e) => e.content); } catch (e) { rawName = await page.title(); }
+      const name = cleanName(rawName);
+      if (!name || /다이렉트|결혼준비|^웨딩홀$|^$/.test(name)) { empty++; continue; }
       const pr = parsePrice(text), region = parseRegion(text);
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;

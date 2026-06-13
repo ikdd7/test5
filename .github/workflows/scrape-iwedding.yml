@@ -38,5 +38,12 @@ jobs:
             echo "변경 없음"
           else
             git commit -m "iwedding 가격 수집 (Actions)"
-            git push origin HEAD:claude/vibe-coding-revenue-page-k8dg72
+            ok=0
+            for i in 1 2 3 4 5; do
+              git fetch origin claude/vibe-coding-revenue-page-k8dg72 || true
+              if git rebase origin/claude/vibe-coding-revenue-page-k8dg72 && git push origin HEAD:claude/vibe-coding-revenue-page-k8dg72; then ok=1; break; fi
+              git rebase --abort || true
+              sleep $((i * 5))
+            done
+            [ "$ok" = 1 ] || { echo "push 실패(동시 변경)"; exit 1; }
           fi
