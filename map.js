@@ -70,6 +70,13 @@
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
     }
+    var feat;
+    if (d.tags && d.tags.length) {
+      feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징</div><div class="kk-chips feat">' +
+        d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div></div>";
+    } else {
+      feat = '<div class="kk-feat empty">✨ 식사 · 주차 · 교통 · 분위기 <span>정보 수집 중 — 아는 점이 있다면 제보해 주세요 🙏</span></div>';
+    }
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
       (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
@@ -78,7 +85,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      body +
+      body + feat +
       '<div class="kk-actions">' + fav +
       (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 →</a>" : "") + "</div>" +
       '<div class="kk-tail"></div></div>';
@@ -101,6 +108,38 @@
     var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
     updateFavChip();
+  }
+
+  // ── 검색(식장·지역) ──
+  function goToVenue(d) {
+    if (!map) return;
+    var pos = new kakao.maps.LatLng(d.lat, d.lng);
+    map.setLevel(3); map.setCenter(pos);
+    info.setContent(popupHtml(d)); info.setPosition(pos); info.setMap(map);
+  }
+  function setupSearch() {
+    var inp = $("qInput"), box = $("qResults");
+    if (!inp) return;
+    var current = [];
+    function close() { box.innerHTML = ""; box.style.display = "none"; }
+    inp.addEventListener("input", function () {
+      var q = inp.value.replace(/\s/g, "").toLowerCase();
+      if (q.length < 1) { close(); return; }
+      current = DATA.filter(function (d) {
+        var hay = ((d.name || "") + (d.region || "") + (d.district || "")).replace(/\s/g, "").toLowerCase();
+        return hay.indexOf(q) >= 0;
+      }).sort(function (a, b) { return (hasPrice(b) ? 1 : 0) - (hasPrice(a) ? 1 : 0); }).slice(0, 10);
+      if (!current.length) { box.innerHTML = '<div class="qempty">검색 결과 없음</div>'; box.style.display = "block"; return; }
+      box.innerHTML = current.map(function (d, i) {
+        return '<button class="qitem" data-i="' + i + '"><b>' + esc(d.name || "") + "</b><small>" +
+          esc(d.region + (d.district ? " " + d.district : "") + " · " + d.type) + (hasPrice(d) ? " · " + manwon(d.meal) + "원" : " · 가격 미확인") + "</small></button>";
+      }).join("");
+      box.style.display = "block";
+      Array.prototype.forEach.call(box.querySelectorAll(".qitem"), function (b) {
+        b.addEventListener("click", function () { var d = current[+b.getAttribute("data-i")]; inp.value = d.name || ""; close(); goToVenue(d); });
+      });
+    });
+    inp.addEventListener("blur", function () { setTimeout(close, 200); });
   }
 
   // ── 카카오 지도 ──
@@ -157,7 +196,7 @@
     info = new kakao.maps.CustomOverlay({ yAnchor: 1.28, zIndex: 3, clickable: true });
     window.__closePop = function () { info.setMap(null); };
     kakao.maps.event.addListener(map, "click", window.__closePop);
-    buildFilters(drawKakao); drawKakao();
+    buildFilters(drawKakao); drawKakao(); setupSearch();
     try {
       var b = new kakao.maps.LatLngBounds();
       DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); });
@@ -168,6 +207,7 @@
   // ── 폴백(히트맵) ──
   function initFallback() {
     $("map").style.display = "none";
+    var ms = $("msearch"); if (ms) ms.style.display = "none";
     $("offlineBanner").style.display = "block";
     var fb = $("mapFallback"); fb.style.display = "flex";
     if (window.KoreaMap) window.KoreaMap.render($("fbMap"), {

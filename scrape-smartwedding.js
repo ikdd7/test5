@@ -34,6 +34,16 @@ function parsePrice(t) {
   if (r) { var rv = parseInt(r[1].replace(/,/g, ""), 10); if (rv >= 100000 && rv <= 100000000) rental = rv; }
   return { meal: meal, rental: rental };
 }
+function tagsFromText(t) {
+  var tg = [], push = function (re, label) { if (re.test(t) && tg.indexOf(label) < 0) tg.push(label); };
+  push(/발렛|발레파킹/, "발렛파킹"); push(/주차/, "주차 가능");
+  push(/역세권|역\s*도보|지하철\s*도보|역\s*\d+\s*분/, "역세권");
+  push(/단독홀|단독\s*예식|단독\s*건물/, "단독홀"); push(/동시예식/, "동시예식");
+  push(/오션뷰|바다\s*전망/, "오션뷰"); push(/천고|층고/, "높은 천고");
+  push(/생화/, "생화 꽃장식"); push(/뷔페/, "뷔페"); push(/코스/, "코스요리");
+  push(/야외|가든|루프탑/, "야외·가든"); push(/채플/, "채플"); push(/스몰웨딩|소규모/, "스몰웨딩");
+  return tg.slice(0, 8);
+}
 
 (async () => {
   const sandbox = { window: {} };
@@ -67,6 +77,7 @@ function parsePrice(t) {
       if (v) {
         var res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "smartwedding/" + slug });
         if (photo && !v.photo) v.photo = photo;
+        var tg = tagsFromText(text); if (tg.length && !(v.tags && v.tags.length)) v.tags = tg;
         if (res === "filled" || res === "averaged") { filled++; report.push((res === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : "")); }
         else report.push("- " + slug + " → " + name + " (" + res + ")");
       } else {
