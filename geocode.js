@@ -39,8 +39,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const enc = encodeURIComponent;
 
 (async () => {
+  // ONLY_MISSING=1 → 좌표 없는 식장(스크래퍼 신규삽입분)만 지오코딩(기존 좌표 보존, 호출 절약)
+  const ONLY_MISSING = !!process.env.ONLY_MISSING;
+  const targets = ONLY_MISSING ? venues.filter((v) => !(v.lat && v.lng)) : venues;
+  console.log((ONLY_MISSING ? "좌표 없는 " : "전체 ") + targets.length + "곳 지오코딩 시작");
   let updated = 0; const failed = [];
-  for (const v of venues) {
+  for (const v of targets) {
     const q = (v.name + " " + (v.district || v.region || "")).trim();
     let hit = null;
     try {

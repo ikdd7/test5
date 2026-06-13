@@ -34,6 +34,12 @@ jobs:
           START: ${{ inputs.start }}
           END: ${{ inputs.end }}
         run: node scrape-directwedding.js
+      - name: Geocode new venues (좌표 없는 신규삽입분만)
+        continue-on-error: true
+        env:
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          ONLY_MISSING: "1"
+        run: node geocode.js
       - name: Dedupe & rebuild & test
         run: |
           node dedupe.js

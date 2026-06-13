@@ -8,7 +8,7 @@
  */
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const { chromium } = require("playwright");
-const { addPrice } = require("./pricemerge.js");
+const { applyScrape } = require("./pricemerge.js");
 
 const BASE = "https://smartwedding-besthall.com/";
 const SEED = ["eltower", "TheRaum", "noblevalentidaechi", "swtower", "withus", "YeouidoWeddingConvention",
@@ -18,12 +18,6 @@ const SEED = ["eltower", "TheRaum", "noblevalentidaechi", "swtower", "withus", "
   "Irumconvention", "houseoftheraum", "hwcc", "wocon", "tmwedding", "GladHotelYeouido", "lvwedding"];
 
 const FILE = path.join(__dirname, "venues.js");
-const norm = (s) => String(s || "").replace(/[\s()\-·_]/g, "").toLowerCase();
-function match(v, p) {
-  if (p.region && v.region && v.region !== p.region) return false;
-  const a = norm(v.name), b = norm(p.name);
-  return a === b || (a.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0));
-}
 const REGIONS = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 function parseRegion(t) { for (const r of REGIONS) if (t.indexOf(r) >= 0) return r; return null; }
 function parsePrice(t) {
@@ -62,7 +56,7 @@ function tagsFromText(t) {
   } catch (e) { /* 시드만 사용 */ }
   console.log("대상 슬러그 " + slugs.length + "개");
 
-  let scraped = 0, filled = 0; const report = [];
+  let scraped = 0, filled = 0, inserted = 0; const report = [];
   for (const slug of slugs) {
     try {
       await page.goto(BASE + slug, { waitUntil: "networkidle", timeout: 20000 });
@@ -73,15 +67,17 @@ function tagsFromText(t) {
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!name || !pr.meal) { report.push(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
-      const v = venues.find((x) => match(x, { name: name, region: region }));
-      if (v) {
-        var res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "smartwedding/" + slug });
-        if (photo && !v.photo) v.photo = photo;
-        var tg = tagsFromText(text); if (tg.length && !(v.tags && v.tags.length)) v.tags = tg;
-        if (res === "filled" || res === "averaged") { filled++; report.push((res === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : "")); }
-        else report.push("- " + slug + " → " + name + " (" + res + ")");
+      const out = applyScrape(venues, {
+        name: name, region: region, meal: pr.meal, rental: pr.rental,
+        source: "smartwedding/" + slug, tags: tagsFromText(text), photo: photo,
+      });
+      const v = out.venue;
+      if (out.status === "filled" || out.status === "averaged") {
+        filled++; report.push((out.status === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : ""));
+      } else if (out.status === "inserted") {
+        inserted++; report.push("＋ " + slug + " → " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")");
       } else {
-        report.push("? " + slug + " → " + name + " (지도에 없음)");
+        report.push("- " + slug + " → " + name + " (" + out.status + ")");
       }
     } catch (e) { report.push("! " + slug + " 오류"); }
     await new Promise((r) => setTimeout(r, 800)); // rate limit
@@ -90,6 +86,6 @@ function tagsFromText(t) {
 
   const header = "/* 전국 예식장 리스트 — 스마트웨딩 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
-  console.log("스크랩 " + scraped + "곳, 가격 채움 " + filled + "곳, 총 가격 " + venues.filter((v) => v.meal).length + "곳");
+  console.log("스크랩 " + scraped + "곳, 채움 " + filled + "곳, 신규삽입 " + inserted + "곳(좌표는 geocode가 채움), 총 가격 " + venues.filter((v) => v.meal).length + "곳");
   report.slice(0, 120).forEach((l) => console.log("  " + l));
 })();

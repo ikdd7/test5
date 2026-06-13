@@ -6,19 +6,13 @@
  */
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const { chromium } = require("playwright");
-const { addPrice } = require("./pricemerge.js");
+const { applyScrape } = require("./pricemerge.js");
 
 const BASE = "https://www.directwedding.co.kr/weddinghall/hall";
 const START = parseInt(process.env.START, 10) || 1;
 const END = parseInt(process.env.END, 10) || 520;
 
 const FILE = path.join(__dirname, "venues.js");
-const norm = (s) => String(s || "").replace(/[\s()\-·_]/g, "").toLowerCase();
-function match(v, p) {
-  if (p.region && v.region && v.region !== p.region) return false;
-  const a = norm(v.name), b = norm(p.name);
-  return a === b || (a.length >= 4 && (a.indexOf(b) === 0 || b.indexOf(a) === 0));
-}
 const REGIONS = ["서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종", "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주"];
 function parseRegion(t) { for (const r of REGIONS) if (t.indexOf(r) >= 0) return r; return null; }
 function parsePrice(t) {
@@ -55,7 +49,7 @@ function cleanName(title) {
     } catch (e) { console.log("[DEBUG] " + dbg + " 오류 " + e.message); }
   }
 
-  let scraped = 0, filled = 0, averaged = 0, empty = 0; const report = [];
+  let scraped = 0, filled = 0, averaged = 0, inserted = 0, empty = 0; const report = [];
   for (let i = START; i <= END; i++) {
     const id = "hall" + String(i).padStart(4, "0");
     try {
@@ -71,16 +65,12 @@ function cleanName(title) {
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
-      const v = venues.find((x) => match(x, { name: name, region: region }));
-      if (v) {
-        if (photo && !v.photo) v.photo = photo;
-        const res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "directwedding/" + id });
-        if (res === "filled") { filled++; report.push("✓ " + id + " " + name + " : " + v.meal); }
-        else if (res === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
-        else report.push("- " + name + " (" + res + ")");
-      } else {
-        report.push("? " + id + " " + name + " (지도에 없음)");
-      }
+      const out = applyScrape(venues, { name: name, region: region, meal: pr.meal, rental: pr.rental, source: "directwedding/" + id, photo: photo });
+      const v = out.venue;
+      if (out.status === "filled") { filled++; report.push("✓ " + id + " " + name + " : " + v.meal); }
+      else if (out.status === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
+      else if (out.status === "inserted") { inserted++; report.push("＋ " + id + " " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")"); }
+      else report.push("- " + name + " (" + out.status + ")");
     } catch (e) { empty++; }
     await new Promise((r) => setTimeout(r, 700));
   }
@@ -88,6 +78,6 @@ function cleanName(title) {
 
   const header = "/* 전국 예식장 리스트 — directwedding 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
-  console.log("스크랩 " + scraped + "곳 / 빈페이지 " + empty + " → 새채움 " + filled + ", 평균추가 " + averaged + ", 총가격 " + venues.filter((v) => v.meal).length + "곳");
+  console.log("스크랩 " + scraped + "곳 / 빈페이지 " + empty + " → 새채움 " + filled + ", 평균추가 " + averaged + ", 신규삽입 " + inserted + "(좌표는 geocode가 채움), 총가격 " + venues.filter((v) => v.meal).length + "곳");
   report.slice(0, 150).forEach((l) => console.log("  " + l));
 })();
