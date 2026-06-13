@@ -57,35 +57,38 @@ function tagsFromText(t) {
   console.log("대상 슬러그 " + slugs.length + "개");
 
   let scraped = 0, filled = 0, inserted = 0; const report = [];
+  let idx = 0;
+  const log = (s) => { report.push(s); console.log("  [" + idx + "/" + slugs.length + "] " + s); };
   for (const slug of slugs) {
+    idx++;
     try {
-      await page.goto(BASE + slug, { waitUntil: "networkidle", timeout: 20000 });
+      await page.goto(BASE + slug, { waitUntil: "domcontentloaded", timeout: 15000 });
+      await page.waitForLoadState("networkidle", { timeout: 4000 }).catch(() => {}); // 짧게만 추가 대기
       const title = await page.title();
       const text = await page.evaluate(() => document.body.innerText);
       const name = (title.split("|")[0] || "").replace(/스마트웨딩.*/, "").trim();
       const pr = parsePrice(text), region = parseRegion(text);
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
-      if (!name || !pr.meal) { report.push(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
+      if (!name || !pr.meal) { log(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
       const out = applyScrape(venues, {
         name: name, region: region, meal: pr.meal, rental: pr.rental,
         source: "smartwedding/" + slug, tags: tagsFromText(text), photo: photo,
       });
       const v = out.venue;
       if (out.status === "filled" || out.status === "averaged") {
-        filled++; report.push((out.status === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : ""));
+        filled++; log((out.status === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : ""));
       } else if (out.status === "inserted") {
-        inserted++; report.push("＋ " + slug + " → " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")");
+        inserted++; log("＋ " + slug + " → " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")");
       } else {
-        report.push("- " + slug + " → " + name + " (" + out.status + ")");
+        log("- " + slug + " → " + name + " (" + out.status + ")");
       }
-    } catch (e) { report.push("! " + slug + " 오류"); }
-    await new Promise((r) => setTimeout(r, 800)); // rate limit
+    } catch (e) { log("! " + slug + " 오류(" + (e.name || "err") + ")"); }
+    await new Promise((r) => setTimeout(r, 500)); // rate limit
   }
   await browser.close();
 
   const header = "/* 전국 예식장 리스트 — 스마트웨딩 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
   console.log("스크랩 " + scraped + "곳, 채움 " + filled + "곳, 신규삽입 " + inserted + "곳(좌표는 geocode가 채움), 총 가격 " + venues.filter((v) => v.meal).length + "곳");
-  report.slice(0, 120).forEach((l) => console.log("  " + l));
 })();

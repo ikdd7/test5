@@ -69,33 +69,34 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
   const list = Array.from(ids);
   console.log("대상 식장 ID " + list.length + "개");
 
-  let scraped = 0, filled = 0, averaged = 0, inserted = 0; const report = [];
+  let scraped = 0, filled = 0, averaged = 0, inserted = 0, idx = 0; const report = [];
+  const log = (s) => { report.push(s); console.log("  [" + idx + "/" + list.length + "] " + s); };
   for (const id of list) {
+    idx++;
     try {
-      try { await page.goto(INFO + id, { waitUntil: "networkidle", timeout: 20000 }); }
+      try { await page.goto(INFO + id, { waitUntil: "domcontentloaded", timeout: 15000 }); }
       catch (e) { /* networkidle 타임아웃이어도 렌더된 내용으로 계속 시도 */ }
       const name = cleanName(await page.title());
-      if (!name) { report.push(id + ": 이름 없음"); continue; }
+      if (!name) { log(id + ": 이름 없음"); continue; }
       // 가격이 JS로 늦게 렌더되는 SPA 대비: 가격 키워드가 보일 때까지 대기
       await page.waitForFunction(() => /식대|뷔페|대관|보증\s*인원|코스|한식/.test(document.body.innerText), { timeout: 9000 }).catch(() => {});
       const text = await page.evaluate(() => document.body.innerText);
       const pr = parsePrice(text), region = parseRegion(name) || parseRegion(text); // 지역은 식장명에서 먼저
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
-      if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
+      if (!pr.meal) { log(id + " " + name + ": 식대 못찾음"); continue; }
       const out = applyScrape(venues, { name: name, region: region, meal: pr.meal, rental: pr.rental, source: "iwedding/" + id, photo: photo });
       const v = out.venue;
-      if (out.status === "filled") { filled++; report.push("✓ " + name + " : " + v.meal); }
-      else if (out.status === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
-      else if (out.status === "inserted") { inserted++; report.push("＋ " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")"); }
-      else report.push("- " + name + " (" + out.status + ")");
-    } catch (e) { report.push(id + ": 오류"); }
-    await new Promise((r) => setTimeout(r, 700));
+      if (out.status === "filled") { filled++; log("✓ " + name + " : " + v.meal); }
+      else if (out.status === "averaged") { averaged++; log("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
+      else if (out.status === "inserted") { inserted++; log("＋ " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")"); }
+      else log("- " + name + " (" + out.status + ")");
+    } catch (e) { log(id + ": 오류(" + (e.name || "err") + ")"); }
+    await new Promise((r) => setTimeout(r, 500));
   }
   await browser.close();
 
   const header = "/* 전국 예식장 리스트 — iwedding 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
   console.log("스크랩 " + scraped + "곳 → 새채움 " + filled + ", 평균추가 " + averaged + ", 신규삽입 " + inserted + "(좌표는 geocode가 채움), 총가격 " + venues.filter((v) => v.meal).length + "곳");
-  report.slice(0, 150).forEach((l) => console.log("  " + l));
 })();

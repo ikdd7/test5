@@ -50,11 +50,13 @@ function cleanName(title) {
   }
 
   let scraped = 0, filled = 0, averaged = 0, inserted = 0, empty = 0; const report = [];
+  const log = (i, s) => { report.push(s); console.log("  [" + i + "/" + END + "] " + s); };
   for (let i = START; i <= END; i++) {
     const id = "hall" + String(i).padStart(4, "0");
     try {
-      const resp = await page.goto(BASE + id, { waitUntil: "networkidle", timeout: 25000 });
+      const resp = await page.goto(BASE + id, { waitUntil: "domcontentloaded", timeout: 15000 });
       if (resp && resp.status() >= 400) { empty++; continue; }
+      await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {}); // SPA 렌더 짧게 대기
       const text = await page.evaluate(() => document.body.innerText);
       // 식장명: og:title 우선(SPA 렌더 후), 없으면 title
       let rawName = "";
@@ -64,20 +66,19 @@ function cleanName(title) {
       const pr = parsePrice(text), region = parseRegion(text);
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
-      if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
+      if (!pr.meal) { log(i, id + " " + name + ": 식대 못찾음"); continue; }
       const out = applyScrape(venues, { name: name, region: region, meal: pr.meal, rental: pr.rental, source: "directwedding/" + id, photo: photo });
       const v = out.venue;
-      if (out.status === "filled") { filled++; report.push("✓ " + id + " " + name + " : " + v.meal); }
-      else if (out.status === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
-      else if (out.status === "inserted") { inserted++; report.push("＋ " + id + " " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")"); }
-      else report.push("- " + name + " (" + out.status + ")");
+      if (out.status === "filled") { filled++; log(i, "✓ " + id + " " + name + " : " + v.meal); }
+      else if (out.status === "averaged") { averaged++; log(i, "≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }
+      else if (out.status === "inserted") { inserted++; log(i, "＋ " + id + " " + name + " : " + v.meal + " (신규, 지역=" + (region || "?") + ")"); }
+      else log(i, "- " + name + " (" + out.status + ")");
     } catch (e) { empty++; }
-    await new Promise((r) => setTimeout(r, 700));
+    await new Promise((r) => setTimeout(r, 500));
   }
   await browser.close();
 
   const header = "/* 전국 예식장 리스트 — directwedding 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
   console.log("스크랩 " + scraped + "곳 / 빈페이지 " + empty + " → 새채움 " + filled + ", 평균추가 " + averaged + ", 신규삽입 " + inserted + "(좌표는 geocode가 채움), 총가격 " + venues.filter((v) => v.meal).length + "곳");
-  report.slice(0, 150).forEach((l) => console.log("  " + l));
 })();
