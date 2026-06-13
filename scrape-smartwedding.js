@@ -60,11 +60,13 @@ function parsePrice(t) {
       const text = await page.evaluate(() => document.body.innerText);
       const name = (title.split("|")[0] || "").replace(/스마트웨딩.*/, "").trim();
       const pr = parsePrice(text), region = parseRegion(text);
+      let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!name || !pr.meal) { report.push(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
       const v = venues.find((x) => match(x, { name: name, region: region }));
       if (v) {
         var res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "smartwedding/" + slug });
+        if (photo && !v.photo) v.photo = photo;
         if (res === "filled" || res === "averaged") { filled++; report.push((res === "averaged" ? "≈" : "✓") + " " + slug + " → " + name + " : " + v.meal + (v.nobs > 1 ? " (" + v.nobs + "소스)" : "")); }
         else report.push("- " + slug + " → " + name + " (" + res + ")");
       } else {

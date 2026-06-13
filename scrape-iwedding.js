@@ -71,10 +71,12 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
       if (!name) { report.push(id + ": 이름 없음"); continue; }
       const text = await page.evaluate(() => document.body.innerText);
       const pr = parsePrice(text), region = parseRegion(text);
+      let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
       const v = venues.find((x) => match(x, { name: name, region: region }));
       if (v) {
+        if (photo && !v.photo) v.photo = photo;
         const res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "iwedding/" + id });
         if (res === "filled") { filled++; report.push("✓ " + name + " : " + v.meal); }
         else if (res === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }

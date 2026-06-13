@@ -52,10 +52,12 @@ function cleanName(title) {
       if (!name || /다이렉트|결혼준비|^웨딩홀$/.test(name)) { empty++; continue; }
       const text = await page.evaluate(() => document.body.innerText);
       const pr = parsePrice(text), region = parseRegion(text);
+      let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
       if (!pr.meal) { report.push(id + " " + name + ": 식대 못찾음"); continue; }
       const v = venues.find((x) => match(x, { name: name, region: region }));
       if (v) {
+        if (photo && !v.photo) v.photo = photo;
         const res = addPrice(v, { meal: pr.meal, rental: pr.rental, source: "directwedding/" + id });
         if (res === "filled") { filled++; report.push("✓ " + id + " " + name + " : " + v.meal); }
         else if (res === "averaged") { averaged++; report.push("≈ " + name + " : " + v.meal + " (" + v.nobs + "소스)"); }

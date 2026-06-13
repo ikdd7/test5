@@ -74,6 +74,7 @@
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
       (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
     return '<div class="kkcard">' +
+      (d.photo ? '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="this.style.display=\'none\'">' : "") +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
