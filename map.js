@@ -108,13 +108,11 @@
     var priced = hasPrice(d);
     var key = priced ? "p" + Math.round((d.meal - lo) / (hi - lo) * 10) : "g";
     if (imgCache[key]) return imgCache[key];
-    var svg, size;
+    var size = 36, svg;
     if (priced) {
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42"><circle cx="21" cy="21" r="15" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="4"/></svg>';
-      size = 42;
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="13" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="4"/></svg>';
     } else {
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="15" r="10" fill="#9aa4ba" fill-opacity="0.35" stroke="#9aa4ba" stroke-width="3"/></svg>';
-      size = 30;
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="11" fill="#9aa4ba" fill-opacity="0.35" stroke="#9aa4ba" stroke-width="3"/></svg>';
     }
     var img = new kakao.maps.MarkerImage("data:image/svg+xml;base64," + btoa(svg), new kakao.maps.Size(size, size),
       { offset: new kakao.maps.Point(size / 2, size / 2) });
