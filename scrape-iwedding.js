@@ -43,30 +43,38 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
   const browser = await chromium.launch();
   const page = await browser.newPage(); // 기본(실제 크롬) UA
 
-  // ── 진단: 시드 식장 3곳을 열어 상태 확인 ──
-  for (const dbg of ["1527650130", "1207559364", "1402283129"]) {
-    try {
-      const r = await page.goto(INFO + dbg, { waitUntil: "networkidle", timeout: 25000 });
-      const text = await page.evaluate(() => document.body.innerText).catch(() => "");
-      console.log("[DEBUG] " + dbg + " status=" + (r ? r.status() : "?") + " url=" + page.url());
-      console.log("   title=" + (await page.title()) + " | bodyLen=" + text.length);
-      console.log("   sample=" + text.slice(0, 160).replace(/\s+/g, " "));
-      console.log("   parsed name=" + cleanName(await page.title()) + " price=" + JSON.stringify(parsePrice(text)) + " region=" + parseRegion(text));
-    } catch (e) { console.log("[DEBUG] " + dbg + " 오류 " + e.message); }
-  }
-
-  // 1) 목록 페이지에서 ID 수집
+  // 1) 목록 페이지네이션으로 식장 ID 대량 수집
+  //    brand/ihall?tab=list&category=웨딩홀&subCategory=N&page=M  (네가 준 형식)
   const ids = new Set(SEED);
-  for (const lp of LIST_PAGES) {
+  const MAX = parseInt(process.env.MAX || "500", 10);
+  const cat = encodeURIComponent("웨딩홀");
+  const grabIds = async () => page.evaluate(() =>
+    Array.from(document.querySelectorAll('a[href*="/enterprise/info/"]'))
+      .map((a) => (a.getAttribute("href").match(/info\/(\d+)/) || [])[1]).filter(Boolean));
+  for (const lp of LIST_PAGES) { // best/기본 목록
     try {
-      await page.goto(lp, { waitUntil: "networkidle", timeout: 25000 });
-      const found = await page.evaluate(() =>
-        Array.from(document.querySelectorAll('a[href*="/enterprise/info/"]'))
-          .map((a) => (a.getAttribute("href").match(/info\/(\d+)/) || [])[1]).filter(Boolean));
-      found.forEach((x) => ids.add(x));
+      await page.goto(lp, { waitUntil: "domcontentloaded", timeout: 20000 });
+      await page.waitForSelector('a[href*="/enterprise/info/"]', { timeout: 6000 }).catch(() => {});
+      (await grabIds()).forEach((x) => ids.add(x));
     } catch (e) {}
   }
-  const list = Array.from(ids);
+  for (let sc = 1; sc <= 8 && ids.size < MAX; sc++) {
+    let empty = 0;
+    for (let pg = 1; pg <= 25 && ids.size < MAX; pg++) {
+      const url = HOST + "/brand/ihall?tab=list&category=" + cat + "&subCategory=" + sc + "&page=" + pg + "&sort=recommendations";
+      let found = [];
+      try {
+        await page.goto(url, { waitUntil: "domcontentloaded", timeout: 20000 });
+        await page.waitForSelector('a[href*="/enterprise/info/"]', { timeout: 6000 }).catch(() => {});
+        found = await grabIds();
+      } catch (e) {}
+      const before = ids.size; found.forEach((x) => ids.add(x));
+      const added = ids.size - before;
+      if (pg === 1 || added) console.log("  목록 sub" + sc + " p" + pg + ": 링크" + found.length + " 신규+" + added + " (누적 " + ids.size + ")");
+      if (!found.length) { if (++empty >= 2) break; } else empty = 0;
+    }
+  }
+  const list = Array.from(ids).slice(0, MAX);
   console.log("대상 식장 ID " + list.length + "개");
 
   let scraped = 0, filled = 0, averaged = 0, inserted = 0, idx = 0; const report = [];
@@ -79,7 +87,7 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
       const name = cleanName(await page.title());
       if (!name) { log(id + ": 이름 없음"); continue; }
       // 가격이 JS로 늦게 렌더되는 SPA 대비: 가격 키워드가 보일 때까지 대기
-      await page.waitForFunction(() => /식대|뷔페|대관|보증\s*인원|코스|한식/.test(document.body.innerText), { timeout: 9000 }).catch(() => {});
+      await page.waitForFunction(() => /식대|뷔페|대관|보증\s*인원|코스|한식/.test(document.body.innerText), { timeout: 6000 }).catch(() => {});
       const text = await page.evaluate(() => document.body.innerText);
       const pr = parsePrice(text), region = parseRegion(name) || parseRegion(text); // 지역은 식장명에서 먼저
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
