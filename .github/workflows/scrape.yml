@@ -21,8 +21,7 @@ jobs:
           node-version: "20"
       - name: Install Playwright + Chromium
         run: |
-          npm init -y >/dev/null 2>&1 || true
-          npm i playwright@1.56.1
+          npm i playwright@1.56.1 --no-save --no-package-lock
           npx playwright install --with-deps chromium
       - name: Scrape prices
         run: node scrape-smartwedding.js
@@ -42,6 +41,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add venues.js region/ sitemap.xml
+          git checkout -- package.json package-lock.json 2>/dev/null || true
           if git diff --staged --quiet; then
             echo "변경 없음"
           else
