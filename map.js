@@ -110,11 +110,11 @@
     if (imgCache[key]) return imgCache[key];
     var svg, size;
     if (priced) {
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60"><circle cx="30" cy="30" r="22" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="5"/></svg>';
-      size = 60;
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="42" height="42"><circle cx="21" cy="21" r="15" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="4"/></svg>';
+      size = 42;
     } else {
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"><circle cx="22" cy="22" r="15" fill="#9aa4ba" fill-opacity="0.35" stroke="#9aa4ba" stroke-width="4"/></svg>';
-      size = 44;
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><circle cx="15" cy="15" r="10" fill="#9aa4ba" fill-opacity="0.35" stroke="#9aa4ba" stroke-width="3"/></svg>';
+      size = 30;
     }
     var img = new kakao.maps.MarkerImage("data:image/svg+xml;base64," + btoa(svg), new kakao.maps.Size(size, size),
       { offset: new kakao.maps.Point(size / 2, size / 2) });
