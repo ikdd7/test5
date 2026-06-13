@@ -60,21 +60,34 @@
       .filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; });
   }
 
-  // 현재 열린 팝업의 식장(키워드 투표·댓글 재렌더용)
-  var currentPop = null;
+  // 현재 열린 팝업(화면 고정 패널 — 지도 움직여도 안 사라짐)
+  var currentPop = null, panelEl = null;
+  function getPanel() {
+    if (!panelEl) { panelEl = document.createElement("div"); panelEl.id = "venuePanel"; panelEl.className = "venue-panel"; document.body.appendChild(panelEl); }
+    return panelEl;
+  }
+  function lockMap(on) { if (map) { try { map.setDraggable(!on); map.setZoomable(!on); } catch (e) {} } }
+  function rerenderPanel() { // 투표 후 갱신(스크롤 위치 유지)
+    if (!panelEl || !currentPop) return;
+    var card = panelEl.querySelector(".kkcard"), st = card ? card.scrollTop : 0;
+    panelEl.innerHTML = popupHtml(currentPop);
+    var nc = panelEl.querySelector(".kkcard"); if (nc) nc.scrollTop = st;
+  }
   window.__kwVote = function (idx) {
     if (!currentPop || !KEYWORDS[idx]) return;
     var label = KEYWORDS[idx][1], arr = getVotes(currentPop), i = arr.indexOf(label);
     if (i >= 0) arr.splice(i, 1); else arr.push(label);
     setVotes(currentPop, arr);
-    if (info) info.setContent(popupHtml(currentPop)); // 카운트·요약 갱신
+    rerenderPanel();
   };
   window.__saveCmt = function (val) { if (currentPop) setCmt(currentPop, val); };
-  function openPop(d, pos) {
+  window.__closePop = function () { if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null; };
+  function openPop(d) {
     currentPop = d;
-    info.setContent(popupHtml(d));
-    if (pos) info.setPosition(pos);
-    info.setMap(map);
+    var p = getPanel();
+    p.innerHTML = popupHtml(d);
+    p.classList.add("open");
+    lockMap(true); // 팝업 동안 지도 고정
   }
 
   function visible() {
@@ -215,7 +228,7 @@
   }
 
   // ── 카카오 지도 ──
-  var map, clusterer, info, imgCache = {};
+  var map, clusterer, imgCache = {};
   function markerImage(d, lo, hi) {
     var priced = hasPrice(d);
     var key = priced ? "p" + Math.round((d.meal - lo) / (hi - lo) * 10) : "g";
@@ -265,9 +278,7 @@
       map: map, averageCenter: true, minLevel: 7, gridSize: 70, disableClickZoom: false,
       calculator: [10, 30, 100], styles: [cstyle(34, 13), cstyle(40, 14), cstyle(48, 15), cstyle(58, 17)],
     });
-    info = new kakao.maps.CustomOverlay({ yAnchor: 1.28, zIndex: 3, clickable: true });
-    window.__closePop = function () { info.setMap(null); };
-    kakao.maps.event.addListener(map, "click", window.__closePop);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.__closePop(); });
     buildFilters(drawKakao); drawKakao(); setupSearch();
     try {
       var b = new kakao.maps.LatLngBounds();
