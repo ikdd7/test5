@@ -149,7 +149,10 @@
       setLocalRevs(d, getLocalRevs(d).filter(function (r) { return r.id !== id; })); rerenderPanel();
     }
   };
-  window.__closePop = function () { if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null; };
+  window.__closePop = function () {
+    if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null;
+    if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
+  };
   function openPop(d) {
     currentPop = d;
     var p = getPanel();
@@ -309,21 +312,32 @@
   }
 
   // ── 카카오 지도 ──
-  var map, clusterer, imgCache = {};
-  function markerImage(d, lo, hi) {
+  var map, clusterer, imgCache = {}, selectedMarker = null;
+  // 거지맵식 가격 알약(pill) 마커. sel=선택 강조(어두운 배경)
+  function pillSVG(text, color, sel) {
+    var w = 24 + Math.max(2, text.length) * 10 + 8, h = 24, th = h + 8, cx = w / 2;
+    var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#1a1a2e", bd = sel ? "#2b2b3a" : color;
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
+      '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
+      '<rect x="1.5" y="1.5" rx="11" ry="11" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
+      '<circle cx="14" cy="' + (h / 2) + '" r="4.5" fill="' + color + '"/>' +
+      '<text x="24" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
+      '</svg>';
+  }
+  function markerImage(d, lo, hi, sel) {
     var priced = hasPrice(d);
-    var key = priced ? "p" + Math.round((d.meal - lo) / (hi - lo) * 10) : "g";
-    if (imgCache[key]) return imgCache[key];
-    var size, svg;
-    if (priced) {
-      size = 36;
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="13" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="4"/></svg>';
-    } else {
-      size = 26;
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="13" cy="13" r="8" fill="#9aa4ba" fill-opacity="0.32" stroke="#9aa4ba" stroke-width="2.5"/></svg>';
+    if (!priced) {
+      if (imgCache.g) return imgCache.g;
+      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="7" fill="#9aa4ba" fill-opacity="0.30" stroke="#9aa4ba" stroke-width="2.5"/></svg>';
+      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
+      return imgCache.g;
     }
-    var img = new kakao.maps.MarkerImage("data:image/svg+xml;base64," + btoa(svg), new kakao.maps.Size(size, size),
-      { offset: new kakao.maps.Point(size / 2, size / 2) });
+    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi);
+    var key = (sel ? "s|" : "p|") + t + "|" + color;
+    if (imgCache[key]) return imgCache[key];
+    var w = 24 + Math.max(2, t.length) * 10 + 8, th = 32;
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, color, sel)),
+      new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
   }
   function drawKakao() {
@@ -331,12 +345,18 @@
     var pm = DATA.filter(hasPrice).map(function (d) { return d.meal; });
     var lo = pm.length ? Math.min.apply(null, pm) : 40000, hi = pm.length ? Math.max.apply(null, pm) : 200000;
     clusterer.clear();
+    selectedMarker = null; // 재그리기 시 선택 해제
     var markers = rows.map(function (d) {
+      var normal = markerImage(d, lo, hi, false);
       var mk = new kakao.maps.Marker({
-        position: new kakao.maps.LatLng(d.lat, d.lng), image: markerImage(d, lo, hi),
+        position: new kakao.maps.LatLng(d.lat, d.lng), image: normal,
         title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
       });
+      mk.__img = normal;
+      if (hasPrice(d)) mk.__selImg = markerImage(d, lo, hi, true);
       kakao.maps.event.addListener(mk, "click", function () {
+        if (selectedMarker && selectedMarker !== mk) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} }
+        if (mk.__selImg) { mk.setImage(mk.__selImg); mk.setZIndex(10000); selectedMarker = mk; }
         openPop(d, mk.getPosition());
         map.panTo(mk.getPosition());
       });
