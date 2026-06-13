@@ -36,6 +36,47 @@
   function totalCost(d) { return hasPrice(d) ? d.meal * GUESTS + (d.rental || 0) : null; }
   function favList() { return DATA.filter(function (d) { return FAVS[favKey(d)]; }); }
 
+  // ── 키워드 후기(네이버 플레이스식) ──
+  // 사람들이 식장에서 가장 많이 따지는 항목으로 압축. [이모지, 문구]
+  var KEYWORDS = [
+    ["🍽️", "음식이 맛있어요"], ["✨", "인테리어가 예뻐요"], ["🏛️", "홀이 넓어요"],
+    ["🙂", "응대가 친절해요"], ["💰", "가성비가 좋아요"], ["🅿️", "주차가 편해요"],
+    ["🚇", "교통이 편해요"], ["🌿", "분위기가 좋아요"], ["🧹", "깨끗해요"],
+    ["👥", "하객 수용이 좋아요"],
+  ];
+  function kwVoteKey(d) { return "wedding_kw_" + favKey(d); }
+  function getVotes(d) { try { return JSON.parse(localStorage.getItem(kwVoteKey(d)) || "[]"); } catch (e) { return []; } }
+  function setVotes(d, a) { try { localStorage.setItem(kwVoteKey(d), JSON.stringify(a)); } catch (e) {} }
+  function cmtKey(d) { return "wedding_cmt_" + favKey(d); }
+  function getCmt(d) { try { return localStorage.getItem(cmtKey(d)) || ""; } catch (e) { return ""; } }
+  function setCmt(d, t) { try { localStorage.setItem(cmtKey(d), t); } catch (e) {} }
+  // 키워드 카운트 = 공개 집계(d.kw) + 내 투표(이 기기). 데이터 없으면 0에서 시작.
+  function kwCount(d, label) {
+    var base = (d.kw && d.kw[label]) ? d.kw[label] : 0;
+    return base + (getVotes(d).indexOf(label) >= 0 ? 1 : 0);
+  }
+  function kwRanked(d) {
+    return KEYWORDS.map(function (k, i) { return { i: i, emoji: k[0], label: k[1], n: kwCount(d, k[1]) }; })
+      .filter(function (x) { return x.n > 0; }).sort(function (a, b) { return b.n - a.n; });
+  }
+
+  // 현재 열린 팝업의 식장(키워드 투표·댓글 재렌더용)
+  var currentPop = null;
+  window.__kwVote = function (idx) {
+    if (!currentPop || !KEYWORDS[idx]) return;
+    var label = KEYWORDS[idx][1], arr = getVotes(currentPop), i = arr.indexOf(label);
+    if (i >= 0) arr.splice(i, 1); else arr.push(label);
+    setVotes(currentPop, arr);
+    if (info) info.setContent(popupHtml(currentPop)); // 카운트·요약 갱신
+  };
+  window.__saveCmt = function (val) { if (currentPop) setCmt(currentPop, val); };
+  function openPop(d, pos) {
+    currentPop = d;
+    info.setContent(popupHtml(d));
+    if (pos) info.setPosition(pos);
+    info.setMap(map);
+  }
+
   function visible() {
     return DATA.filter(function (d) {
       return (fType === "전체" || d.type === fType) && (fSlot === "전체" || d.slot === fSlot)
@@ -81,6 +122,25 @@
     } else {
       feat = '<div class="kk-feat empty">✨ 식사 · 주차 · 교통 · 분위기 <span>정보 수집 중 — 아는 점이 있다면 제보해 주세요 🙏</span></div>';
     }
+    // ── "여기는 이런 점이 좋아요" 요약 헤더 ──
+    var ranked = kwRanked(d);
+    var summary = ranked.length
+      ? '<div class="kk-sum"><div class="kk-sumt">😊 여기는 이런 점이 좋아요</div><div class="kk-sumchips">' +
+        ranked.slice(0, 3).map(function (x) { return "<span>" + x.emoji + " " + esc(x.label) + " <em>" + x.n + "</em></span>"; }).join("") +
+        "</div></div>"
+      : "";
+    // ── 키워드 투표 그리드 ──
+    var myVotes = getVotes(d);
+    var kwGrid = '<div class="kk-kw"><div class="kk-kwt">이 식장, 어떤 점이 좋았나요?</div><div class="kk-kwgrid">' +
+      KEYWORDS.map(function (k, i) {
+        var n = kwCount(d, k[1]), mine = myVotes.indexOf(k[1]) >= 0;
+        return '<button class="kk-kwb' + (mine ? " on" : "") + '" onclick="window.__kwVote(' + i + ')">' +
+          k[0] + " " + esc(k[1]) + (n ? ' <em>' + n + "</em>" : "") + "</button>";
+      }).join("") + "</div></div>";
+    // ── 댓글칸(이 기기 저장) ──
+    var cmt = '<div class="kk-cmt"><textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요 (이 기기에만 저장돼요)" ' +
+      'oninput="window.__saveCmt(this.value)">' + esc(getCmt(d)) + "</textarea></div>";
+
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
       (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
@@ -89,7 +149,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      body + feat +
+      summary + body + feat + kwGrid + cmt +
       '<div class="kk-actions">' + fav +
       (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 →</a>" : "") + "</div>" +
       '<div class="kk-tail"></div></div>';
@@ -119,7 +179,7 @@
     if (!map) return;
     var pos = new kakao.maps.LatLng(d.lat, d.lng);
     map.setLevel(3); map.setCenter(pos);
-    info.setContent(popupHtml(d)); info.setPosition(pos); info.setMap(map);
+    openPop(d, pos);
   }
   function setupSearch() {
     var inp = $("qInput"), box = $("qResults");
@@ -175,9 +235,7 @@
         title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
       });
       kakao.maps.event.addListener(mk, "click", function () {
-        info.setContent(popupHtml(d));
-        info.setPosition(mk.getPosition());
-        info.setMap(map);
+        openPop(d, mk.getPosition());
         map.panTo(mk.getPosition());
       });
       return mk;
