@@ -1,10 +1,10 @@
-/* 전국 예식장 리스트 — 잡음 제거+중복 병합(2026-06-13, 1109곳) */
+/* 전국 예식장 리스트 — 장단점 반영(2026-06-13) */
 window.WEDDING_VENUES = [
-  {"name":"아펠가모","region":"서울","district":"종로구","type":"컨벤션","meal":90000,"lat":37.574586,"lng":126.979029,"verified":false,"source":"kgwed.com","halls":2,"rental":9000000},
-  {"name":"더라움","region":"서울","district":"강남구","type":"하우스웨딩","meal":125000,"lat":37.508391,"lng":127.039776,"verified":false,"source":"smartwedding/TheRaum","halls":3,"rental":5500000},
+  {"name":"아펠가모","region":"서울","district":"종로구","type":"컨벤션","meal":90000,"lat":37.574586,"lng":126.979029,"verified":false,"source":"kgwed.com","halls":2,"rental":9000000,"pros":["식사(밥 맛집) 평 좋음"]},
+  {"name":"더라움","region":"서울","district":"강남구","type":"하우스웨딩","meal":125000,"lat":37.508391,"lng":127.039776,"verified":false,"source":"smartwedding/TheRaum","halls":3,"rental":5500000,"pros":["고급스러운 분위기","음식 만족도 높음"],"cons":["가격대 높음"]},
   {"name":"노블발렌티","region":"서울","district":"강남구","type":"하우스웨딩","meal":98000,"lat":37.503305,"lng":127.065561,"verified":false,"source":"smartwedding/noblevalentidaechi","halls":2,"rental":12000000},
-  {"name":"그랜드하얏트","region":"서울","district":"용산구","type":"호텔","meal":145000,"lat":37.539445,"lng":126.997081,"verified":false,"source":"directwedding/hall0063","halls":2,"rental":4000000},
-  {"name":"엘타워","region":"서울","district":"서초구","type":"컨벤션","meal":150000,"lat":37.482298,"lng":127.035604,"verified":false,"source":"smartwedding/eltower","halls":2,"rental":20000000,"guarantee":250},
+  {"name":"그랜드하얏트","region":"서울","district":"용산구","type":"호텔","meal":145000,"lat":37.539445,"lng":126.997081,"verified":false,"source":"directwedding/hall0063","halls":2,"rental":4000000,"pros":["호텔 품격·뷰"],"cons":["식대 높음"]},
+  {"name":"엘타워","region":"서울","district":"서초구","type":"컨벤션","meal":150000,"lat":37.482298,"lng":127.035604,"verified":false,"source":"smartwedding/eltower","halls":2,"rental":20000000,"guarantee":250,"pros":["역세권(양재역)","넓은 규모·주차"],"cons":["가격대 높음","동시예식 규모감"]},
   {"name":"서울웨딩타워","region":"서울","district":"송파구","type":"컨벤션","meal":85000,"rental":9500000,"lat":37.495068,"lng":127.115599,"verified":false,"source":"smartwedding/swtower"},
   {"name":"웨딩그룹 위더스 영등포","region":"서울","district":"영등포구","type":"컨벤션","meal":96000,"rental":13000000,"lat":37.521377,"lng":126.904593,"verified":false,"source":"smartwedding/withus"},
   {"name":"여의도웨딩컨벤션","region":"서울","district":"영등포구","type":"컨벤션","meal":85000,"rental":9000000,"lat":37.521826,"lng":126.919176,"verified":false,"source":"smartwedding/YeouidoWeddingConvention"},
@@ -42,7 +42,7 @@ window.WEDDING_VENUES = [
   {"name":"더채플앳논현","region":"서울","district":"강남구","type":"채플/성당","meal":110000,"lat":37.50513,"lng":127.034438,"verified":false,"source":"smartwedding/thechapelnonhyeon","halls":2,"rental":11000000},
   {"name":"그랜드힐컨벤션","region":"서울","district":"강남구","type":"컨벤션","meal":110000,"rental":12000000,"lat":37.506071,"lng":127.066728,"verified":false,"source":"smartwedding/grandhill"},
   {"name":"명품웨딩프로포즈","region":"서울","district":"구로구","type":"컨벤션","meal":65000,"lat":37.500353,"lng":126.88401,"verified":false,"source":"smartwedding/weddingpropose","halls":2,"rental":5500000},
-  {"name":"빌라드지디","region":"서울","district":"강남구","type":"하우스웨딩","meal":63000,"lat":37.474156,"lng":127.11509,"verified":false,"source":"kgwed.com 빌라드지디수서","halls":2,"rental":3000000,"guarantee":250,"slot":"토요일 낮"},
+  {"name":"빌라드지디","region":"서울","district":"강남구","type":"하우스웨딩","meal":63000,"lat":37.474156,"lng":127.11509,"verified":false,"source":"kgwed.com 빌라드지디수서","halls":2,"rental":3000000,"guarantee":250,"slot":"토요일 낮","pros":["하우스 분위기","단독 느낌"],"cons":["보증인원 높은 편"]},
   {"name":"세종블리스가든","region":"세종","district":"전동면","type":"컨벤션","meal":null,"lat":36.655933,"lng":127.264119,"verified":false,"source":"directwedding/hall0299"},
   {"name":"스카이웨딩컨벤션","region":"전남","district":"무안군","type":"컨벤션","meal":null,"lat":34.80334,"lng":126.467002,"verified":false,"source":"kakao/620976952","halls":2},
   {"name":"디오션리조트 여수","region":"전남","district":"여수시","type":"호텔","meal":null,"lat":34.727251,"lng":127.618764,"verified":false,"source":"weddingcrowd/985"},

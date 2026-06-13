@@ -194,6 +194,10 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-feat.empty{background:#fafbfc;border:1px dashed #e7eaf0;border-radius:10px;padding:9px 11px;
   font-size:.8rem;color:#7a8290;font-weight:700}
 .kk-feat.empty span{display:block;font-weight:500;color:#9aa1ad;margin-top:2px}
+.kk-pc{font-size:.82rem;line-height:1.5;margin-top:6px;padding:6px 9px;border-radius:8px}
+.kk-pc.good{background:#eef6ef;color:#2f6b40}
+.kk-pc.bad{background:#fdeeee;color:#a23b3b}
+.kk-pcsrc{font-size:.68rem;color:#b0b6c0;margin-top:6px}
 .mfilters{display:flex;gap:14px;overflow-x:auto;margin-top:10px;scrollbar-width:none;padding-bottom:2px}
 .mfilters::-webkit-scrollbar{display:none}
 .mfilters .grp{display:flex;gap:5px;align-items:center;white-space:nowrap}

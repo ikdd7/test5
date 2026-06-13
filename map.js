@@ -70,10 +70,14 @@
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
     }
+    var tagsBlock = (d.tags && d.tags.length) ? '<div class="kk-chips feat">' +
+      d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
+    var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
+    var cons = (d.cons && d.cons.length) ? '<div class="kk-pc bad">👎 ' + d.cons.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
     var feat;
-    if (d.tags && d.tags.length) {
-      feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징</div><div class="kk-chips feat">' +
-        d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div></div>";
+    if (tagsBlock || pros || cons) {
+      feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' + tagsBlock + pros + cons +
+        ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "") + "</div>";
     } else {
       feat = '<div class="kk-feat empty">✨ 식사 · 주차 · 교통 · 분위기 <span>정보 수집 중 — 아는 점이 있다면 제보해 주세요 🙏</span></div>';
     }
@@ -148,11 +152,13 @@
     var priced = hasPrice(d);
     var key = priced ? "p" + Math.round((d.meal - lo) / (hi - lo) * 10) : "g";
     if (imgCache[key]) return imgCache[key];
-    var size = 36, svg;
+    var size, svg;
     if (priced) {
+      size = 36;
       svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="13" fill="' + priceColor(d.meal, lo, hi) + '" stroke="#fff" stroke-width="4"/></svg>';
     } else {
-      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36"><circle cx="18" cy="18" r="11" fill="#9aa4ba" fill-opacity="0.35" stroke="#9aa4ba" stroke-width="3"/></svg>';
+      size = 26;
+      svg = '<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26"><circle cx="13" cy="13" r="8" fill="#9aa4ba" fill-opacity="0.32" stroke="#9aa4ba" stroke-width="2.5"/></svg>';
     }
     var img = new kakao.maps.MarkerImage("data:image/svg+xml;base64," + btoa(svg), new kakao.maps.Size(size, size),
       { offset: new kakao.maps.Point(size / 2, size / 2) });
