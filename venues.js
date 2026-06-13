@@ -1,4 +1,4 @@
-/* 전국 예식장 리스트 — 잡음 제거+중복 병합(2026-06-12, 1109곳) */
+/* 전국 예식장 리스트 — 잡음 제거+중복 병합(2026-06-13, 1109곳) */
 window.WEDDING_VENUES = [
   {"name":"아펠가모","region":"서울","district":"종로구","type":"컨벤션","meal":90000,"lat":37.574586,"lng":126.979029,"verified":false,"source":"kgwed.com","halls":2,"rental":9000000},
   {"name":"더라움","region":"서울","district":"강남구","type":"하우스웨딩","meal":125000,"lat":37.508391,"lng":127.039776,"verified":false,"source":"smartwedding/TheRaum","halls":3,"rental":5500000},
