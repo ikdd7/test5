@@ -39,7 +39,21 @@ function cleanName(title) {
   const venues = sandbox.window.WEDDING_VENUES || [];
 
   const browser = await chromium.launch();
-  const page = await browser.newPage({ userAgent: "Mozilla/5.0 (compatible; WeddingPriceBot/1.0)" });
+  const page = await browser.newPage(); // 기본(실제 크롬) UA — 봇 UA 차단 회피
+
+  // ── 진단: 알려진 식장 3곳을 열어 페이지 상태를 그대로 출력 ──
+  for (const dbg of ["hall0440", "hall0103", "hall0485"]) {
+    try {
+      const r = await page.goto(BASE + dbg, { waitUntil: "networkidle", timeout: 25000 });
+      const text = await page.evaluate(() => document.body.innerText).catch(() => "");
+      let ogt = ""; try { ogt = await page.$eval('meta[property="og:title"]', (e) => e.content); } catch (e) {}
+      console.log("[DEBUG] " + dbg + " status=" + (r ? r.status() : "?") + " url=" + page.url());
+      console.log("   title=" + (await page.title()));
+      console.log("   og:title=" + ogt + " | bodyLen=" + text.length);
+      console.log("   sample=" + text.slice(0, 160).replace(/\s+/g, " "));
+      console.log("   parsed name=" + cleanName(ogt || (await page.title())) + " price=" + JSON.stringify(parsePrice(text)) + " region=" + parseRegion(text));
+    } catch (e) { console.log("[DEBUG] " + dbg + " 오류 " + e.message); }
+  }
 
   let scraped = 0, filled = 0, averaged = 0, empty = 0; const report = [];
   for (let i = START; i <= END; i++) {
