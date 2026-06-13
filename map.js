@@ -122,20 +122,28 @@
     } else {
       feat = '<div class="kk-feat empty">✨ 식사 · 주차 · 교통 · 분위기 <span>정보 수집 중 — 아는 점이 있다면 제보해 주세요 🙏</span></div>';
     }
-    // ── "여기는 이런 점이 좋아요" 요약 헤더 ──
+    // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
+    var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
+    var total = counts.reduce(function (a, b) { return a + b; }, 0);
+    function pct(n) { return total ? Math.round(n / total * 100) : 0; }
     var ranked = kwRanked(d);
+    // ── "여기는 이런 점이 좋아요" 요약 헤더(상위 3개 + 비율) ──
     var summary = ranked.length
       ? '<div class="kk-sum"><div class="kk-sumt">😊 여기는 이런 점이 좋아요</div><div class="kk-sumchips">' +
-        ranked.slice(0, 3).map(function (x) { return "<span>" + x.emoji + " " + esc(x.label) + " <em>" + x.n + "</em></span>"; }).join("") +
+        ranked.slice(0, 3).map(function (x) { return "<span>" + x.emoji + " " + esc(x.label) + " <em>" + pct(x.n) + "%</em></span>"; }).join("") +
         "</div></div>"
       : "";
-    // ── 키워드 투표 그리드 ──
+    // ── 키워드 투표 그리드(비율 막대바) ──
     var myVotes = getVotes(d);
-    var kwGrid = '<div class="kk-kw"><div class="kk-kwt">이 식장, 어떤 점이 좋았나요?</div><div class="kk-kwgrid">' +
+    var kwGrid = '<div class="kk-kw"><div class="kk-kwt">이 식장, 어떤 점이 좋았나요? ' +
+      (total ? '<span class="kk-kwn">(' + total + '명 평가)</span>' : '<span class="kk-kwn">첫 평가를 남겨주세요</span>') +
+      '</div><div class="kk-kwgrid">' +
       KEYWORDS.map(function (k, i) {
-        var n = kwCount(d, k[1]), mine = myVotes.indexOf(k[1]) >= 0;
+        var n = counts[i], p = pct(n), mine = myVotes.indexOf(k[1]) >= 0;
         return '<button class="kk-kwb' + (mine ? " on" : "") + '" onclick="window.__kwVote(' + i + ')">' +
-          k[0] + " " + esc(k[1]) + (n ? ' <em>' + n + "</em>" : "") + "</button>";
+          (total ? '<span class="kk-kwbar" style="width:' + p + '%"></span>' : "") +
+          '<span class="kk-kwlab">' + k[0] + " " + esc(k[1]) + "</span>" +
+          (total ? '<em class="kk-kwpct">' + p + "%</em>" : "") + "</button>";
       }).join("") + "</div></div>";
     // ── 댓글칸(이 기기 저장) ──
     var cmt = '<div class="kk-cmt"><textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요 (이 기기에만 저장돼요)" ' +
