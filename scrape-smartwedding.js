@@ -47,22 +47,46 @@ function tagsFromText(t) {
   const browser = await chromium.launch();
   const page = await browser.newPage({ userAgent: "Mozilla/5.0 (compatible; WeddingPriceBot/1.0)" });
 
-  let slugs = SEED.slice();
-  try {
-    await page.goto(BASE + "sitemap.xml", { timeout: 15000 });
-    const xml = await page.content();
-    const found = [...xml.matchAll(/besthall\.com\/([A-Za-z0-9_-]{2,})(?:<|\/)/g)].map((x) => x[1]).filter((s) => s !== "sitemap");
-    if (found.length) slugs = Array.from(new Set(slugs.concat(found)));
-  } catch (e) { /* 시드만 사용 */ }
-  console.log("대상 슬러그 " + slugs.length + "개");
+  // ── 대상 사이트(besthall + 자매사이트 pro). 각 사이트 sitemap에서 같은 호스트 URL 수집 ──
+  const SITES = [
+    { name: "smartwedding", host: "smartwedding-besthall.com", base: BASE, seed: SEED },
+    { name: "swpro", host: "smartwedding-pro.com", base: "https://smartwedding-pro.com/", seed: [] },
+  ];
+  const BADEXT = /\.(xml|jpe?g|png|gif|webp|css|js|ico|svg|pdf)(\?|$)/i;
+  async function sitemapUrls(site) {
+    let out = [], seen = {};
+    const grab = async (sm) => {
+      try {
+        await page.goto(sm, { waitUntil: "domcontentloaded", timeout: 15000 });
+        const xml = await page.content();
+        const all = (xml.match(/https?:\/\/[^<>"'\s]+/g) || []).filter((u) => u.indexOf(site.host) >= 0);
+        all.filter((u) => /sitemap[\w-]*\.xml/i.test(u) && !seen[u]).slice(0, 8).forEach((u) => { seen[u] = 1; });
+        return all;
+      } catch (e) { return []; }
+    };
+    const first = await grab(site.base + "sitemap.xml");
+    const nested = first.filter((u) => /sitemap[\w-]*\.xml/i.test(u));
+    out = first.filter((u) => !BADEXT.test(u));
+    for (const n of nested.slice(0, 8)) out = out.concat((await grab(n)).filter((u) => !BADEXT.test(u)));
+    return out;
+  }
+  let targets = [];
+  for (const site of SITES) {
+    let urls = site.seed.map((s) => site.base + s).concat(await sitemapUrls(site));
+    urls = Array.from(new Set(urls)).filter((u) => u.replace(site.base, "").replace(/\/$/, "").length > 1).slice(0, 400);
+    console.log(site.name + "(" + site.host + "): 대상 " + urls.length + "개");
+    urls.forEach((u) => targets.push({ site: site, url: u }));
+  }
+  console.log("총 대상 " + targets.length + "개");
 
   let scraped = 0, filled = 0, inserted = 0; const report = [];
   let idx = 0;
-  const log = (s) => { report.push(s); console.log("  [" + idx + "/" + slugs.length + "] " + s); };
-  for (const slug of slugs) {
+  const log = (s) => { report.push(s); console.log("  [" + idx + "/" + targets.length + "] " + s); };
+  for (const t of targets) {
     idx++;
+    const slug = t.url.replace(t.site.base, "").replace(/\/$/, "") || t.url;
     try {
-      await page.goto(BASE + slug, { waitUntil: "domcontentloaded", timeout: 15000 });
+      await page.goto(t.url, { waitUntil: "domcontentloaded", timeout: 15000 });
       await page.waitForLoadState("networkidle", { timeout: 4000 }).catch(() => {}); // 짧게만 추가 대기
       const title = await page.title();
       const text = await page.evaluate(() => document.body.innerText);
@@ -70,10 +94,10 @@ function tagsFromText(t) {
       const pr = parsePrice(text), region = parseRegion(text);
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
-      if (!name || !pr.meal) { log(slug + ": 파싱 실패(name=" + name + ", meal=" + pr.meal + ")"); continue; }
+      if (!name || !pr.meal) { log(slug + ": 파싱실패(name=" + name + ",meal=" + pr.meal + ")"); continue; }
       const out = applyScrape(venues, {
         name: name, region: region, meal: pr.meal, rental: pr.rental,
-        source: "smartwedding/" + slug, tags: tagsFromText(text), photo: photo,
+        source: t.site.name + "/" + slug, tags: tagsFromText(text), photo: photo,
       });
       const v = out.venue;
       if (out.status === "filled" || out.status === "averaged") {
