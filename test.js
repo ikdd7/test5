@@ -337,7 +337,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
 }
 
 // ── 12. HTML 페이지 구조 검증 (전 페이지) ──
-const pages = ["index.html", "silup.html", "wedding.html", "daechul.html", "man-nai.html", "pyeong.html"];
+const pages = ["wedding.html"];
 const calcPages = pages.filter((p) => p !== "wedding.html"); // wedding은 charts.js 사용
 ["share.js", "style.css", "calc.js", "charts.js", "wedding-data.js"].forEach((f) =>
   ok(fs.existsSync(path.join(__dirname, f)), `${f} 존재`));

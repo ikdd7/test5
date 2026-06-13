@@ -103,9 +103,9 @@ function regionPage(region, recs, allRegions) {
 <body>
 
 <nav class="sitenav"><div class="in">
-  <span class="brand">🧮 계산기허브</span>
-  <a href="../wedding.html">결혼식장 비용</a>
-  <a href="../map.html">지도</a>
+  <span class="brand">💒 웨딩맵</span>
+  <a href="../map.html">🗺️ 지도</a>
+  <a href="../wedding.html">데이터·통계</a>
   <a href="../method.html">방법론</a>
 </div></nav>
 
@@ -173,9 +173,7 @@ function regionPage(region, recs, allRegions) {
 function sitemap(slugs) {
   const today = new Date().toISOString().slice(0, 10);
   const statics = [
-    ["/", "1.0", "monthly"], ["/wedding.html", "0.9", "weekly"], ["/map.html", "0.9", "weekly"], ["/method.html", "0.5", "monthly"],
-    ["/silup.html", "0.9", "monthly"], ["/daechul.html", "0.9", "monthly"],
-    ["/man-nai.html", "0.8", "monthly"], ["/pyeong.html", "0.7", "monthly"],
+    ["/map.html", "1.0", "weekly"], ["/wedding.html", "0.8", "weekly"], ["/method.html", "0.5", "monthly"],
   ];
   let x = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
   statics.forEach(([u, p, f]) => { x += `  <url><loc>${SITE}${u}</loc><changefreq>${f}</changefreq><priority>${p}</priority></url>\n`; });
