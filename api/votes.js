@@ -1,15 +1,16 @@
 // /api/votes — 키워드 투표 집계(공유). GET=조회, POST=토글
 //   GET  ?venue=KEY&cid=CLIENT  →  { kw:{라벨:수}, mine:[라벨...] }
 //   POST { venue, keyword, cid } →  토글 후 { kw, mine }
-const { sql } = require("@vercel/postgres");
+const { neon } = require("@neondatabase/serverless");
+const sql = neon(process.env.DATABASE_URL || process.env.POSTGRES_URL);
 
 async function snapshot(venue, cid) {
   const counts = await sql`select keyword, count(*)::int as n from votes where venue_key = ${venue} group by keyword`;
   const mine = cid
-    ? (await sql`select keyword from votes where venue_key = ${venue} and client_id = ${cid}`).rows.map((r) => r.keyword)
+    ? (await sql`select keyword from votes where venue_key = ${venue} and client_id = ${cid}`).map((r) => r.keyword)
     : [];
   const kw = {};
-  counts.rows.forEach((r) => { kw[r.keyword] = r.n; });
+  counts.forEach((r) => { kw[r.keyword] = r.n; });
   return { kw, mine };
 }
 
@@ -25,7 +26,7 @@ module.exports = async (req, res) => {
       const venue = String(b.venue || ""), keyword = String(b.keyword || ""), cid = String(b.cid || "");
       if (!venue || !keyword || !cid) return res.status(400).json({ error: "venue, keyword, cid required" });
       const exists = await sql`select 1 from votes where venue_key = ${venue} and keyword = ${keyword} and client_id = ${cid}`;
-      if (exists.rows.length) {
+      if (exists.length) {
         await sql`delete from votes where venue_key = ${venue} and keyword = ${keyword} and client_id = ${cid}`;
       } else {
         await sql`insert into votes (venue_key, keyword, client_id) values (${venue}, ${keyword}, ${cid}) on conflict do nothing`;

@@ -2,29 +2,30 @@
 //   GET    ?venue=KEY          →  { reviews:[{id,t,d,cid}...] }
 //   POST   { venue, name, text, cid } → 등록된 { id, t, d, cid }
 //   DELETE ?id=ID&cid=CLIENT   →  { ok:true }
-const { sql } = require("@vercel/postgres");
+const { neon } = require("@neondatabase/serverless");
+const sql = neon(process.env.DATABASE_URL || process.env.POSTGRES_URL);
 
 module.exports = async (req, res) => {
   try {
     if (req.method === "GET") {
       const venue = String(req.query.venue || "");
       if (!venue) return res.status(400).json({ error: "venue required" });
-      const r = await sql`
+      const rows = await sql`
         select id, body, client_id, (extract(epoch from created_at) * 1000)::bigint as ts
         from reviews where venue_key = ${venue} and status = 'visible'
         order by created_at desc limit 100`;
-      return res.json({ reviews: r.rows.map((x) => ({ id: Number(x.id), t: x.body, d: Number(x.ts), cid: x.client_id })) });
+      return res.json({ reviews: rows.map((x) => ({ id: Number(x.id), t: x.body, d: Number(x.ts), cid: x.client_id })) });
     }
     if (req.method === "POST") {
       const b = req.body || {};
       const venue = String(b.venue || ""), cid = String(b.cid || "");
       const text = String(b.text || "").trim().slice(0, 300);
       if (!venue || !text || !cid) return res.status(400).json({ error: "venue, text, cid required" });
-      const ins = await sql`
+      const rows = await sql`
         insert into reviews (venue_key, venue_name, client_id, body)
         values (${venue}, ${b.name ? String(b.name).slice(0, 80) : null}, ${cid}, ${text})
         returning id, (extract(epoch from created_at) * 1000)::bigint as ts`;
-      const row = ins.rows[0];
+      const row = rows[0];
       return res.json({ id: Number(row.id), t: text, d: Number(row.ts), cid });
     }
     if (req.method === "DELETE") {

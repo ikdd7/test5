@@ -17,7 +17,7 @@
 ## 2) Neon Postgres 연결
 1. Vercel 프로젝트 → **Storage** 탭 → **Create Database** → **Neon (Postgres)** 선택
    (또는 https://neon.tech 에서 만들고 Integration으로 연결)
-2. 연결하면 `POSTGRES_URL` 등 환경변수가 프로젝트에 **자동 주입**됩니다.
+2. 연결하면 `DATABASE_URL` 등 환경변수가 프로젝트에 **자동 주입**됩니다.
    (`api/votes.js`·`api/reviews.js`의 `@vercel/postgres`가 이걸 자동으로 읽어요.)
 
 ## 3) 테이블 생성 (한 번만)

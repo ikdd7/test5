@@ -4,6 +4,6 @@
   "private": true,
   "description": "전국 웨딩홀 가격·후기 지도 (Vercel 정적 + 서버리스 API)",
   "dependencies": {
-    "@vercel/postgres": "^0.10.0"
+    "@neondatabase/serverless": "^0.10.4"
   }
 }
