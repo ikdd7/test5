@@ -299,10 +299,23 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-kwlab{position:relative;z-index:1}
 .kk-kwpct{position:relative;z-index:1;font-style:normal;font-weight:900;color:#d6336c;font-size:.84rem}
 /* 댓글칸 */
-.kk-cmt{margin-top:10px}
-.kk-cmt textarea{width:100%;box-sizing:border-box;min-height:46px;resize:vertical;border:1px solid #e7eaf0;
-  border-radius:10px;padding:8px 10px;font-family:inherit;font-size:.82rem;color:#1c2230;background:#fafbfc}
+.kk-cmt{margin-top:14px;border-top:1px solid #f1edf0;padding-top:12px}
+.kk-cmth{font-size:.82rem;font-weight:800;color:#586074;margin-bottom:7px}
+.kk-cmth b{color:#d6336c}
+.kk-cmt textarea{width:100%;box-sizing:border-box;min-height:56px;resize:vertical;border:1px solid #e7eaf0;
+  border-radius:10px;padding:9px 11px;font-family:inherit;font-size:.84rem;color:#1c2230;background:#fafbfc}
 .kk-cmt textarea:focus{outline:none;border-color:#f48fb1;background:#fff}
+.kk-cmtbtn{width:100%;margin-top:7px;border:0;background:linear-gradient(135deg,#ec4f8e,#f7a072);color:#fff;
+  font-weight:800;font-size:.88rem;padding:10px;border-radius:10px;cursor:pointer;font-family:inherit}
+.kk-cmtbtn:hover{filter:brightness(1.04)}
+.kk-cmtbtn:active{transform:translateY(1px)}
+.kk-revs{margin-top:11px;display:flex;flex-direction:column;gap:8px}
+.kk-rev{background:#faf7f9;border:1px solid #efe7ec;border-radius:10px;padding:9px 11px}
+.kk-revtxt{font-size:.85rem;color:#2a2230;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.kk-revmeta{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.kk-revmeta span{font-size:.7rem;color:#a89aa6;font-weight:700}
+.kk-revdel{border:0;background:none;color:#c08;opacity:.55;font-size:.72rem;font-weight:700;cursor:pointer;padding:0}
+.kk-revdel:hover{opacity:1}
 .mpop .big{font-weight:900;font-size:1.15rem;color:#d6336c;margin:3px 0}
 .mpop .big span{font-size:.7rem;color:#888}
 .mpop a{display:inline-block;margin-top:7px;color:#d6336c;font-weight:800}

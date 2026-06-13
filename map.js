@@ -47,9 +47,11 @@
   function kwVoteKey(d) { return "wedding_kw_" + favKey(d); }
   function getVotes(d) { try { return JSON.parse(localStorage.getItem(kwVoteKey(d)) || "[]"); } catch (e) { return []; } }
   function setVotes(d, a) { try { localStorage.setItem(kwVoteKey(d), JSON.stringify(a)); } catch (e) {} }
-  function cmtKey(d) { return "wedding_cmt_" + favKey(d); }
-  function getCmt(d) { try { return localStorage.getItem(cmtKey(d)) || ""; } catch (e) { return ""; } }
-  function setCmt(d, t) { try { localStorage.setItem(cmtKey(d), t); } catch (e) {} }
+  // 후기(여러 개 목록 저장 — 이 기기)
+  function revKey(d) { return "wedding_rev_" + favKey(d); }
+  function getRevs(d) { try { return JSON.parse(localStorage.getItem(revKey(d)) || "[]"); } catch (e) { return []; } }
+  function setRevs(d, a) { try { localStorage.setItem(revKey(d), JSON.stringify(a)); } catch (e) {} }
+  function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
   // 키워드 카운트 = 공개 집계(d.kw) + 내 투표(이 기기). 데이터 없으면 0에서 시작.
   function kwCount(d, label) {
     var base = (d.kw && d.kw[label]) ? d.kw[label] : 0;
@@ -67,11 +69,13 @@
     return panelEl;
   }
   function lockMap(on) { if (map) { try { map.setDraggable(!on); map.setZoomable(!on); } catch (e) {} } }
-  function rerenderPanel() { // 투표 후 갱신(스크롤 위치 유지)
+  function rerenderPanel() { // 갱신 시 스크롤 위치 + 작성중인 후기 초안 유지
     if (!panelEl || !currentPop) return;
     var card = panelEl.querySelector(".kkcard"), st = card ? card.scrollTop : 0;
+    var ta = panelEl.querySelector(".kk-cmt textarea"), draft = ta ? ta.value : null;
     panelEl.innerHTML = popupHtml(currentPop);
     var nc = panelEl.querySelector(".kkcard"); if (nc) nc.scrollTop = st;
+    var nta = panelEl.querySelector(".kk-cmt textarea"); if (nta && draft != null) nta.value = draft;
   }
   window.__kwVote = function (idx) {
     if (!currentPop || !KEYWORDS[idx]) return;
@@ -80,7 +84,19 @@
     setVotes(currentPop, arr);
     rerenderPanel();
   };
-  window.__saveCmt = function (val) { if (currentPop) setCmt(currentPop, val); };
+  window.__addReview = function () {
+    if (!currentPop || !panelEl) return;
+    var ta = panelEl.querySelector(".kk-cmt textarea"), t = ta ? ta.value.trim() : "";
+    if (!t) { if (ta) ta.focus(); return; }
+    var arr = getRevs(currentPop); arr.unshift({ t: t, d: Date.now() });
+    setRevs(currentPop, arr);
+    if (ta) ta.value = ""; // 초안 비우고 목록 갱신
+    rerenderPanel();
+  };
+  window.__delReview = function (i) {
+    if (!currentPop) return;
+    var arr = getRevs(currentPop); arr.splice(i, 1); setRevs(currentPop, arr); rerenderPanel();
+  };
   window.__closePop = function () { if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null; };
   function openPop(d) {
     currentPop = d;
@@ -163,8 +179,15 @@
           (total ? '<em class="kk-kwpct">' + p + "%</em>" : "") + "</button>";
       }).join("") + "</div></div>";
     // ── 댓글칸(이 기기 저장) ──
-    var cmt = '<div class="kk-cmt"><textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요 (이 기기에만 저장돼요)" ' +
-      'oninput="window.__saveCmt(this.value)">' + esc(getCmt(d)) + "</textarea></div>";
+    var revs = getRevs(d);
+    var revList = revs.length ? '<div class="kk-revs">' + revs.map(function (r, i) {
+      return '<div class="kk-rev"><div class="kk-revtxt">' + esc(r.t) + "</div>" +
+        '<div class="kk-revmeta"><span>' + revDate(r.d) + " · 내 후기</span>" +
+        '<button class="kk-revdel" onclick="window.__delReview(' + i + ')">삭제</button></div></div>';
+    }).join("") + "</div>" : "";
+    var cmt = '<div class="kk-cmt"><div class="kk-cmth">📝 후기 ' + (revs.length ? "<b>" + revs.length + "</b>개" : "남기기") + "</div>" +
+      '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요 (이 기기에 저장돼요)"></textarea>' +
+      '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
 
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
