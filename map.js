@@ -44,18 +44,31 @@
     ["🚇", "교통이 편해요"], ["🌿", "분위기가 좋아요"], ["🧹", "깨끗해요"],
     ["👥", "하객 수용이 좋아요"],
   ];
+  // ── 백엔드(Vercel /api) 연동 + localStorage 폴백 ──
+  var API = (location.protocol === "https:" || location.protocol === "http:") ? "/api" : null;
+  var apiOK = !!API;
+  function clientId() {
+    var k = "wedding_cid", v = null;
+    try { v = localStorage.getItem(k); } catch (e) {}
+    if (!v) { v = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); try { localStorage.setItem(k, v); } catch (e) {} }
+    return v;
+  }
+
   function kwVoteKey(d) { return "wedding_kw_" + favKey(d); }
   function getVotes(d) { try { return JSON.parse(localStorage.getItem(kwVoteKey(d)) || "[]"); } catch (e) { return []; } }
   function setVotes(d, a) { try { localStorage.setItem(kwVoteKey(d), JSON.stringify(a)); } catch (e) {} }
-  // 후기(여러 개 목록 저장 — 이 기기)
+  function myKw(d) { return d._kwsrv ? (d.kwMine || []) : getVotes(d); } // 내가 누른 키워드
+  // 후기(서버 로드 시 d._revs, 아니면 이 기기)
   function revKey(d) { return "wedding_rev_" + favKey(d); }
-  function getRevs(d) { try { return JSON.parse(localStorage.getItem(revKey(d)) || "[]"); } catch (e) { return []; } }
-  function setRevs(d, a) { try { localStorage.setItem(revKey(d), JSON.stringify(a)); } catch (e) {} }
+  function getLocalRevs(d) { try { return JSON.parse(localStorage.getItem(revKey(d)) || "[]"); } catch (e) { return []; } }
+  function setLocalRevs(d, a) { try { localStorage.setItem(revKey(d), JSON.stringify(a)); } catch (e) {} }
+  function getRevs(d) { return d._revsrv ? (d._revs || []) : getLocalRevs(d); }
+  function saveLocalReview(d, t, cid) { var a = getLocalRevs(d); a.unshift({ id: Date.now(), t: t, d: Date.now(), cid: cid }); setLocalRevs(d, a); }
   function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
-  // 키워드 카운트 = 공개 집계(d.kw) + 내 투표(이 기기). 데이터 없으면 0에서 시작.
+  // 키워드 카운트: 서버 집계(나 포함) 우선, 없으면 이 기기 투표만
   function kwCount(d, label) {
-    var base = (d.kw && d.kw[label]) ? d.kw[label] : 0;
-    return base + (getVotes(d).indexOf(label) >= 0 ? 1 : 0);
+    if (d._kwsrv) return (d.kw && d.kw[label]) || 0;
+    return getVotes(d).indexOf(label) >= 0 ? 1 : 0;
   }
   function kwRanked(d) {
     return KEYWORDS.map(function (k, i) { return { i: i, emoji: k[0], label: k[1], n: kwCount(d, k[1]) }; })
@@ -77,25 +90,64 @@
     var nc = panelEl.querySelector(".kkcard"); if (nc) nc.scrollTop = st;
     var nta = panelEl.querySelector(".kk-cmt textarea"); if (nta && draft != null) nta.value = draft;
   }
+  // 팝업 열 때 서버에서 투표·후기 동기화(없으면 폴백 유지)
+  function loadServer(d) {
+    if (!apiOK) return;
+    var key = favKey(d), cid = clientId();
+    Promise.all([
+      fetch(API + "/votes?venue=" + encodeURIComponent(key) + "&cid=" + encodeURIComponent(cid)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch(API + "/reviews?venue=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+    ]).then(function (res) {
+      if (currentPop !== d) return; // 다른 핀으로 이동했으면 무시
+      if (res[0]) { d.kw = res[0].kw || {}; d.kwMine = res[0].mine || []; d._kwsrv = true; }
+      if (res[1]) { d._revs = res[1].reviews || []; d._revsrv = true; }
+      if (res[0] || res[1]) rerenderPanel();
+    });
+  }
   window.__kwVote = function (idx) {
     if (!currentPop || !KEYWORDS[idx]) return;
-    var label = KEYWORDS[idx][1], arr = getVotes(currentPop), i = arr.indexOf(label);
-    if (i >= 0) arr.splice(i, 1); else arr.push(label);
-    setVotes(currentPop, arr);
-    rerenderPanel();
+    var d = currentPop, label = KEYWORDS[idx][1];
+    if (apiOK) {
+      d._kwsrv = true; if (!d.kw) d.kw = {}; if (!d.kwMine) d.kwMine = []; // 낙관적 갱신
+      var mi = d.kwMine.indexOf(label);
+      if (mi >= 0) { d.kwMine.splice(mi, 1); d.kw[label] = Math.max(0, (d.kw[label] || 1) - 1); }
+      else { d.kwMine.push(label); d.kw[label] = (d.kw[label] || 0) + 1; }
+      rerenderPanel();
+      fetch(API + "/votes", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ venue: favKey(d), keyword: label, cid: clientId() }) })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (s) { if (currentPop === d) { d.kw = s.kw || {}; d.kwMine = s.mine || []; rerenderPanel(); } })
+        .catch(function () {});
+    } else {
+      var arr = getVotes(d), i = arr.indexOf(label);
+      if (i >= 0) arr.splice(i, 1); else arr.push(label);
+      setVotes(d, arr); rerenderPanel();
+    }
   };
   window.__addReview = function () {
     if (!currentPop || !panelEl) return;
-    var ta = panelEl.querySelector(".kk-cmt textarea"), t = ta ? ta.value.trim() : "";
+    var d = currentPop, ta = panelEl.querySelector(".kk-cmt textarea"), t = ta ? ta.value.trim() : "";
     if (!t) { if (ta) ta.focus(); return; }
-    var arr = getRevs(currentPop); arr.unshift({ t: t, d: Date.now() });
-    setRevs(currentPop, arr);
-    if (ta) ta.value = ""; // 초안 비우고 목록 갱신
-    rerenderPanel();
+    var cid = clientId(), clear = function () { if (ta) ta.value = ""; rerenderPanel(); };
+    if (apiOK) {
+      var btn = panelEl.querySelector(".kk-cmtbtn"); if (btn) { btn.disabled = true; btn.textContent = "등록 중…"; }
+      fetch(API + "/reviews", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ venue: favKey(d), name: d.name, text: t, cid: cid }) })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (row) { if (!d._revs) d._revs = []; d._revs.unshift(row); d._revsrv = true; clear(); })
+        .catch(function () { saveLocalReview(d, t, cid); clear(); });
+    } else { saveLocalReview(d, t, cid); clear(); }
   };
-  window.__delReview = function (i) {
+  window.__delReview = function (id) {
     if (!currentPop) return;
-    var arr = getRevs(currentPop); arr.splice(i, 1); setRevs(currentPop, arr); rerenderPanel();
+    var d = currentPop;
+    if (d._revsrv) {
+      d._revs = (d._revs || []).filter(function (r) { return r.id !== id; });
+      rerenderPanel();
+      if (apiOK) fetch(API + "/reviews?id=" + id + "&cid=" + encodeURIComponent(clientId()), { method: "DELETE" }).catch(function () {});
+    } else {
+      setLocalRevs(d, getLocalRevs(d).filter(function (r) { return r.id !== id; })); rerenderPanel();
+    }
   };
   window.__closePop = function () { if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null; };
   function openPop(d) {
@@ -104,6 +156,7 @@
     p.innerHTML = popupHtml(d);
     p.classList.add("open");
     lockMap(true); // 팝업 동안 지도 고정
+    loadServer(d); // 공유 데이터 동기화
   }
 
   function visible() {
@@ -167,7 +220,7 @@
       : '<div class="kk-sum empty"><div class="kk-sumt">아직 평가가 없어요</div>' +
         '<div class="kk-sumemp">아래에서 이 식장의 좋았던 점을 평가해 주세요 🙏</div></div>';
     // ── 키워드 투표 그리드(비율 막대바) ──
-    var myVotes = getVotes(d);
+    var myVotes = myKw(d);
     var kwGrid = '<div class="kk-kw"><div class="kk-kwt">이 식장, 어떤 점이 좋았나요? ' +
       (total ? '<span class="kk-kwn">(' + total + '명 평가)</span>' : '<span class="kk-kwn">첫 평가를 남겨주세요</span>') +
       '</div><div class="kk-kwgrid">' +
@@ -178,15 +231,16 @@
           '<span class="kk-kwlab">' + k[0] + " " + esc(k[1]) + "</span>" +
           (total ? '<em class="kk-kwpct">' + p + "%</em>" : "") + "</button>";
       }).join("") + "</div></div>";
-    // ── 댓글칸(이 기기 저장) ──
-    var revs = getRevs(d);
-    var revList = revs.length ? '<div class="kk-revs">' + revs.map(function (r, i) {
+    // ── 후기 목록·작성 ──
+    var revs = getRevs(d), cid = apiOK ? clientId() : null;
+    var revList = revs.length ? '<div class="kk-revs">' + revs.map(function (r) {
+      var own = (r.cid == null) || (cid != null && r.cid === cid);
       return '<div class="kk-rev"><div class="kk-revtxt">' + esc(r.t) + "</div>" +
-        '<div class="kk-revmeta"><span>' + revDate(r.d) + " · 내 후기</span>" +
-        '<button class="kk-revdel" onclick="window.__delReview(' + i + ')">삭제</button></div></div>';
+        '<div class="kk-revmeta"><span>' + revDate(r.d) + (own ? " · 내 후기" : "") + "</span>" +
+        (own ? '<button class="kk-revdel" onclick="window.__delReview(' + r.id + ')">삭제</button>' : "") + "</div></div>";
     }).join("") + "</div>" : "";
     var cmt = '<div class="kk-cmt"><div class="kk-cmth">📝 후기 ' + (revs.length ? "<b>" + revs.length + "</b>개" : "남기기") + "</div>" +
-      '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요 (이 기기에 저장돼요)"></textarea>' +
+      '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요"></textarea>' +
       '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
 
     var key = favKey(d), on = !!FAVS[key];
