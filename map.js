@@ -168,7 +168,14 @@
         && (!fVer || d.verified) && (!fPriced || hasPrice(d)) && (!fFav || FAVS[favKey(d)]);
     });
   }
-  function priceColor(m, lo, hi) { var v = hi > lo ? (m - lo) / (hi - lo) : 0.5; return "hsl(" + Math.round(120 * (1 - v)) + ",70%,46%)"; }
+  function priceColor(m, lo, hi, mid) {
+    mid = mid || (lo + hi) / 2;
+    var v;                                   // 중앙값=0.5(노랑) 기준 piecewise → 흔한 가격대 대비 강화
+    if (m <= mid) v = mid > lo ? 0.5 * (m - lo) / (mid - lo) : 0;
+    else v = hi > mid ? 0.5 + 0.5 * (m - mid) / (hi - mid) : 1;
+    v = Math.max(0, Math.min(1, v));
+    return "hsl(" + Math.round(120 * (1 - v)) + ",72%,45%)";
+  }
 
   function renderStats(rows) {
     var priced = rows.filter(hasPrice);
@@ -324,7 +331,7 @@
       '<text x="24" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
       '</svg>';
   }
-  function markerImage(d, lo, hi, sel) {
+  function markerImage(d, lo, hi, mid, sel) {
     var priced = hasPrice(d);
     if (!priced) {
       if (imgCache.g) return imgCache.g;
@@ -332,7 +339,7 @@
       imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
       return imgCache.g;
     }
-    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi);
+    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid);
     var key = (sel ? "s|" : "p|") + t + "|" + color;
     if (imgCache[key]) return imgCache[key];
     var w = 24 + Math.max(2, t.length) * 10 + 8, th = 32;
@@ -344,16 +351,18 @@
     var rows = visible();
     var pm = DATA.filter(hasPrice).map(function (d) { return d.meal; });
     var lo = pm.length ? Math.min.apply(null, pm) : 40000, hi = pm.length ? Math.max.apply(null, pm) : 200000;
+    var sm = pm.slice().sort(function (a, b) { return a - b; });
+    var mid = sm.length ? sm[Math.floor(sm.length / 2)] : (lo + hi) / 2; // 중앙값(색 대비 기준)
     clusterer.clear();
     selectedMarker = null; // 재그리기 시 선택 해제
     var markers = rows.map(function (d) {
-      var normal = markerImage(d, lo, hi, false);
+      var normal = markerImage(d, lo, hi, mid, false);
       var mk = new kakao.maps.Marker({
         position: new kakao.maps.LatLng(d.lat, d.lng), image: normal,
         title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
       });
       mk.__img = normal;
-      if (hasPrice(d)) mk.__selImg = markerImage(d, lo, hi, true);
+      if (hasPrice(d)) mk.__selImg = markerImage(d, lo, hi, mid, true);
       kakao.maps.event.addListener(mk, "click", function () {
         if (selectedMarker && selectedMarker !== mk) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} }
         if (mk.__selImg) { mk.setImage(mk.__selImg); mk.setZIndex(10000); selectedMarker = mk; }

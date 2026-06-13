@@ -42,21 +42,18 @@ function parseRental(t) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  // 카드 텍스트 수집: '대관료'+'식대'를 모두 가진 가장 작은 요소
+  // 카드 텍스트 수집: 페이지 전체 텍스트를 [지역] 마커 단위로 분할(DOM 구조 무관)
+  const SPLIT = new RegExp("(?=\\[(?:" + REGIONS.join("|") + ")\\])");
   let cards = [];
   for (const lp of LIST_PAGES) {
     try {
-      await page.goto(lp, { waitUntil: "domcontentloaded", timeout: 20000 });
-      await page.waitForLoadState("networkidle", { timeout: 6000 }).catch(() => {});
-      const found = await page.evaluate(() => {
-        const out = [];
-        Array.from(document.querySelectorAll("li,div,a,article,section")).forEach((el) => {
-          const t = (el.innerText || "").replace(/\s+/g, " ").trim();
-          if (t.length >= 8 && t.length <= 240 && t.indexOf("대관료") >= 0 && t.indexOf("식대") >= 0) out.push(t);
-        });
-        return out;
+      await page.goto(lp, { waitUntil: "networkidle", timeout: 25000 });
+      for (let i = 0; i < 8; i++) { try { await page.evaluate(() => window.scrollBy(0, 2200)); } catch (e) {} await page.waitForTimeout(500); } // lazy 로드 유도
+      const body = await page.evaluate(() => document.body.innerText || "");
+      body.split(SPLIT).forEach((s) => {
+        if (/대관료/.test(s) && /식대/.test(s)) cards.push(s.replace(/\s+/g, " ").trim().slice(0, 220));
       });
-      found.forEach((c) => cards.push(c));
+      console.log("목록 " + lp + ": 본문 " + body.length + "자");
     } catch (e) { console.log("목록 오류 " + lp + ": " + (e.message || e)); }
   }
   cards = Array.from(new Set(cards));
