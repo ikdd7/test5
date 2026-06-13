@@ -234,8 +234,18 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-price b{font-size:1.45rem;font-weight:900;letter-spacing:-.02em}
 .kk-price span{font-size:.74rem;color:#8b93a1;font-weight:700}
 .kk-rent{font-size:.86rem;color:#3a4150;margin-top:2px}
-.kk-total{font-size:.84rem;color:#586074;margin-top:6px;background:#fff4f8;border:1px solid #ffd9e7;
-  padding:5px 9px;border-radius:8px}
+/* 식대·대관료 강조 박스(홀별 대관료 안내 포함) */
+.kk-pricerow{display:flex;gap:9px;margin-top:12px}
+.kk-pb{flex:1;border-radius:12px;padding:10px 12px;min-width:0}
+.kk-pb .kk-pblab{font-size:.74rem;font-weight:800;margin-bottom:3px}
+.kk-pb .kk-pbval{font-size:1.2rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap}
+.kk-pb.meal{background:#fff4f8;border:1px solid #ffd9e7}
+.kk-pb.meal .kk-pblab{color:#b06283}.kk-pb.meal .kk-pbval{color:#d6336c}
+.kk-pb.rent{background:#eef2ff;border:1px solid #d9e2ff}
+.kk-pb.rent .kk-pblab{color:#6677aa}.kk-pb.rent .kk-pbval{color:#3f56b8}
+.kk-pbnote{font-size:.68rem;color:#9aa1ad;font-weight:700;margin-top:3px;white-space:normal}
+.kk-total{font-size:.86rem;color:#586074;margin-top:9px;background:#fafafe;border:1px solid #e7eaf5;
+  padding:8px 11px;border-radius:9px;text-align:center}
 .kk-total b{color:#d6336c}
 .kk-soon{margin-top:10px;font-weight:800;color:#586074;font-size:.95rem}
 .kk-soonsub{font-size:.78rem;color:#9aa1ad;margin-top:2px}
@@ -249,7 +259,7 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-link{color:#d6336c;font-weight:800;font-size:.84rem;white-space:nowrap}
 .kk-tail{display:none}
 /* 화면 고정 팝업 패널(거지맵식) — 지도 움직여도 유지 */
-.venue-panel{position:fixed;z-index:1150;top:74px;left:14px;width:420px;display:none}
+.venue-panel{position:fixed;z-index:1150;top:64px;left:0;right:0;margin:0 auto;width:420px;display:none}
 .venue-panel.open{display:block;animation:vpIn .18s ease}
 @keyframes vpIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 .venue-panel .kkcard{width:100%;max-height:calc(100vh - 100px)}
@@ -265,11 +275,15 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 /* "여기는 이런 점이 좋아요" 요약 헤더 */
 .kk-sum{margin-top:11px;background:linear-gradient(135deg,#fff4f8,#fff0fb);border:1px solid #ffd9e7;
   border-radius:11px;padding:9px 11px}
-.kk-sumt{font-size:.82rem;font-weight:800;color:#c2306a;margin-bottom:6px}
+.kk-sumt{font-size:.82rem;font-weight:800;color:#c2306a;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kk-sumn{font-size:.68rem;font-weight:700;color:#c79bb0;background:#fff;border:1px solid #ffd9e7;border-radius:999px;padding:1px 7px}
 .kk-sumchips{display:flex;flex-wrap:wrap;gap:5px}
 .kk-sumchips span{background:#fff;border:1px solid #ffd0e2;color:#b8295f;font-size:.74rem;font-weight:700;
   padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:4px}
 .kk-sumchips em{font-style:normal;font-weight:900;color:#d6336c}
+.kk-sum.empty{background:#fafbfc;border:1px dashed #e7eaf0}
+.kk-sum.empty .kk-sumt{color:#7a8290;margin-bottom:3px}
+.kk-sumemp{font-size:.78rem;color:#9aa1ad;font-weight:600}
 /* 키워드 투표 그리드(비율 막대바) */
 .kk-kw{margin-top:12px;border-top:1px solid #f1edf0;padding-top:11px}
 .kk-kwt{font-size:.8rem;font-weight:800;color:#586074;margin-bottom:8px}

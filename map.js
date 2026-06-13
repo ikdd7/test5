@@ -110,7 +110,6 @@
     var slug = SLUGS[d.region];
     var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
     var chips = [];
-    if (d.halls > 1) chips.push("홀 " + d.halls + "개");
     if (d.nobs > 1) chips.push(d.nobs + "개 소스 평균");
     if (d.slot) chips.push(d.slot);
     if (d.guarantee) chips.push("보증 " + d.guarantee + "명");
@@ -118,9 +117,15 @@
     var chipHtml = chips.length ? '<div class="kk-chips">' + chips.map(function (c) { return "<span>" + c + "</span>"; }).join("") + "</div>" : "";
     var body;
     if (hasPrice(d)) {
-      body = '<div class="kk-price"><b>' + won(d.meal) + '</b><span>/ 1인 식대</span></div>' +
-        '<div class="kk-rent">대관료 ' + (d.rental ? won(d.rental) : "정보 없음") + "</div>" +
-        '<div class="kk-total">하객 ' + GUESTS + "명 ≈ <b>" + manwon(totalCost(d)) + "원</b></div>" + chipHtml;
+      // 대관료는 홀마다 다름 → 여러 홀이면 안내 문구
+      var rentNote = (d.halls > 1) ? "홀 " + d.halls + "개 · 홀마다 달라요" : (d.nobs > 1 ? "소스 평균" : "");
+      body = '<div class="kk-pricerow">' +
+          '<div class="kk-pb meal"><div class="kk-pblab">1인 식대</div><div class="kk-pbval">' + won(d.meal) + "</div></div>" +
+          '<div class="kk-pb rent"><div class="kk-pblab">대관료</div><div class="kk-pbval">' +
+            (d.rental ? manwon(d.rental) + "원" : "정보 없음") + "</div>" +
+            (rentNote ? '<div class="kk-pbnote">' + rentNote + "</div>" : "") + "</div>" +
+        "</div>" +
+        '<div class="kk-total">하객 ' + GUESTS + "명 예상 총액 ≈ <b>" + manwon(totalCost(d)) + "원</b></div>" + chipHtml;
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
     }
@@ -128,24 +133,23 @@
       d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
     var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
     var cons = (d.cons && d.cons.length) ? '<div class="kk-pc bad">👎 ' + d.cons.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
-    var feat;
-    if (tagsBlock || pros || cons) {
-      feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' + tagsBlock + pros + cons +
-        ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "") + "</div>";
-    } else {
-      feat = '<div class="kk-feat empty">✨ 식사 · 주차 · 교통 · 분위기 <span>정보 수집 중 — 아는 점이 있다면 제보해 주세요 🙏</span></div>';
-    }
+    // 특징·장단점은 실제 데이터가 있을 때만(빈 "정보 수집 중" 자리 제거)
+    var feat = (tagsBlock || pros || cons)
+      ? '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' + tagsBlock + pros + cons +
+        ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "") + "</div>"
+      : "";
     // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
     var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
     var total = counts.reduce(function (a, b) { return a + b; }, 0);
     function pct(n) { return total ? Math.round(n / total * 100) : 0; }
     var ranked = kwRanked(d);
-    // ── "여기는 이런 점이 좋아요" 요약 헤더(상위 3개 + 비율) ──
+    // ── 사용자 평가 점수 기반 요약(항상 표시) ──
     var summary = ranked.length
-      ? '<div class="kk-sum"><div class="kk-sumt">😊 여기는 이런 점이 좋아요</div><div class="kk-sumchips">' +
-        ranked.slice(0, 3).map(function (x) { return "<span>" + x.emoji + " " + esc(x.label) + " <em>" + pct(x.n) + "%</em></span>"; }).join("") +
+      ? '<div class="kk-sum"><div class="kk-sumt">😊 여기는 이런 점이 좋아요 <span class="kk-sumn">' + total + "명 평가</span></div><div class=\"kk-sumchips\">" +
+        ranked.slice(0, 4).map(function (x) { return "<span>" + x.emoji + " " + esc(x.label) + " <em>" + pct(x.n) + "%</em></span>"; }).join("") +
         "</div></div>"
-      : "";
+      : '<div class="kk-sum empty"><div class="kk-sumt">아직 평가가 없어요</div>' +
+        '<div class="kk-sumemp">아래에서 이 식장의 좋았던 점을 평가해 주세요 🙏</div></div>';
     // ── 키워드 투표 그리드(비율 막대바) ──
     var myVotes = getVotes(d);
     var kwGrid = '<div class="kk-kw"><div class="kk-kwt">이 식장, 어떤 점이 좋았나요? ' +
