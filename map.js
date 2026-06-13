@@ -366,6 +366,27 @@
       DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); });
       map.setBounds(b);
     } catch (e) {}
+    locateUser(); // 첫 진입 시 GPS로 내 위치 주변으로 이동(허용 시)
+  }
+
+  // 첫 진입 시 현재 위치로 이동 — 사용자가 먼저 조작/팝업 열면 양보
+  function locateUser() {
+    if (!navigator.geolocation || !map) return;
+    var moved = false;
+    kakao.maps.event.addListener(map, "dragstart", function () { moved = true; });
+    kakao.maps.event.addListener(map, "zoom_start", function () { moved = true; });
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      if (moved || currentPop) return;                 // 이미 조작 중이면 중심 안 옮김
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      if (!(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) return; // 한반도 밖이면 전국뷰 유지
+      var here = new kakao.maps.LatLng(lat, lng);
+      map.setLevel(6); map.setCenter(here);
+      new kakao.maps.Circle({                          // 내 위치 표시(파란 점)
+        map: map, center: here, radius: 90,
+        strokeWeight: 2, strokeColor: "#2b7cff", strokeOpacity: 0.9,
+        fillColor: "#2b7cff", fillOpacity: 0.35,
+      });
+    }, function () {}, { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 });
   }
 
   // ── 폴백(히트맵) ──
