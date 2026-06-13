@@ -1,8 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": null,
+  "buildCommand": "echo 'static site - no build needed'",
   "outputDirectory": ".",
+  "installCommand": "npm install",
   "cleanUrls": true,
   "functions": {
     "api/*.js": { "maxDuration": 10 }
