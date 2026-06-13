@@ -47,7 +47,19 @@ function cleanName(title) { return String(title || "").replace(/웨딩홀|아이
   const venues = sandbox.window.WEDDING_VENUES || [];
 
   const browser = await chromium.launch();
-  const page = await browser.newPage({ userAgent: "Mozilla/5.0 (compatible; WeddingPriceBot/1.0)" });
+  const page = await browser.newPage(); // 기본(실제 크롬) UA
+
+  // ── 진단: 시드 식장 3곳을 열어 상태 확인 ──
+  for (const dbg of ["1527650130", "1207559364", "1402283129"]) {
+    try {
+      const r = await page.goto(INFO + dbg, { waitUntil: "networkidle", timeout: 25000 });
+      const text = await page.evaluate(() => document.body.innerText).catch(() => "");
+      console.log("[DEBUG] " + dbg + " status=" + (r ? r.status() : "?") + " url=" + page.url());
+      console.log("   title=" + (await page.title()) + " | bodyLen=" + text.length);
+      console.log("   sample=" + text.slice(0, 160).replace(/\s+/g, " "));
+      console.log("   parsed name=" + cleanName(await page.title()) + " price=" + JSON.stringify(parsePrice(text)) + " region=" + parseRegion(text));
+    } catch (e) { console.log("[DEBUG] " + dbg + " 오류 " + e.message); }
+  }
 
   // 1) 목록 페이지에서 ID 수집
   const ids = new Set(SEED);
