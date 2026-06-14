@@ -11,7 +11,7 @@ if (!ID || !SECRET) { console.error("❌ NAVER_ID / NAVER_SECRET 환경변수가
 
 // map.js KEYWORDS와 동일 라벨 + 동의어 정규식(긍정 언급)
 const KW = [
-  { l: "음식이 맛있어요", re: /맛있|음식.{0,3}좋|식사.{0,3}좋|뷔페.{0,3}맛|코스.{0,3}맛|밥.{0,2}맛|맛집/g },
+  { l: "음식이 맛있어요", re: /맛있|음식.{0,3}(좋|만족|훌륭|굿)|식사.{0,3}(좋|만족)|뷔페.{0,3}(맛|좋|만족)|코스.{0,3}(맛|좋)|밥.{0,2}맛|맛집|퀄리티.{0,3}좋|음식.{0,2}퀄/g },
   { l: "인테리어가 예뻐요", re: /인테리어|예쁘|이쁘|화려|꽃.{0,2}장식.{0,3}예|버진로드.{0,3}예/g },
   { l: "홀이 넓어요", re: /홀.{0,3}넓|넓은.{0,2}홀|규모.{0,2}크|웅장|층고.{0,2}높|천장.{0,2}높/g },
   { l: "응대가 친절해요", re: /친절|응대.{0,3}좋|상담.{0,3}좋|직원.{0,3}좋|플래너.{0,3}좋/g },
@@ -31,7 +31,6 @@ function naver(p) {
   });
 }
 const api = (q) => naver("/v1/search/blog.json?display=30&sort=sim&query=" + encodeURIComponent(q));
-const imgApi = (q) => naver("/v1/search/image.json?display=5&sort=sim&filter=large&query=" + encodeURIComponent(q));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
@@ -40,8 +39,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   vm.runInNewContext(fs.readFileSync(FILE, "utf8"), sandbox);
   const venues = sandbox.window.WEDDING_VENUES || [];
   const MAX = parseInt(process.env.MAX || "1300", 10), START = parseInt(process.env.START || "0", 10);
-  const WANT_PHOTO = process.env.PHOTOS !== "0"; // 사진 없는 곳 대표 이미지 채움
-  let done = 0, filled = 0, photos = 0;
+  let done = 0, filled = 0; const foodHits = []; // 음식 언급 식장 모음
+  const FOOD = "음식이 맛있어요";
   for (let i = START; i < venues.length && done < MAX; i++) {
     const v = venues[i]; done++;
     const j = await api(v.name + " 웨딩홀 후기");
@@ -49,18 +48,20 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
     if (j && j.items && j.items.length) {
       const text = j.items.map((it) => stripTags(it.title) + " " + stripTags(it.description)).join("  ");
       const counts = KW.map((k) => { const m = text.match(k.re); return [k.l, m ? m.length : 0]; }).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
-      if (counts.length) { v.community = counts.slice(0, 6); filled++; console.log("  [" + i + "] " + v.name + " ← " + counts.slice(0, 3).map((x) => x[0] + "(" + x[1] + ")").join(", ")); }
-      else { if (v.community) delete v.community; console.log("  [" + i + "] " + v.name + ": 키워드 없음"); }
+      if (counts.length) {
+        v.community = counts.slice(0, 6); filled++;
+        const food = counts.find((x) => x[0] === FOOD);
+        if (food && food[1] >= 2) foodHits.push({ name: v.name, region: v.region, n: food[1] });
+        console.log("  [" + i + "] " + v.name + " ← " + counts.slice(0, 3).map((x) => x[0] + "(" + x[1] + ")").join(", "));
+      } else { if (v.community) delete v.community; console.log("  [" + i + "] " + v.name + ": 키워드 없음"); }
     } else { console.log("  [" + i + "] " + v.name + ": 결과 없음"); }
-    // 대표 사진(없을 때만): 네이버 이미지 검색 첫 결과
-    if (WANT_PHOTO && !v.photo) {
-      await sleep(90);
-      const im = await imgApi(v.name + " 웨딩홀");
-      if (im && im.items && im.items.length && im.items[0].link) { v.photo = im.items[0].link; v.photoSrc = "naver"; photos++; }
-    }
     await sleep(110); // rate limit
   }
   const header = "/* 전국 예식장 리스트 — 커뮤니티 키워드 집계(" + new Date().toISOString().slice(0, 10) + ") */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
-  console.log("처리 " + done + "곳, community 채움 " + filled + "곳, 사진 채움 " + photos + "곳");
+  console.log("처리 " + done + "곳, community 채움 " + filled + "곳");
+  // 🍽️ 식사 맛있는 곳 요약(언급 빈도 상위)
+  foodHits.sort((a, b) => b.n - a.n);
+  console.log("\n🍽️ 식사 맛있다는 언급 상위 " + Math.min(foodHits.length, 40) + "곳 (" + foodHits.length + "곳 감지):");
+  foodHits.slice(0, 40).forEach((f, k) => console.log("  " + (k + 1) + ". " + f.name + " (" + f.region + ") · 언급 " + f.n));
 })();
