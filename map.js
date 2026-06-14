@@ -85,6 +85,20 @@
     }
     return panelEl;
   }
+  // 펼침 높이 = 헤더(불투명 배경) 아래 경계선까지
+  function setSheet(expanded) {
+    if (!panelEl) return;
+    var card = panelEl.querySelector(".kkcard");
+    if (expanded) {
+      panelEl.classList.add("expanded");
+      var top = document.querySelector(".map-top");
+      var b = top ? top.getBoundingClientRect().bottom : 64;
+      if (card) card.style.maxHeight = Math.max(180, Math.round(window.innerHeight - b - 4)) + "px";
+    } else {
+      panelEl.classList.remove("expanded");
+      if (card) card.style.maxHeight = ""; // CSS 기본(접힘)
+    }
+  }
   // 모바일 바텀시트 제스처: 위로 스와이프=펼침↔접힘 토글, 아래로=접힘/닫기
   function bindSheetGestures(el) {
     var sy = 0, handle = false;
@@ -97,16 +111,10 @@
       if (window.innerWidth > 560 || !el.classList.contains("open")) return;
       var card = el.querySelector(".kkcard"), atTop = !card || card.scrollTop <= 1;
       if (!handle && !atTop) return; // 내용 스크롤 중이면 시트 제어 안 함
-      var dy = e.changedTouches[0].clientY - sy;
-      if (dy < -28) { // 위로 스와이프
-        if (!el.classList.contains("expanded")) el.classList.add("expanded");
-        else el.classList.remove("expanded"); // 그 이후 위로 → 내려감
-      } else if (dy > 40) { // 아래로 스와이프
-        if (el.classList.contains("expanded")) el.classList.remove("expanded");
-        else window.__closePop();
-      } else if (handle && Math.abs(dy) < 8) { // 핸들 탭 → 토글
-        el.classList.toggle("expanded");
-      }
+      var dy = e.changedTouches[0].clientY - sy, exp = el.classList.contains("expanded");
+      if (dy < -28) setSheet(!exp);              // 위로: 펼침↔접힘 토글
+      else if (dy > 40) { if (exp) setSheet(false); else window.__closePop(); } // 아래로: 접힘/닫기
+      else if (handle && Math.abs(dy) < 8) setSheet(!exp); // 핸들 탭 토글
     }, { passive: true });
   }
   function lockMap(on) { if (map) { try { map.setDraggable(!on); map.setZoomable(!on); } catch (e) {} } }
