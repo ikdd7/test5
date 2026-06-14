@@ -16,7 +16,7 @@ window.WEDDING_VENUES = [
   {"name":"파티움하우스","region":"경기","district":"수원시","type":"하우스웨딩","meal":63000,"lat":37.261637,"lng":127.033427,"verified":false,"source":"directwedding/hall0485","halls":2,"rental":6000000},
   {"name":"호텔리츠컨벤션웨딩","region":"경기","district":"수원시 팔달구","type":"컨벤션","meal":62000,"lat":37.258722,"lng":127.033593,"verified":false,"source":"smartwedding/hotelritzkr","halls":3,"rental":6500000,"photo":"https://cdn.imweb.me/upload/S202402167472bfbca756f/2a27bb61f965b.png","tags":["단독홀","생화 꽃장식","뷔페"]},
   {"name":"판교 W스퀘어 채플홀","region":"경기","district":"성남시 분당구","type":"채플/성당","meal":58000,"rental":6500000,"guarantee":150,"lat":37.382753,"lng":127.11883,"verified":false,"source":"tyvld.meat2ja.com"},
-  {"name":"다르미앙","region":"인천","district":"연수구","type":"컨벤션","meal":117000,"lat":37.381872,"lng":126.653169,"verified":false,"source":"thewedd.com/hall-161","halls":2,"rental":5500000,"guarantee":300,"photo":"https://www.darmiang.co.kr/sh_img/common/og_img.jpg"},
+  {"name":"다르미앙","region":"인천","district":"연수구","type":"컨벤션","meal":117000,"lat":37.381872,"lng":126.653169,"verified":false,"source":"thewedd.com/hall-161","halls":2,"rental":5500000,"guarantee":300},
   {"name":"대구웨딩칼라디움","region":"대구","district":"동구","type":"일반예식장","meal":45000,"rental":1500000,"lat":35.870792,"lng":128.731619,"verified":false,"source":"directwedding/hall0103"},
   {"name":"웨딩 메르디앙","region":"대구","district":"대구","type":"컨벤션","meal":57000,"rental":2000000,"slot":"토요일 낮","lat":35.884806,"lng":128.596929,"verified":false,"source":"4.mjella.com"},
   {"name":"라테라스 웨딩","region":"대구","district":"대구","type":"컨벤션","meal":53000,"rental":2450000,"lat":35.836642,"lng":128.544197,"verified":false,"source":"blog.weddinglast.com"},
