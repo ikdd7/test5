@@ -35,7 +35,7 @@ module.exports = async (req, res) => {
       }
       if (type === "reviews") {
         const r = await sql`select id, venue_name, rating, body, status, (extract(epoch from created_at)*1000)::bigint as ts
-          from reviews order by created_at desc limit 200`;
+          from reviews order by (status='reported') desc, created_at desc limit 200`;
         return res.json({ rows: r });
       }
       if (type === "counts") {

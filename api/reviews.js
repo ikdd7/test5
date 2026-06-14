@@ -14,18 +14,26 @@ module.exports = async (req, res) => {
       try {
         rows = await sql`
           select id, body, client_id, rating, (extract(epoch from created_at) * 1000)::bigint as ts
-          from reviews where venue_key = ${venue} and status = 'visible'
+          from reviews where venue_key = ${venue} and status in ('visible','reported')
           order by created_at desc limit 100`;
       } catch (e) { // rating 컬럼 없는 경우(마이그레이션 전) 폴백
         rows = await sql`
           select id, body, client_id, (extract(epoch from created_at) * 1000)::bigint as ts
-          from reviews where venue_key = ${venue} and status = 'visible'
+          from reviews where venue_key = ${venue} and status in ('visible','reported')
           order by created_at desc limit 100`;
       }
       return res.json({ reviews: rows.map((x) => ({ id: Number(x.id), t: x.body, d: Number(x.ts), cid: x.client_id, rating: x.rating != null ? Number(x.rating) : null })) });
     }
     if (req.method === "POST") {
       const b = req.body || {};
+      // 후기 신고: 공개는 유지하되 status='reported'로 표시 → 운영자 검토
+      if (String(b.action || "") === "report") {
+        const id = parseInt(b.id, 10);
+        if (!id) return res.status(400).json({ error: "id required" });
+        try { await sql`update reviews set status='reported' where id=${id} and status='visible'`; }
+        catch (e) { /* status 컬럼 없으면 무시 */ }
+        return res.json({ ok: true });
+      }
       const venue = String(b.venue || ""), cid = String(b.cid || "");
       const text = String(b.text || "").trim().slice(0, 300);
       const name = b.name ? String(b.name).slice(0, 80) : null;

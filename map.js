@@ -122,6 +122,8 @@
     if (!(meal >= 10000 && meal <= 400000)) { if (m) m.focus(); alert("1인 식대를 원 단위로 입력해 주세요.\n예: 70000  (1만~40만원)"); return; }
     if (rent && !(rent >= 100000 && rent <= 100000000)) { if (r) r.focus(); alert("대관료를 원 단위로 입력해 주세요.\n예: 5000000  (10만원~1억)"); return; }
     if (!file) { if (f) f.click(); alert("가격표·견적서 사진을 첨부해 주세요 📷 (검증용·필수)"); return; }
+    var agree = p.querySelector("#prAgree");
+    if (!agree || !agree.checked) { if (agree) agree.focus(); alert("개인정보 수집·이용 동의에 체크해 주세요 🙏"); return; }
     if (!apiOK) { alert("가격 제보는 온라인에서만 가능해요 🙏"); return; }
     var btn = p.querySelector(".kk-prsubmit"); if (btn) { btn.disabled = true; btn.textContent = "사진 처리 중…"; }
     resizeImg(file, function (photo) {
@@ -265,6 +267,15 @@
       setLocalRevs(d, getLocalRevs(d).filter(function (r) { return r.id !== id; })); rerenderPanel();
     }
   };
+  window.__reportReview = function (id) {
+    if (!apiOK) { alert("신고는 온라인에서만 가능해요 🙏"); return; }
+    if (!confirm("이 후기를 신고할까요?\n비방·허위·욕설 등은 운영자가 검토 후 조치해요.")) return;
+    fetch(API + "/reviews", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "report", id: id }) })
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function () { alert("신고가 접수됐어요. 검토 후 조치할게요. 🙏"); })
+      .catch(function () { alert("신고 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
+  };
   window.__closePop = function () {
     if (panelEl) panelEl.classList.remove("open", "expanded"); lockMap(false); currentPop = null;
     if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
@@ -370,7 +381,10 @@
         '<label class="kk-prfile">📷 가격표·견적서 사진 첨부 <span>(필수)</span>' +
           '<input id="prPhoto" type="file" accept="image/*" onchange="window.__prFile(this)" /></label>' +
         '<div id="prFileName" class="kk-prfname"></div>' +
+        '<div class="kk-prmask">🙈 이름·연락처 등 개인정보는 <b>가린</b> 견적서만 올려주세요</div>' +
         '<input id="prNote" class="kk-prnote" maxlength="200" placeholder="검증용 메모 (연락처·인스타·카톡 등, 선택)" />' +
+        '<label class="kk-prconsent"><input id="prAgree" type="checkbox" />' +
+          '<span>본인이 공개 가능한 정보만 제보하며, <a href="/privacy.html" target="_blank" rel="noopener">개인정보 수집·이용</a>에 동의해요.</span></label>' +
         '<button class="kk-prsubmit" onclick="window.__submitPrice()">제보 보내기</button>' +
         '<div class="kk-prhint">견적서 사진으로 검증 후 반영돼요. 사진·메모는 운영자만 봐요.</div></div>'
       : "";
@@ -429,7 +443,8 @@
         (r.rating ? '<div class="kk-revstars">' + starStr(r.rating) + "</div>" : "") +
         '<div class="kk-revtxt">' + esc(r.t) + "</div>" +
         '<div class="kk-revmeta"><span>' + revDate(r.d) + (own ? " · 내 후기" : "") + "</span>" +
-        (own ? '<button class="kk-revdel" onclick="window.__delReview(' + r.id + ')">삭제</button>' : "") + "</div></div>";
+        (own ? '<button class="kk-revdel" onclick="window.__delReview(' + r.id + ')">삭제</button>'
+             : '<button class="kk-revrep" onclick="window.__reportReview(' + r.id + ')">🚩 신고</button>') + "</div></div>";
     }).join("") + "</div>" : "";
     // 별점 매기기 UX (후기 남기기 ↔ 등록 사이)
     var starSel = '<div class="kk-rate"><div class="kk-ratel">별점</div><div class="kk-stars">' +
@@ -463,7 +478,10 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + reviewSec +
+      feat + comm + '<div class="kk-pricesec">' + body +
+        '<div class="kk-prdisc">※ 제보·공개정보 기반 <b>추정치</b>예요. 실제와 다를 수 있으니 계약 시 직접 확인하세요. · ' +
+        '<a href="/privacy.html" target="_blank" rel="noopener">정정·삭제·약관</a></div>' +
+      "</div>" + priceReport + reviewSec +
       '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }

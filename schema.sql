@@ -11,7 +11,7 @@ create table if not exists votes (
 );
 create index if not exists votes_venue_idx on votes (venue_key);
 
--- 후기(여러 개). status='visible'만 노출, 'hidden'은 운영자가 가린 것.
+-- 후기(여러 개). status='visible'/'reported'는 노출(신고건은 운영자 검토 대기), 'hidden'은 운영자가 가린 것.
 create table if not exists reviews (
   id         bigint generated always as identity primary key,
   venue_key  text not null,

@@ -40,7 +40,7 @@
   .del{background:#f1f3f7;color:#7a8394;border:1px solid #e2e6ee}
   .badge{font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:6px}
   .b-pending{background:#fff4e5;color:#b9791f}.b-approved{background:#e7f6ea;color:#2f7a44}
-  .b-rejected{background:#fdeeee;color:#b23b3b}.b-hidden{background:#eee;color:#777}.b-visible{background:#e8f0fb;color:#3a5a86}
+  .b-rejected{background:#fdeeee;color:#b23b3b}.b-hidden{background:#eee;color:#777}.b-visible{background:#e8f0fb;color:#3a5a86}.b-reported{background:#fff1e6;color:#c2691f}
   .empty{text-align:center;color:#9aa1ad;padding:34px 12px;font-size:.92rem}
   .stars{color:#ffb400;font-size:.86rem;letter-spacing:1px}
   .rphoto{display:block;width:100%;max-height:240px;object-fit:contain;background:#f1f3f7;border-radius:9px;margin-top:8px;cursor:zoom-in}
@@ -143,9 +143,9 @@
           '<span class="badge '+b+'">'+esc(r.status)+'</span></div><div class="meta">'+dt(r.ts)+'</div></div>'+
           (r.rating?'<div class="stars">'+"★★★★★".slice(0,r.rating)+"☆☆☆☆☆".slice(0,5-r.rating)+'</div>':"")+
           '<div class="body">'+esc(r.body)+'</div>'+
-          '<div class="acts">'+(r.status==="hidden"
-            ? '<button class="ok" onclick="act('+r.id+',\'showReview\')">노출</button>'
-            : '<button class="del" onclick="act('+r.id+',\'hideReview\')">숨김</button>')+
+          '<div class="acts">'+
+          (r.status!=="visible" ? '<button class="ok" onclick="act('+r.id+',\'showReview\')">'+(r.status==="reported"?"이상없음":"노출")+'</button>' : "")+
+          (r.status!=="hidden" ? '<button class="del" onclick="act('+r.id+',\'hideReview\')">숨김</button>' : "")+
           '<button class="no" onclick="act('+r.id+',\'delReview\')">삭제</button></div></div>';
       }).join("");
     }
