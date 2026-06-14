@@ -42,3 +42,7 @@ create index if not exists price_reports_venue_idx on price_reports (venue_key);
 -- 운영자 승인 기반 언락: pending(대기)/approved(승인)/rejected(반려). 승인된 제보만 가격 언락·집계.
 alter table price_reports add column if not exists status text not null default 'pending';
 create index if not exists price_reports_status_idx on price_reports (client_id, status);
+
+-- 제보 증빙 사진(견적서, base64 data URL) + 검증용 메모(연락처/SNS 등)
+alter table price_reports add column if not exists photo text;
+alter table price_reports add column if not exists note  text;

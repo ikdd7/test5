@@ -16,8 +16,14 @@ module.exports = async (req, res) => {
     if (req.method === "GET") {
       const type = String(req.query.type || "price-pending");
       if (type === "price-pending") {
-        const r = await sql`select id, venue_name, meal, rental, client_id, (extract(epoch from created_at)*1000)::bigint as ts
-          from price_reports where status = 'pending' order by created_at desc limit 300`;
+        let r;
+        try {
+          r = await sql`select id, venue_name, meal, rental, client_id, photo, note, (extract(epoch from created_at)*1000)::bigint as ts
+            from price_reports where status = 'pending' order by created_at desc limit 300`;
+        } catch (e) {
+          r = await sql`select id, venue_name, meal, rental, client_id, (extract(epoch from created_at)*1000)::bigint as ts
+            from price_reports where status = 'pending' order by created_at desc limit 300`;
+        }
         return res.json({ rows: r });
       }
       if (type === "price-recent") {

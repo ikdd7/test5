@@ -90,24 +90,47 @@
   window.__setRating = function (n) { draftRating = (draftRating === n) ? 0 : n; rerenderPanel(); };
   var showPriceForm = false, priceThanks = false; // 가격 제보 폼 펼침 / 제보 직후 안내
   window.__togglePriceForm = function () { showPriceForm = !showPriceForm; rerenderPanel(); };
+  function resizeImg(file, cb) { // 견적서 사진 → 1000px·JPEG로 축소한 dataURL
+    if (!file) { cb(null); return; }
+    var fr = new FileReader();
+    fr.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var max = 1000, w = img.width, h = img.height;
+        if (w > h && w > max) { h = Math.round(h * max / w); w = max; } else if (h >= w && h > max) { w = Math.round(w * max / h); h = max; }
+        var c = document.createElement("canvas"); c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        try { cb(c.toDataURL("image/jpeg", 0.6)); } catch (e) { cb(null); }
+      };
+      img.onerror = function () { cb(null); };
+      img.src = fr.result;
+    };
+    fr.onerror = function () { cb(null); };
+    fr.readAsDataURL(file);
+  }
   window.__submitPrice = function () {
     if (!currentPop) return;
     var d = currentPop, p = panelEl;
-    var m = p.querySelector("#prMeal"), r = p.querySelector("#prRent");
+    var m = p.querySelector("#prMeal"), r = p.querySelector("#prRent"), f = p.querySelector("#prPhoto");
     var meal = m ? parseInt(m.value, 10) : 0, rent = r && r.value ? parseInt(r.value, 10) : 0;
+    var note = (p.querySelector("#prNote") || {}).value || "";
+    var file = f && f.files && f.files[0];
     if (!(meal >= 10000 && meal <= 400000)) { if (m) m.focus(); alert("1인 식대를 원 단위로 입력해 주세요.\n예: 70000  (1만~40만원)"); return; }
     if (rent && !(rent >= 100000 && rent <= 100000000)) { if (r) r.focus(); alert("대관료를 원 단위로 입력해 주세요.\n예: 5000000  (10만원~1억)"); return; }
+    if (!file) { if (f) f.click(); alert("가격표·견적서 사진을 첨부해 주세요 📷 (검증용·필수)"); return; }
     if (!apiOK) { alert("가격 제보는 온라인에서만 가능해요 🙏"); return; }
-    var btn = p.querySelector(".kk-prsubmit"); if (btn) { btn.disabled = true; btn.textContent = "제출 중…"; }
-    fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId() }) })
-      .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
-      .then(function (a) {
-        d._pr = a; showPriceForm = false; priceThanks = true; // 운영자 승인 후 언락(즉시 X)
-        rerenderPanel();
-      })
-      .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제출"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
+    var btn = p.querySelector(".kk-prsubmit"); if (btn) { btn.disabled = true; btn.textContent = "사진 처리 중…"; }
+    resizeImg(file, function (photo) {
+      if (!photo) { if (btn) { btn.disabled = false; btn.textContent = "제보 보내기"; } alert("사진을 처리하지 못했어요. 다른 사진으로 시도해 주세요."); return; }
+      if (btn) btn.textContent = "제출 중…";
+      fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId(), photo: photo, note: note }) })
+        .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
+        .then(function (a) { d._pr = a; showPriceForm = false; priceThanks = true; rerenderPanel(); })
+        .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제보 보내기"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
+    });
   };
+  window.__prFile = function (input) { var n = input.files && input.files[0]; var el = panelEl && panelEl.querySelector("#prFileName"); if (el) el.textContent = n ? "✓ " + n.name : ""; };
   function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
   // 키워드 카운트: 서버 집계(나 포함) 우선, 없으면 이 기기 투표만
   function kwCount(d, label) {
@@ -335,8 +358,13 @@
       ? '<div class="kk-prform"><div class="kk-prrow">' +
           '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원) 예:70000" />' +
           '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택) 예:5000000" />' +
-        "</div><button class=\"kk-prsubmit\" onclick=\"window.__submitPrice()\">제보 보내기</button>" +
-        '<div class="kk-prhint">정확한 정보가 다른 분께 큰 도움이 돼요. 검증 후 반영됩니다.</div></div>'
+        "</div>" +
+        '<label class="kk-prfile">📷 가격표·견적서 사진 첨부 <span>(필수)</span>' +
+          '<input id="prPhoto" type="file" accept="image/*" onchange="window.__prFile(this)" /></label>' +
+        '<div id="prFileName" class="kk-prfname"></div>' +
+        '<input id="prNote" class="kk-prnote" maxlength="200" placeholder="검증용 메모 (연락처·인스타·카톡 등, 선택)" />' +
+        '<button class="kk-prsubmit" onclick="window.__submitPrice()">제보 보내기</button>' +
+        '<div class="kk-prhint">견적서 사진으로 검증 후 반영돼요. 사진·메모는 운영자만 봐요.</div></div>'
       : "";
     var priceReport = priceThanks
       ? '<div class="kk-pr"><div class="kk-prthx">✅ 제보 감사합니다!<br><span>운영자 검증 후 가격이 공개돼요</span></div></div>'

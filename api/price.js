@@ -36,8 +36,15 @@ module.exports = async (req, res) => {
       const meal = (b.meal >= 10000 && b.meal <= 400000) ? Math.round(b.meal) : null;
       const rental = (b.rental >= 100000 && b.rental <= 100000000) ? Math.round(b.rental) : null;
       const name = b.name ? String(b.name).slice(0, 80) : null;
-      if (!venue || !cid || (meal == null && rental == null)) return res.status(400).json({ error: "venue, cid, meal|rental required" });
-      await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental) values (${venue}, ${name}, ${cid}, ${meal}, ${rental})`;
+      const photo = (typeof b.photo === "string" && b.photo.length > 100 && b.photo.length < 900000) ? b.photo : null;
+      const note = b.note ? String(b.note).slice(0, 200) : null;
+      if (!venue || !cid || meal == null) return res.status(400).json({ error: "venue, cid, meal required" });
+      if (!photo) return res.status(400).json({ error: "photo required" });
+      try {
+        await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental, photo, note) values (${venue}, ${name}, ${cid}, ${meal}, ${rental}, ${photo}, ${note})`;
+      } catch (e) { // photo/note 컬럼 없으면(마이그레이션 전) 기본 컬럼만
+        await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental) values (${venue}, ${name}, ${cid}, ${meal}, ${rental})`;
+      }
       const a = await agg(venue);
       return res.json({ ok: true, n: a.n, meal: a.meal, rental: a.rental });
     }

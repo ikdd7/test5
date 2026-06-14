@@ -295,7 +295,15 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prform input{flex:1;min-width:0;border:1px solid #e2e6ee;border-radius:8px;padding:9px 10px;
   font-size:.86rem;font-family:inherit;color:#1c2230;background:#fff}
 .kk-prform input:focus{outline:0;border-color:#f0a85a}
-.kk-prsubmit{width:100%;margin-top:7px;border:0;background:linear-gradient(135deg,#f0932b,#f7b24a);color:#fff;
+.kk-prfile{display:block;margin-top:8px;background:#fff;border:1.5px dashed #f0b27a;border-radius:9px;
+  padding:11px;text-align:center;font-size:.84rem;font-weight:800;color:#c2691f;cursor:pointer}
+.kk-prfile span{color:#e0588a}
+.kk-prfile input{display:none}
+.kk-prfname{font-size:.74rem;color:#3a6b3f;font-weight:800;margin-top:5px;text-align:center;word-break:break-all}
+.kk-prnote{width:100%;margin-top:8px;border:1px solid #e2e6ee;border-radius:8px;padding:9px 10px;
+  font-size:.84rem;font-family:inherit;color:#1c2230;background:#fff;box-sizing:border-box}
+.kk-prnote:focus{outline:0;border-color:#f0a85a}
+.kk-prsubmit{width:100%;margin-top:8px;border:0;background:linear-gradient(135deg,#f0932b,#f7b24a);color:#fff;
   font-weight:800;font-size:.86rem;padding:9px;border-radius:9px;cursor:pointer;font-family:inherit}
 .kk-prhint{font-size:.68rem;color:#9aa1ad;font-weight:600;margin-top:6px;text-align:center}
 .kk-prthx{background:#f1f6f1;border:1px solid #d8e8d8;border-radius:11px;padding:13px;text-align:center;
