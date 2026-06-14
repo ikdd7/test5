@@ -298,7 +298,25 @@
     var ff = $("fFav"); if (ff) { ff.className = "chip" + (fFav ? " on" : ""); ff.onclick = function () { fFav = !fFav; buildFilters(onChange); onChange(); }; }
     var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
+    // 드롭다운 토글(한 번만 바인딩) + 선택요약
+    var tog = $("filterToggle"), pan = $("filterPanel");
+    if (tog && !tog.__b) {
+      tog.__b = true;
+      tog.onclick = function () { if (pan) { var open = pan.classList.toggle("open"); tog.classList.toggle("on", open); } };
+    }
+    updateFilterSummary();
     updateFavChip();
+  }
+  function updateFilterSummary() {
+    var el = $("filterSummary"); if (!el) return;
+    var a = [];
+    if (fType !== "전체") a.push(fType);
+    if (fFav) a.push("💗 찜");
+    if (fPriced) a.push("💰 가격");
+    if (fVer) a.push("✅ 검증");
+    el.innerHTML = a.length
+      ? a.map(function (x) { return '<span class="sumchip">' + x + "</span>"; }).join("")
+      : '<span class="sumchip muted">전체 보기</span>';
   }
 
   // ── 검색(식장·지역) ──
@@ -354,24 +372,28 @@
     return t === "호텔" ? "🏨" : t === "컨벤션" ? "🏢" : t === "하우스웨딩" ? "🏡"
       : t === "야외" ? "🌳" : t === "채플/성당" ? "⛪" : t === "일반예식장" ? "💒" : "💍";
   }
-  // 거지맵식 가격 알약(pill). 2단: 대관료(윗칸) + 식대 00원/인(아랫칸). 값 열 정렬 + 좌우 여백 동일.
-  var PILL_PAD = 12, PILL_EMO = 20, PILL_LABCOL = 41;
+  // 거지맵식 가격 알약(pill). 이름(윗줄) + 대관료 + 식대. 라벨 동일폭(textLength), 좌우 여백 동일.
+  var PILL_PAD = 12, PILL_EMO = 20, PILL_LABW = 34, PILL_LABGAP = 7;
+  function xmlEsc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function shortName(s) { s = String(s || ""); return s.length > 9 ? s.slice(0, 8) + "…" : s; }
   function strW(s) { var w = 0; for (var i = 0; i < s.length; i++) { var c = s[i]; w += /[0-9]/.test(c) ? 7.6 : c === " " ? 4 : c === "/" ? 5 : c === "." ? 4 : 12; } return w; }
+  function lineContentW(line) { return (line.l ? PILL_LABW + PILL_LABGAP : 0) + strW(line.v); }
   function pillWidth(lines, sel) {
-    var mc = 0; lines.forEach(function (l) { mc = Math.max(mc, (l.l ? PILL_LABCOL : 0) + strW(l.v)); });
+    var mc = 0; lines.forEach(function (l) { mc = Math.max(mc, lineContentW(l)); });
     return Math.round(PILL_PAD + PILL_EMO + mc + PILL_PAD + (sel ? 22 : 0));
   }
   function pillSVG(lines, emoji, color, sel, w) {
-    var two = lines.length === 2, h = two ? 41 : 29, th = h + 8, cx = w / 2;
+    var n = lines.length, h = 8 + n * 16, th = h + 8, cx = w / 2, tx = PILL_PAD + PILL_EMO;
     var bg = sel ? "#2b2b3a" : "#ffffff", bd = sel ? "#2b2b3a" : color;
-    var lab = sel ? "#b9bfca" : "#8a93a3", val = sel ? "#ffffff" : "#16203a";
-    var tx = PILL_PAD + PILL_EMO;
-    function row(line, y) {
-      if (!line.l) return '<text x="' + tx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="' + val + '">' + line.v + '</text>';
-      return '<text x="' + tx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="11.5" font-weight="700" fill="' + lab + '">' + line.l + '</text>' +
-        '<text x="' + (tx + PILL_LABCOL) + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="' + val + '">' + line.v + '</text>';
+    var lab = sel ? "#b9bfca" : "#8a93a3", val = sel ? "#ffffff" : "#16203a", nm = sel ? "#ffffff" : "#1b2330";
+    function row(line, i) {
+      var y = 16 + i * 16;
+      if (line.name) return '<text x="' + tx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="12.5" font-weight="800" fill="' + nm + '">' + xmlEsc(line.v) + '</text>';
+      if (!line.l) return '<text x="' + tx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '">' + xmlEsc(line.v) + '</text>';
+      return '<text x="' + tx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="11.5" font-weight="700" fill="' + lab + '" textLength="' + PILL_LABW + '" lengthAdjust="spacing">' + line.l + '</text>' +
+        '<text x="' + (tx + PILL_LABW + PILL_LABGAP) + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '">' + xmlEsc(line.v) + '</text>';
     }
-    var body = two ? (row(lines[0], 17.5) + row(lines[1], 33.5)) : row(lines[0], h / 2 + 4.5);
+    var body = lines.map(function (l, i) { return row(l, i); }).join("");
     var x = sel ? '<text x="' + (w - 14) + '" y="' + (h / 2 + 5.5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="16" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
@@ -380,16 +402,16 @@
       body + x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d), emoji = typeEmoji(d.type), color, lines;
+    var priced = hasPrice(d), emoji = typeEmoji(d.type), color;
+    var lines = [{ name: true, v: shortName(d.name) }];
     if (priced) {
       color = priceColor(d.meal, lo, hi, mid);
-      lines = [];
       if (d.rental) lines.push({ l: "대관료", v: manwon(d.rental) + "원" });
-      lines.push({ l: "식대", v: manwon(d.meal) + "원/인" });
-    } else { color = "#aeb6c2"; lines = [{ l: "", v: "정보없음" }]; }
-    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return l.l + l.v; }).join("~") + "|" + color + "|" + emoji;
+      lines.push({ l: "식대", v: manwon(d.meal) + "원" });
+    } else { color = "#aeb6c2"; lines.push({ v: "정보없음" }); }
+    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.l || "") + l.v; }).join("~") + "|" + color + "|" + emoji;
     if (imgCache[key]) return imgCache[key];
-    var w = pillWidth(lines, sel), th = (lines.length === 2 ? 41 : 29) + 8;
+    var w = pillWidth(lines, sel), th = 8 + lines.length * 16 + 8;
     var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, emoji, color, sel, w)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;

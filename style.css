@@ -202,11 +202,24 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-pc.good{background:#eef6ef;color:#2f6b40}
 .kk-pc.bad{background:#fdeeee;color:#a23b3b}
 .kk-pcsrc{font-size:.68rem;color:#b0b6c0;margin-top:6px}
-.mfilters{display:flex;gap:14px;overflow-x:auto;margin-top:10px;scrollbar-width:none;padding-bottom:2px}
-.mfilters::-webkit-scrollbar{display:none}
-.mfilters .grp{display:flex;gap:5px;align-items:center;white-space:nowrap}
-.mfilters .glab{color:#6b7480;font-size:.72rem;font-weight:800}
-.mfilters #fType,.mfilters #fSlot{display:flex;gap:5px}
+/* 필터 바(접힘) + 드롭다운 패널(펼침) */
+.mfilters{display:flex;gap:8px;align-items:center;margin-top:9px}
+.filterbtn{flex-shrink:0;background:#fff;border:1px solid #e2e6ee;border-radius:999px;padding:6px 13px;
+  font-weight:800;font-size:.82rem;color:#3a4150;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:5px;box-shadow:0 1px 4px rgba(20,30,50,.07)}
+.filterbtn.on{background:#ec4f8e;border-color:#ec4f8e;color:#fff}
+.filterbtn .fbcaret{font-size:.66rem;transition:transform .2s}
+.filterbtn.on .fbcaret{transform:rotate(180deg)}
+.filtersummary{display:flex;gap:5px;overflow-x:auto;flex:1;min-width:0;align-items:center;scrollbar-width:none}
+.filtersummary::-webkit-scrollbar{display:none}
+.sumchip{flex-shrink:0;background:rgba(236,79,142,.14);color:#d6336c;border:1px solid #f3b8cd;
+  font-size:.74rem;font-weight:800;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.sumchip.muted{background:#fff;color:#9aa1ad;border-color:#e6e9ef}
+.filterpanel{display:none;flex-direction:column;gap:10px;margin-top:10px;padding-top:11px;border-top:1px solid rgba(20,30,50,.08)}
+.filterpanel.open{display:flex;animation:fpDrop .16s ease}
+@keyframes fpDrop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.filterpanel .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.glab{color:#6b7480;font-size:.72rem;font-weight:800;margin-right:2px}
+#fType{display:flex;gap:6px;flex-wrap:wrap}
 .chip{background:#fff;border:1px solid #e2e6ee;color:#5a6273;font-weight:700;
   font-size:.8rem;padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;box-shadow:0 1px 4px rgba(20,30,50,.06)}
 .chip.on{background:#ec4f8e;border-color:#ec4f8e;color:#fff;box-shadow:0 2px 8px rgba(236,79,142,.35)}
@@ -285,9 +298,20 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
   .venue-panel{top:auto;left:0;right:0;bottom:0;width:100%}
   .venue-panel.open{animation:vpUp .22s ease}
   @keyframes vpUp{from{transform:translateY(100%)}to{transform:none}}
-  .venue-panel .kkcard{width:100%;height:auto;max-height:86vh;border-radius:18px 18px 0 0;padding:14px 16px 16px;
+  .venue-panel .kkcard{width:100%;height:auto;max-height:74vh;border-radius:18px 18px 0 0;padding:12px 14px 14px;
     box-shadow:0 -8px 30px rgba(0,0,0,.25)}
-  .venue-panel .kkcard .kk-photo{height:128px}
+  .venue-panel .kkcard .kk-photo{height:110px;margin-bottom:8px}
+  /* 모바일 팝업 컴팩트 */
+  .kk-name{font-size:.96rem}
+  .kk-hero{padding:10px 12px}
+  .kk-herolab{font-size:.72rem}
+  .kk-heroval{font-size:1.32rem}
+  .kk-herosub{font-size:.64rem}
+  .kk-pb{padding:8px 10px;min-width:78px}
+  .kk-pb .kk-pblab{font-size:.68rem;margin-bottom:2px}
+  .kk-pb .kk-pbval{font-size:.98rem}
+  .kk-feat,.kk-kw,.kk-cmt{margin-top:11px;padding-top:10px}
+  .kk-cmt textarea{min-height:42px}
 }
 /* "여기는 이런 점이 좋아요" 요약 헤더 */
 .kk-sum{margin-top:11px;background:linear-gradient(135deg,#fff4f8,#fff0fb);border:1px solid #ffd9e7;

@@ -39,7 +39,7 @@
 <div class="map-top">
   <div class="row1">
     <div class="brandwrap">
-      <span class="ttl">웨딩홀맵</span>
+      <a class="ttl" href="wedding.html">웨딩홀맵</a>
     </div>
     <div class="msearch" id="msearch">
       <span class="qicon">🔍</span>
@@ -48,11 +48,17 @@
     </div>
   </div>
   <div class="mfilters">
-    <div class="grp"><span class="glab">홀타입</span><span id="fType"></span></div>
-    <div class="grp"><button class="chip" id="fFav">💗 찜</button></div>
-    <div class="grp"><button class="chip" id="fPriced">💰 가격있는 곳만</button></div>
-    <div class="grp"><button class="chip" id="fVer">✅ 검증만</button></div>
+    <button class="filterbtn" id="filterToggle">⚙ 필터 <span class="fbcaret">▾</span></button>
+    <div class="filtersummary" id="filterSummary"></div>
     <a class="back methodlink" href="method.html">방법론</a>
+  </div>
+  <div class="filterpanel" id="filterPanel">
+    <div class="grp"><span class="glab">홀타입</span><span id="fType"></span></div>
+    <div class="grp toggles">
+      <button class="chip" id="fFav">💗 찜</button>
+      <button class="chip" id="fPriced">💰 가격있는 곳만</button>
+      <button class="chip" id="fVer">✅ 검증만</button>
+    </div>
   </div>
 </div>
 
