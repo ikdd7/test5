@@ -348,32 +348,42 @@
     return t === "호텔" ? "🏨" : t === "컨벤션" ? "🏢" : t === "하우스웨딩" ? "🏡"
       : t === "야외" ? "🌳" : t === "채플/성당" ? "⛪" : t === "일반예식장" ? "💒" : "💍";
   }
-  // 거지맵식 가격 알약(pill). 식대(굵게) + 대관료(연하게). sel=선택(어두움 + × 닫기)
-  function pillWidth(main, sub, sel) {
-    return Math.round(24 + Math.max(2, main.length) * 11 + (sub ? 6 + sub.length * 8.5 : 0) + 12 + (sel ? 22 : 0));
+  // 거지맵식 가격 알약(pill). 2단: 대관료(윗칸) + 식대 00원/인(아랫칸). sel=선택(어두움 + × 닫기)
+  function strW(s) { var w = 0; for (var i = 0; i < s.length; i++) { var c = s[i]; w += /[0-9]/.test(c) ? 7.6 : c === " " ? 4 : c === "/" ? 5 : 12; } return w; }
+  function pillWidth(lines, sel) {
+    var mw = 0; lines.forEach(function (l) { mw = Math.max(mw, strW((l.l ? l.l + " " : "") + l.v)); });
+    return Math.round(28 + mw + 14 + (sel ? 22 : 0));
   }
-  function pillSVG(main, sub, emoji, color, sel, w) {
-    var h = 26, th = h + 8, cx = w / 2;
-    var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#16203a", bd = sel ? "#2b2b3a" : color;
-    var subfg = sel ? "#c7ccd6" : "#7b8494";
-    var mainX = 26, mainW = Math.max(2, main.length) * 11;
-    var subEl = sub ? '<text x="' + (mainX + mainW + 5) + '" y="' + (h / 2 + 4) + '" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="' + subfg + '">' + sub + '</text>' : "";
+  function pillSVG(lines, emoji, color, sel, w) {
+    var two = lines.length === 2, h = two ? 40 : 28, th = h + 8, cx = w / 2;
+    var bg = sel ? "#2b2b3a" : "#ffffff", bd = sel ? "#2b2b3a" : color;
+    var lab = sel ? "#b9bfca" : "#8a93a3", val = sel ? "#ffffff" : "#16203a";
+    function lineEl(line, y) {
+      if (!line.l) return '<text x="28" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13.5" font-weight="800" fill="' + val + '">' + line.v + '</text>';
+      return '<text x="28" y="' + y + '" font-family="-apple-system,sans-serif">' +
+        '<tspan font-size="11" font-weight="700" fill="' + lab + '">' + line.l + ' </tspan>' +
+        '<tspan font-size="13.5" font-weight="800" fill="' + val + '">' + line.v + '</tspan></text>';
+    }
+    var body = two ? (lineEl(lines[0], 17) + lineEl(lines[1], 33)) : lineEl(lines[0], h / 2 + 4.5);
     var x = sel ? '<text x="' + (w - 13) + '" y="' + (h / 2 + 5.5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="16" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<rect x="1.5" y="1.5" rx="12" ry="12" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
-      '<text x="7" y="' + (h / 2 + 5.5) + '" font-size="14.5">' + emoji + '</text>' +
-      '<text x="' + mainX + '" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13.5" font-weight="800" fill="' + fg + '">' + main + '</text>' +
-      subEl + x + '</svg>';
+      '<text x="8" y="' + (h / 2 + 5) + '" font-size="15">' + emoji + '</text>' +
+      body + x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d), emoji = typeEmoji(d.type), main, sub = "", color;
-    if (priced) { main = manwon(d.meal); sub = d.rental ? manwon(d.rental) : ""; color = priceColor(d.meal, lo, hi, mid); }
-    else { main = "정보없음"; color = "#aeb6c2"; }      // 가격미확인도 동일 pill 디자인
-    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + main + "|" + sub + "|" + color + "|" + emoji;
+    var priced = hasPrice(d), emoji = typeEmoji(d.type), color, lines;
+    if (priced) {
+      color = priceColor(d.meal, lo, hi, mid);
+      lines = [];
+      if (d.rental) lines.push({ l: "대관료", v: manwon(d.rental) + "원" });
+      lines.push({ l: "식대", v: manwon(d.meal) + "원/인" });
+    } else { color = "#aeb6c2"; lines = [{ l: "", v: "정보없음" }]; }
+    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return l.l + l.v; }).join("~") + "|" + color + "|" + emoji;
     if (imgCache[key]) return imgCache[key];
-    var w = pillWidth(main, sub, sel), th = 34;
-    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(main, sub, emoji, color, sel, w)),
+    var w = pillWidth(lines, sel), th = (lines.length === 2 ? 40 : 28) + 8;
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, emoji, color, sel, w)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
   }
