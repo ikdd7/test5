@@ -44,6 +44,8 @@
   .empty{text-align:center;color:#9aa1ad;padding:34px 12px;font-size:.92rem}
   .stars{color:#ffb400;font-size:.86rem;letter-spacing:1px}
   .rphoto{display:block;width:100%;max-height:240px;object-fit:contain;background:#f1f3f7;border-radius:9px;margin-top:8px;cursor:zoom-in}
+  .zoomov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:9999;padding:16px;cursor:zoom-out}
+  .zoomov img{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.5)}
   .nophoto{margin-top:8px;padding:14px;text-align:center;background:#fdeeee;color:#b23b3b;border-radius:9px;font-size:.82rem;font-weight:800}
   .rnote{margin-top:7px;font-size:.84rem;color:#3a4150;font-weight:700;background:#f4f7f1;border:1px solid #dcebd9;border-radius:8px;padding:7px 10px}
   .rdates{margin-top:4px;font-size:.76rem;color:#7a8394;font-weight:700}
@@ -83,6 +85,14 @@
   function $(id){return document.getElementById(id);}
   function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._);t._=setTimeout(function(){t.classList.remove("on");},1600);}
   function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+  // 견적서 사진 확대(data: URL은 새 탭이 차단되므로 페이지 내 라이트박스로)
+  function zoom(src){
+    var o=document.createElement("div"); o.className="zoomov";
+    var im=new Image(); im.src=src; o.appendChild(im);
+    o.onclick=function(){document.body.removeChild(o);};
+    document.body.appendChild(o);
+  }
+  window.zoom=zoom;
   function won(n){return (Math.round(n||0)).toLocaleString("ko-KR")+"원";}
   function dt(ts){var d=new Date(Number(ts));return (d.getMonth()+1)+"."+d.getDate()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
 
@@ -130,7 +140,7 @@
         return '<div class="card"><div class="top"><div class="name">'+esc(r.venue_name||"(이름없음)")+'</div><div class="meta">'+dt(r.ts)+'</div></div>'+
           '<div class="vals">식대 <b>'+(r.meal?won(r.meal):"-")+'</b>'+(r.rental?' · 대관료 <b>'+won(r.rental)+'</b>':"")+'</div>'+
           ((r.quote_date||r.wedding_date)?'<div class="rdates">'+(r.quote_date?'견적일 '+r.quote_date:"")+(r.wedding_date?'  ·  예식일 '+r.wedding_date:"")+'</div>':"")+
-          (r.photo?'<img class="rphoto" src="'+r.photo+'" onclick="window.open(this.src)" alt="견적서"/>':'<div class="nophoto">📷 사진 없음</div>')+
+          (r.photo?'<img class="rphoto" src="'+r.photo+'" onclick="zoom(this.src)" alt="견적서"/>':'<div class="nophoto">📷 사진 없음</div>')+
           (r.note?'<div class="rnote">📝 '+esc(r.note)+'</div>':'')+
           '<div class="acts"><button class="ok" onclick="act('+r.id+',\'approve\')">✓ 승인</button>'+
           '<button class="no" onclick="act('+r.id+',\'reject\')">✕ 반려</button>'+
