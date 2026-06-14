@@ -361,17 +361,10 @@
       x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d);
-    if (!priced) {
-      if (imgCache.g) return imgCache.g;                 // 가격미확인: 진한 회색 동그라미
-      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">' +
-        '<circle cx="10" cy="10" r="7.5" fill="#8a93a3" stroke="#fff" stroke-width="1.8"/>' +
-        '<circle cx="10" cy="10" r="2.8" fill="#fff"/></svg>';
-      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(20, 20), { offset: new kakao.maps.Point(10, 10) });
-      return imgCache.g;
-    }
-    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid), emoji = typeEmoji(d.type);
-    var key = (sel ? "s|" : "p|") + t + "|" + color + "|" + emoji;
+    var priced = hasPrice(d), emoji = typeEmoji(d.type), t, color;
+    if (priced) { t = manwon(d.meal); color = priceColor(d.meal, lo, hi, mid); }
+    else { t = "정보없음"; color = "#aeb6c2"; }      // 가격미확인도 동일 pill 디자인
+    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + t + "|" + color + "|" + emoji;
     if (imgCache[key]) return imgCache[key];
     var w = 28 + Math.max(2, t.length) * 10 + 8 + (sel ? 20 : 0), th = 32;
     var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, emoji, color, sel)),
@@ -393,7 +386,7 @@
         title: (d.name || "") + (hasPrice(d) ? " " + manwon(d.meal) : ""),
       });
       mk.__img = normal;
-      if (hasPrice(d)) mk.__selImg = markerImage(d, lo, hi, mid, true);
+      mk.__selImg = markerImage(d, lo, hi, mid, true);
       kakao.maps.event.addListener(mk, "click", function () {
         if (selectedMarker === mk) { window.__closePop(); return; } // 선택된 핀 다시 누르면 닫기(× 토글)
         if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} }
