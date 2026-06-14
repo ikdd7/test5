@@ -92,6 +92,8 @@ function extractOgImage(html, baseUrl) {
   try { img = new URL(img, baseUrl).href; } catch (e) { return null; }
   if (!/^https:/.test(img)) return null;            // 혼합콘텐츠 방지: https만
   if (/(logo|sprite|blank|spacer|1x1|icon|favicon)/i.test(img)) return null;
+  // 실제 사진이 아닌 공유카드/배너/기본이미지류 제외(파일명 기준)
+  if (/(sns|share|symbol|banner|ci[-_]|bi[-_]|[-_]ci\.|[-_]bi\.|default|no[-_]?img|noimage|placeholder|common|opengraph)/i.test(img)) return null;
   if (!IMG_OK.test(img) && !/og|image|thumb|photo|img/i.test(img)) return null;
   return img;
 }
