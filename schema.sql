@@ -18,7 +18,11 @@ create table if not exists reviews (
   venue_name text,
   client_id  text not null,
   body       text not null,
+  rating     int,                       -- 별점 1~5 (없으면 null)
   status     text not null default 'visible',
   created_at timestamptz not null default now()
 );
 create index if not exists reviews_venue_idx on reviews (venue_key, status);
+
+-- 기존 테이블에 별점 컬럼 추가(이미 만들어둔 경우 이 한 줄만 실행)
+alter table reviews add column if not exists rating int;

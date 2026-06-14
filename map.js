@@ -63,7 +63,9 @@
   function getLocalRevs(d) { try { return JSON.parse(localStorage.getItem(revKey(d)) || "[]"); } catch (e) { return []; } }
   function setLocalRevs(d, a) { try { localStorage.setItem(revKey(d), JSON.stringify(a)); } catch (e) {} }
   function getRevs(d) { return d._revsrv ? (d._revs || []) : getLocalRevs(d); }
-  function saveLocalReview(d, t, cid) { var a = getLocalRevs(d); a.unshift({ id: Date.now(), t: t, d: Date.now(), cid: cid }); setLocalRevs(d, a); }
+  function saveLocalReview(d, t, cid, rating) { var a = getLocalRevs(d); a.unshift({ id: Date.now(), t: t, d: Date.now(), cid: cid, rating: rating || null }); setLocalRevs(d, a); }
+  var draftRating = 0; // 후기 작성 시 선택한 별점(팝업당)
+  window.__setRating = function (n) { draftRating = (draftRating === n) ? 0 : n; rerenderPanel(); };
   function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
   // 키워드 카운트: 서버 집계(나 포함) 우선, 없으면 이 기기 투표만
   function kwCount(d, label) {
@@ -170,15 +172,16 @@
     if (!currentPop || !panelEl) return;
     var d = currentPop, ta = panelEl.querySelector(".kk-cmt textarea"), t = ta ? ta.value.trim() : "";
     if (!t) { if (ta) ta.focus(); return; }
-    var cid = clientId(), clear = function () { if (ta) ta.value = ""; rerenderPanel(); };
+    var cid = clientId(), rating = draftRating || null;
+    var clear = function () { draftRating = 0; if (ta) ta.value = ""; rerenderPanel(); };
     if (apiOK) {
       var btn = panelEl.querySelector(".kk-cmtbtn"); if (btn) { btn.disabled = true; btn.textContent = "등록 중…"; }
       fetch(API + "/reviews", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ venue: favKey(d), name: d.name, text: t, cid: cid }) })
+        body: JSON.stringify({ venue: favKey(d), name: d.name, text: t, cid: cid, rating: rating }) })
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
         .then(function (row) { if (!d._revs) d._revs = []; d._revs.unshift(row); d._revsrv = true; clear(); })
-        .catch(function () { saveLocalReview(d, t, cid); clear(); });
-    } else { saveLocalReview(d, t, cid); clear(); }
+        .catch(function () { saveLocalReview(d, t, cid, rating); clear(); });
+    } else { saveLocalReview(d, t, cid, rating); clear(); }
   };
   window.__delReview = function (id) {
     if (!currentPop) return;
@@ -195,8 +198,10 @@
     if (panelEl) panelEl.classList.remove("open", "expanded"); lockMap(false); currentPop = null;
     if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
   };
+  window.__photoErr = function (img) { try { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; } catch (e) {} };
   function openPop(d) {
     currentPop = d;
+    draftRating = 0; // 새 팝업: 별점 초기화
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
@@ -271,11 +276,11 @@
       d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
     var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
     var cons = (d.cons && d.cons.length) ? '<div class="kk-pc bad">👎 ' + d.cons.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
-    // 특징·장단점은 실제 데이터가 있을 때만(빈 "정보 수집 중" 자리 제거)
-    var feat = (tagsBlock || pros || cons)
-      ? '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' + tagsBlock + pros + cons +
-        ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "") + "</div>"
-      : "";
+    var featBody = tagsBlock + pros + cons;
+    // 특징·장단점: 데이터 없어도 자리 유지(빈 placeholder) → 팝업 크기 일정
+    var feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' +
+      (featBody ? featBody + ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "")
+        : '<div class="kk-featempty">아직 등록된 특징·장단점이 없어요</div>') + "</div>";
     // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
     var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
     var total = counts.reduce(function (a, b) { return a + b; }, 0);
@@ -300,16 +305,27 @@
           '<span class="kk-kwlab">' + k[0] + " " + esc(k[1]) + "</span>" +
           (total ? '<em class="kk-kwpct">' + p + "%</em>" : "") + "</button>";
       }).join("") + "</div></div>";
-    // ── 후기 목록·작성 ──
+    // ── 후기 목록·작성(별점 포함) ──
     var revs = getRevs(d), cid = apiOK ? clientId() : null;
+    var rated = revs.filter(function (r) { return r.rating; });
+    var avg = rated.length ? (rated.reduce(function (s, r) { return s + r.rating; }, 0) / rated.length) : 0;
+    function starStr(n) { n = Math.round(n); return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n); }
     var revList = revs.length ? '<div class="kk-revs">' + revs.map(function (r) {
       var own = (r.cid == null) || (cid != null && r.cid === cid);
-      return '<div class="kk-rev"><div class="kk-revtxt">' + esc(r.t) + "</div>" +
+      return '<div class="kk-rev">' +
+        (r.rating ? '<div class="kk-revstars">' + starStr(r.rating) + "</div>" : "") +
+        '<div class="kk-revtxt">' + esc(r.t) + "</div>" +
         '<div class="kk-revmeta"><span>' + revDate(r.d) + (own ? " · 내 후기" : "") + "</span>" +
         (own ? '<button class="kk-revdel" onclick="window.__delReview(' + r.id + ')">삭제</button>' : "") + "</div></div>";
     }).join("") + "</div>" : "";
-    var cmt = '<div class="kk-cmt"><div class="kk-cmth">📝 후기 ' + (revs.length ? "<b>" + revs.length + "</b>개" : "남기기") + "</div>" +
-      summary +
+    // 별점 매기기 UX (후기 남기기 ↔ 등록 사이)
+    var starSel = '<div class="kk-rate"><div class="kk-ratel">별점</div><div class="kk-stars">' +
+      [1, 2, 3, 4, 5].map(function (n) {
+        return '<button class="kk-star' + (n <= draftRating ? " on" : "") + '" onclick="window.__setRating(' + n + ')" aria-label="' + n + '점">★</button>';
+      }).join("") +
+      '<span class="kk-ratenum">' + (draftRating ? draftRating + ".0" : (avg ? "평균 " + avg.toFixed(1) : "")) + "</span></div></div>";
+    var cmt = '<div class="kk-cmt"><div class="kk-cmth">📝 후기 ' + (revs.length ? "<b>" + revs.length + "</b>개" + (avg ? ' <span class="kk-cmtavg">★ ' + avg.toFixed(1) + "</span>" : "") : "남기기") + "</div>" +
+      starSel +
       '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요"></textarea>' +
       '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
 
@@ -317,7 +333,8 @@
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
       (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
     return '<div class="kkcard">' +
-      (d.photo ? '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="this.style.display=\'none\'">' : "") +
+      (d.photo ? '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="window.__photoErr(this)">'
+        : '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>') +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +

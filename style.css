@@ -359,6 +359,19 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-revmeta span{font-size:.7rem;color:#a89aa6;font-weight:700}
 .kk-revdel{border:0;background:none;color:#c08;opacity:.55;font-size:.72rem;font-weight:700;cursor:pointer;padding:0}
 .kk-revdel:hover{opacity:1}
+.kk-revstars{color:#ffb400;font-size:.86rem;letter-spacing:1px;margin-bottom:3px}
+/* 빈 자리 유지 placeholder(사진/특징) */
+.kk-photo-empty{display:flex;align-items:center;justify-content:center;background:#eef1f5;color:#aab2bf;font-size:.86rem;font-weight:700}
+.kk-featempty{font-size:.82rem;color:#aab2bf;font-weight:600;padding:3px 0 2px}
+/* 별점 매기기 */
+.kk-rate{display:flex;align-items:center;gap:9px;margin:2px 0 9px}
+.kk-ratel{font-size:.8rem;font-weight:800;color:#586074}
+.kk-stars{display:flex;align-items:center;gap:1px}
+.kk-star{border:0;background:none;cursor:pointer;font-size:1.55rem;line-height:1;color:#dfe3ea;padding:0 1px;font-family:inherit;transition:color .1s}
+.kk-star.on{color:#ffb400}
+.kk-star:active{transform:scale(1.15)}
+.kk-ratenum{font-size:.78rem;font-weight:800;color:#f0a000;margin-left:5px}
+.kk-cmtavg{color:#f0a000;font-weight:800;font-size:.82rem;margin-left:3px}
 .mpop .big{font-weight:900;font-size:1.15rem;color:#d6336c;margin:3px 0}
 .mpop .big span{font-size:.7rem;color:#888}
 .mpop a{display:inline-block;margin-top:7px;color:#d6336c;font-weight:800}
