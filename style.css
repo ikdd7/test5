@@ -283,6 +283,25 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-herosub{font-size:.68rem;color:#b3a0ad;font-weight:700;margin-top:3px}
 /* 식대·대관료·보증인원 박스 */
 .kk-pricerow{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+/* 지역 평균 대비 비교바(시안5) */
+.kk-cmp{margin-top:9px;background:#fff;border:1px solid #ffd9e6;border-radius:13px;padding:11px 13px}
+.kk-cmp-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.kk-cmp-ttl{font-size:.76rem;font-weight:800;color:#8b93a1}
+.kk-cmp-diff{font-size:.78rem;font-weight:800}
+.kk-cmp-diff.low{color:#2f9e63}.kk-cmp-diff.high{color:#e8590c}.kk-cmp-diff.eq{color:#8b93a1}
+.kk-cmp-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.kk-cmp-lab{font-size:.74rem;font-weight:700;color:#7a828f;width:58px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-cmp-track{flex:1;height:9px;background:#f2f0f3;border-radius:5px;overflow:hidden}
+.kk-cmp-track i{display:block;height:100%;border-radius:5px}
+.kk-cmp-track i.me{background:linear-gradient(90deg,#f06595,#d6336c)}
+.kk-cmp-track i.av{background:#cbb8c4}
+.kk-cmp-val{font-size:.8rem;font-weight:800;color:#3a4150;width:62px;flex:none;text-align:right}
+.kk-cmp-val.me{color:#d6336c}
+.kk-cmp-n{font-size:.68rem;color:#aab2bf;font-weight:600;margin-top:8px;text-align:right}
+/* 잠김 상태 지역 평균 한 줄 */
+.kk-avgline{margin-top:9px;background:#f7f3fb;border:1px solid #ece3f4;border-radius:11px;padding:9px 12px;font-size:.8rem;font-weight:700;color:#7a6a8a}
+.kk-avgline b{color:#9a5fb0;font-weight:900}
+.kk-avgline i{font-style:normal;font-weight:600;color:#aab2bf;font-size:.72rem}
 .kk-pb{flex:1;border-radius:12px;padding:9px 11px;min-width:84px}
 .kk-pb .kk-pblab{font-size:.72rem;font-weight:800;margin-bottom:3px}
 .kk-pb .kk-pbval{font-size:1.08rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap}

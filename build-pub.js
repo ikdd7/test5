@@ -33,4 +33,24 @@ const hub = V.filter(function (v) { return v.meal > 0; }).map(function (v) {
 });
 fs.writeFileSync(path.join(root, "hub-data.js"), "/* 자동생성(build-pub) — 익명 가격, 허브 통계용 */\nwindow.WEDDING_VENUES =\n" + JSON.stringify(hub) + ";\n");
 
-console.log("build-pub: venues.pub.js " + pub.length + "곳(가격제외), hub-data.js " + hub.length + "곳(익명가격)");
+// 3) hub-stats.js — 지역/지역+타입별 가격 중앙값(비교바용). 이름/좌표 없음.
+function median(arr) {
+  var a = arr.filter(function (x) { return x > 0; }).sort(function (x, y) { return x - y; });
+  if (!a.length) return null;
+  var m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : Math.round((a[m - 1] + a[m]) / 2);
+}
+function agg(rows) {
+  return { meal: median(rows.map(function (v) { return v.meal; })), rental: median(rows.map(function (v) { return v.rental; })), n: rows.length };
+}
+var groupsR = {}, groupsRT = {};
+hub.forEach(function (v) {
+  (groupsR[v.region] = groupsR[v.region] || []).push(v);
+  var k = v.region + "|" + v.type; (groupsRT[k] = groupsRT[k] || []).push(v);
+});
+var byRegion = {}, byRegionType = {};
+Object.keys(groupsR).forEach(function (r) { byRegion[r] = agg(groupsR[r]); });
+Object.keys(groupsRT).forEach(function (k) { byRegionType[k] = agg(groupsRT[k]); });
+fs.writeFileSync(path.join(root, "hub-stats.js"), "/* 자동생성(build-pub) — 지역/타입 가격 중앙값(비교바용) */\nwindow.HUB_STATS = " + JSON.stringify({ byRegion: byRegion, byRegionType: byRegionType }) + ";\n");
+
+console.log("build-pub: venues.pub.js " + pub.length + "곳(가격제외), hub-data.js " + hub.length + "곳(익명가격), hub-stats.js " + Object.keys(byRegion).length + "지역");

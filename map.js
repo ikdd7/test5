@@ -40,6 +40,39 @@
   function getMemo(d) { try { return localStorage.getItem(memoKey(d)) || ""; } catch (e) { return ""; } }
   function setMemo(d, t) { try { localStorage.setItem(memoKey(d), t); } catch (e) {} }
   function totalCost(d) { return hasPrice(d) ? d.meal * GUESTS + (d.rental || 0) : null; }
+  // 지역(또는 지역+타입) 가격 중앙값 — 비교바/맥락용. 표본 충분할 때만.
+  function regionAvg(d) {
+    var H = window.HUB_STATS; if (!H || !d.region) return null;
+    var rt = H.byRegionType && H.byRegionType[d.region + "|" + d.type];
+    if (rt && rt.n >= 5 && rt.meal) return { meal: rt.meal, rental: rt.rental, n: rt.n, scope: d.type };
+    var r = H.byRegion && H.byRegion[d.region];
+    if (r && r.n >= 6 && r.meal) return { meal: r.meal, rental: r.rental, n: r.n, scope: null };
+    return null;
+  }
+  function avgTotalAt(a) { return a.meal * GUESTS + (a.rental || 0); }
+  // 잠김 상태에서도 지역 평균은 맥락으로 보여줌(이 홀 가격은 노출 안 함)
+  function lockedAvgLine(d) {
+    var a = regionAvg(d); if (!a) return "";
+    var sc = (a.scope ? d.region + " " + a.scope : d.region) + " 평균";
+    return '<div class="kk-avgline">📊 ' + esc(sc) + ' <b>' + manwon(avgTotalAt(a)) + '원</b> <i>· ' + a.n + '곳 기준</i></div>';
+  }
+  // 지역 평균 대비 비교바(시안5) — 이 홀 가격이 있을 때만
+  function compareBar(d) {
+    if (!hasPrice(d)) return "";
+    var a = regionAvg(d); if (!a) return "";
+    var mine = totalCost(d), avg = avgTotalAt(a);
+    if (!(mine > 0) || !(avg > 0)) return "";
+    var diff = Math.round((mine - avg) / avg * 100);
+    var cls = diff <= -3 ? "low" : diff >= 3 ? "high" : "eq";
+    var lab = diff <= -3 ? "▼ 평균보다 " + (-diff) + "% 낮아요" : diff >= 3 ? "▲ 평균보다 " + diff + "% 높아요" : "평균과 비슷해요";
+    var mx = Math.max(mine, avg), mw = Math.round(mine / mx * 100), aw = Math.round(avg / mx * 100);
+    var sc = (a.scope ? d.region + " " + a.scope : d.region) + " 평균";
+    return '<div class="kk-cmp">' +
+      '<div class="kk-cmp-top"><span class="kk-cmp-ttl">지역 평균 대비</span><span class="kk-cmp-diff ' + cls + '">' + lab + "</span></div>" +
+      '<div class="kk-cmp-row"><span class="kk-cmp-lab">이 홀</span><span class="kk-cmp-track"><i class="me" style="width:' + mw + '%"></i></span><span class="kk-cmp-val me">' + manwon(mine) + "원</span></div>" +
+      '<div class="kk-cmp-row"><span class="kk-cmp-lab">' + esc(sc) + '</span><span class="kk-cmp-track"><i class="av" style="width:' + aw + '%"></i></span><span class="kk-cmp-val">' + manwon(avg) + "원</span></div>" +
+      '<div class="kk-cmp-n">' + a.n + "곳 기준 · 추정</div></div>";
+  }
   function favList() { return DATA.filter(function (d) { return FAVS[favKey(d)]; }); }
 
   // ── 키워드 후기(네이버 플레이스식) ──
@@ -370,6 +403,7 @@
           '<div class="kk-heroval">' + won(totalCost(d)) + "</div>" +
           '<div class="kk-herosub">식대×하객 + 대관료 추정' + (d.guarantee && d.guarantee > GUESTS ? " · 보증 " + d.guarantee + "명 주의" : "") + "</div>" +
         "</div>" +
+        compareBar(d) +
         '<div class="kk-pricerow">' +
           '<div class="kk-pb meal"><div class="kk-pblab">식대 (1인)</div><div class="kk-pbval">' + won(d.meal) + "</div></div>" +
           '<div class="kk-pb rent"><div class="kk-pblab">대관료</div><div class="kk-pbval">' +
@@ -384,6 +418,7 @@
           '<div class="kk-heroval kk-blur">00,000,000원</div>' +
           '<div class="kk-herosub">🔒 가격 <b>제보·검증</b> 후 전체 공개</div>' +
         "</div>" +
+        lockedAvgLine(d) +
         '<div class="kk-pricerow">' +
           '<div class="kk-pb meal"><div class="kk-pblab">식대 (1인)</div><div class="kk-pbval kk-blur">00,000원</div></div>' +
           '<div class="kk-pb rent"><div class="kk-pblab">대관료</div><div class="kk-pbval kk-blur">000만원</div></div>' +

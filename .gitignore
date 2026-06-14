@@ -10,3 +10,4 @@ package-lock.json
 # 빌드 시 생성(가격 게이팅)
 venues.pub.js
 hub-data.js
+hub-stats.js
