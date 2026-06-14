@@ -243,6 +243,14 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kkcard .kk-x:hover{background:#e2e6ec;color:#333}
 /* 섹션 구분선(거지맵식 정돈) */
 .kk-feat,.kk-kw,.kk-cmt{border-top:1px solid #eef0f4;margin-top:14px;padding-top:13px}
+/* 후기·평가 접이식(비중 축소): 기본 접힘 + 토글 */
+.kk-revsec{border-top:1px solid #eef0f4;margin-top:14px;padding-top:11px}
+.kk-revtoggle{display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;
+  padding:2px 0;cursor:pointer;font-family:inherit;text-align:left}
+.kk-revtl{font-size:.86rem;font-weight:800;color:#3a4150;white-space:nowrap}
+.kk-revtsum{flex:1;font-size:.78rem;color:#9aa2b0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kk-revtarr{font-size:.8rem;color:#b6bdc8}
+.kk-revbody>.kk-kw{border-top:0;margin-top:8px;padding-top:0}
 /* 우하단 GPS 버튼(반투명) */
 #mapFabs{position:fixed;right:14px;bottom:22px;z-index:1000}
 #mapFabs .fab{width:46px;height:46px;border-radius:50%;border:0;

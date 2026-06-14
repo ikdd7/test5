@@ -90,6 +90,8 @@
   window.__setRating = function (n) { draftRating = (draftRating === n) ? 0 : n; rerenderPanel(); };
   var showPriceForm = false, priceThanks = false; // 가격 제보 폼 펼침 / 제보 직후 안내
   window.__togglePriceForm = function () { showPriceForm = !showPriceForm; rerenderPanel(); };
+  var showReviews = false; // 후기·평가 영역 펼침(기본 접힘 — 비중 축소)
+  window.__toggleReviews = function () { showReviews = !showReviews; rerenderPanel(); };
   function resizeImg(file, cb) { // 견적서 사진 → 1000px·JPEG로 축소한 dataURL
     if (!file) { cb(null); return; }
     var fr = new FileReader();
@@ -270,7 +272,7 @@
   window.__photoErr = function (img) { try { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; } catch (e) {} };
   function openPop(d) {
     currentPop = d;
-    draftRating = 0; showPriceForm = false; priceThanks = false; // 새 팝업: 별점/제보폼 초기화
+    draftRating = 0; showPriceForm = false; priceThanks = false; showReviews = false; // 새 팝업: 별점/제보폼/후기 초기화
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
@@ -439,6 +441,18 @@
       starSel +
       '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요"></textarea>' +
       '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
+    // ── 후기·평가: 기본 접힘(비중 축소). 한 줄 요약 + 펼치기 토글 ──
+    var revMeta = [];
+    if (revs.length) revMeta.push("후기 " + revs.length + "개" + (avg ? " ★" + avg.toFixed(1) : ""));
+    if (total) revMeta.push("평가 " + total + "명");
+    var revSummary = revMeta.length ? revMeta.join(" · ") : "아직 후기·평가가 없어요";
+    var reviewSec = '<div class="kk-revsec' + (showReviews ? " open" : "") + '">' +
+      '<button class="kk-revtoggle" onclick="window.__toggleReviews()">' +
+        '<span class="kk-revtl">📝 후기 · 평가</span>' +
+        '<span class="kk-revtsum">' + revSummary + '</span>' +
+        '<span class="kk-revtarr">' + (showReviews ? "▴" : "▾") + "</span>" +
+      "</button>" +
+      (showReviews ? '<div class="kk-revbody">' + kwGrid + cmt + "</div>" : "") + "</div>";
 
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
@@ -449,7 +463,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + kwGrid + cmt +
+      feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + reviewSec +
       '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }
