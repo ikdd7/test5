@@ -363,11 +363,11 @@
   function markerImage(d, lo, hi, mid, sel) {
     var priced = hasPrice(d);
     if (!priced) {
-      if (imgCache.g) return imgCache.g;                 // 가격미확인: 진한 회색 GPS(물방울) 핀
-      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="27">' +
-        '<path d="M10 1C5 1 1.2 4.8 1.2 9.8 1.2 16 10 26 10 26S18.8 16 18.8 9.8C18.8 4.8 15 1 10 1Z" fill="#7b8494" stroke="#fff" stroke-width="1.6"/>' +
-        '<circle cx="10" cy="9.8" r="3.1" fill="#fff"/></svg>';
-      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(20, 27), { offset: new kakao.maps.Point(10, 26) });
+      if (imgCache.g) return imgCache.g;                 // 가격미확인: 진한 회색 동그라미
+      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">' +
+        '<circle cx="10" cy="10" r="7.5" fill="#8a93a3" stroke="#fff" stroke-width="1.8"/>' +
+        '<circle cx="10" cy="10" r="2.8" fill="#fff"/></svg>';
+      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(20, 20), { offset: new kakao.maps.Point(10, 10) });
       return imgCache.g;
     }
     var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid), emoji = typeEmoji(d.type);
