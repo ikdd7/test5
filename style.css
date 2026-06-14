@@ -430,18 +430,20 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-revstars{color:#ffb400;font-size:.86rem;letter-spacing:1px;margin-bottom:3px}
 /* 빈 자리 유지 placeholder(사진/특징) */
 .kk-photo-empty{display:flex;align-items:center;justify-content:center;background:#eef1f5;color:#aab2bf;font-size:.86rem;font-weight:700}
-/* 사진 없을 때 디자인 플레이스홀더(타입별 색·아이콘) */
-.kk-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;position:relative;overflow:hidden}
-.kk-ph::before{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.32);top:-46px;right:-34px}
-.kk-ph::after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.22);bottom:-30px;left:-20px}
-.kk-ph-ic{font-size:2.7rem;line-height:1;z-index:1;filter:drop-shadow(0 3px 7px rgba(0,0,0,.12))}
-.kk-ph-tx{z-index:1;font-size:.82rem;font-weight:800;letter-spacing:.01em}
-.kk-ph-tx i{font-style:normal;font-weight:600;opacity:.7}
-.kk-ph-w{background:linear-gradient(135deg,#fde4ef,#fff1ea);color:#c25b86}
-.kk-ph-v{background:linear-gradient(135deg,#e6ecff,#f1ecff);color:#6a72c8}
-.kk-ph-h{background:linear-gradient(135deg,#fff0dd,#ffe9ec);color:#c68a3a}
-.kk-ph-c{background:linear-gradient(135deg,#eaf2ff,#f3f0ff);color:#7088c2}
-.kk-ph-g{background:linear-gradient(135deg,#e2f4e6,#eefaf0);color:#4f9a66}
+/* 사진 없을 때 디자인 플레이스홀더(타입별 색·아이콘) — .kkcard .kk-photo 보다 우선하도록 동일 특이도 */
+.kkcard .kk-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;position:relative;overflow:hidden;text-align:center}
+.kk-ph::before{content:"";position:absolute;width:170px;height:170px;border-radius:50%;background:rgba(255,255,255,.42);top:-54px;right:-44px;filter:blur(1px)}
+.kk-ph::after{content:"";position:absolute;width:115px;height:115px;border-radius:50%;background:rgba(255,255,255,.22);bottom:-38px;left:-28px}
+.kk-ph-badge{z-index:1;width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.58);box-shadow:0 7px 20px rgba(0,0,0,.10),inset 0 0 0 1px rgba(255,255,255,.65)}
+.kk-ph-ic{font-size:2.05rem;line-height:1;filter:drop-shadow(0 2px 4px rgba(0,0,0,.14))}
+.kk-ph-tx{z-index:1;font-size:1rem;font-weight:900;letter-spacing:-.01em;line-height:1.1}
+.kk-ph-sub{z-index:1;font-size:.76rem;font-weight:700;opacity:.72;margin-top:-4px}
+.kk-ph-w{background:linear-gradient(135deg,#fbdcea,#ffe9e0 55%,#fff3ee);color:#c25b86}
+.kk-ph-v{background:linear-gradient(135deg,#e1e8ff,#ece8ff 55%,#f4eeff);color:#6a72c8}
+.kk-ph-h{background:linear-gradient(135deg,#ffe9cf,#ffe2e6 55%,#fff0ea);color:#c0822f}
+.kk-ph-c{background:linear-gradient(135deg,#e3eeff,#ece9ff 55%,#f3f0ff);color:#6c84c4}
+.kk-ph-g{background:linear-gradient(135deg,#d8f0de,#e7f7ea 55%,#f0faf1);color:#479060}
 .kk-featempty{font-size:.82rem;color:#aab2bf;font-weight:600;padding:3px 0 2px}
 /* 별점 매기기 */
 .kk-rate{display:flex;align-items:center;gap:9px;margin:2px 0 9px}

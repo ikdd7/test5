@@ -221,9 +221,12 @@
   }
   function placeholderHtml(d) {
     var loc = (d.region || "") + (d.district ? " " + d.district : "");
-    return '<div class="kk-photo kk-ph kk-ph-' + (venueIcon(d.type) === "🏨" ? "h" : venueIcon(d.type) === "⛪" ? "c" : venueIcon(d.type) === "🌿" ? "g" : venueIcon(d.type) === "🏛️" ? "v" : "w") + '">' +
-      '<span class="kk-ph-ic">' + venueIcon(d.type) + '</span>' +
-      '<span class="kk-ph-tx">' + esc(d.type || "예식장") + (loc ? ' <i>· ' + esc(loc) + '</i>' : "") + '</span>' +
+    var ic = venueIcon(d.type);
+    var k = ic === "🏨" ? "h" : ic === "⛪" ? "c" : ic === "🌿" ? "g" : ic === "🏛️" ? "v" : "w";
+    return '<div class="kk-photo kk-ph kk-ph-' + k + '">' +
+      '<div class="kk-ph-badge"><span class="kk-ph-ic">' + ic + '</span></div>' +
+      '<div class="kk-ph-tx">' + esc(d.type || "예식장") + '</div>' +
+      (loc ? '<div class="kk-ph-sub">' + esc(loc) + '</div>' : "") +
       '</div>';
   }
   // 팝업 열 때 서버에서 투표·후기 동기화(없으면 폴백 유지)
