@@ -84,6 +84,21 @@
     ["👥", "하객 수용이 좋아요"],
   ];
   var KW_EMOJI = {}; KEYWORDS.forEach(function (k) { KW_EMOJI[k[1]] = k[0]; });
+  // 특징·장단점 6축: 데이터(태그+커뮤니티 언급+pros)에서 긍정 신호 있는 축만 노출. cons에 부정 있으면 제외.
+  var FEAT_AXES = [
+    { ic: "🍽️", label: "음식이 좋아요", pos: /맛있|음식.{0,4}(좋|굿|훌륭)|식사.{0,4}좋|뷔페.{0,3}(맛|좋)|코스.{0,3}(맛|좋)|맛집/, neg: /맛없|음식.{0,4}(별로|아쉽|실망)|식사.{0,4}(별로|아쉽)/ },
+    { ic: "🏛️", label: "홀이 넓어요", pos: /홀.{0,4}넓|넓은.{0,3}홀|규모.{0,3}크|웅장|층고|천고|단독홀|대형|홀이 넓어요/, neg: /홀.{0,4}좁|좁(은|아|다)|규모.{0,4}작|협소/ },
+    { ic: "🅿️", label: "주차 편해요", pos: /주차.{0,4}(편|넓|많|충분)|주차장.{0,3}넓|발렛|발레파킹|주차 가능|주차가 편해요/, neg: /주차.{0,4}(불편|좁|어려|부족|난)/ },
+    { ic: "🚇", label: "교통 편해요", pos: /교통.{0,4}편|역세권|역.{0,3}가까|지하철.{0,3}가까|접근성.{0,4}좋|역.{0,3}도보|교통이 편해요/, neg: /교통.{0,4}불편|외진|접근성.{0,4}(안|나쁨|별로)/ },
+    { ic: "🌿", label: "야외·가든", pos: /야외|가든|루프탑|정원|테라스|오션뷰|글라스|하우스/, neg: /실내만|야외.{0,4}없/ },
+    { ic: "🙂", label: "응대 친절해요", pos: /친절|응대.{0,4}좋|상담.{0,4}좋|직원.{0,4}좋|플래너.{0,4}좋|응대가 친절해요/, neg: /불친절|응대.{0,4}(별로|아쉽)|상담.{0,4}별로|강매|압박/ },
+  ];
+  function featAxes(d) {
+    var pos = ((d.tags || []).join(" ") + " " + (d.type || "") + " " +
+      (d.community || []).map(function (c) { return c[0]; }).join(" ") + " " + (d.pros || []).join(" "));
+    var neg = (d.cons || []).join(" ");
+    return FEAT_AXES.filter(function (a) { return a.pos.test(pos) && !a.neg.test(neg); });
+  }
   // ── 백엔드(Vercel /api) 연동 + localStorage 폴백 ──
   var API = (location.protocol === "https:" || location.protocol === "http:") ? "/api" : null;
   var apiOK = !!API;
@@ -453,15 +468,15 @@
       ? '<div class="kk-pr"><div class="kk-prthx">✅ 제보 감사합니다!<br><span>운영자 검증 후 가격이 공개돼요</span></div></div>'
       : '<div class="kk-pr' + (hasPrice(d) ? "" : " soon") + '">' + prInfo +
         '<button class="kk-prbtn" onclick="window.__togglePriceForm()">💰 가격 ' + (showPriceForm ? "제보 닫기" : "제보하기") + "</button>" + prForm + "</div>";
-    var tagsBlock = (d.tags && d.tags.length) ? '<div class="kk-chips feat">' +
-      d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
-    var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
-    var cons = (d.cons && d.cons.length) ? '<div class="kk-pc bad">👎 ' + d.cons.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
-    var featBody = tagsBlock + pros + cons;
+    // 6축(홀/주차/교통/야외/음식/응대) 중 데이터상 '괜찮은' 축만 긍정 배지로
+    var axes = featAxes(d);
+    var featBody = axes.length ? '<div class="kk-chips feat good">' +
+      axes.map(function (a) { return "<span>" + a.ic + " " + a.label + "</span>"; }).join("") +
+      '</div><div class="kk-pcsrc">※ 후기·정보 기반 (검증 전)</div>' : "";
     // 특징·장단점: 데이터 없어도 자리 유지(빈 placeholder) → 팝업 크기 일정
-    var feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' +
-      (featBody ? featBody + ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "")
-        : '<div class="kk-featempty">아직 등록된 특징·장단점이 없어요</div>') + "</div>";
+    var feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 이런 점이 좋아요</div>' +
+      (featBody ? featBody
+        : '<div class="kk-featempty">아직 등록된 좋은 점이 없어요</div>') + "</div>";
     // 커뮤니티(블로그) 후기에서 자주 나온 키워드 — 언급 빈도 기반
     var comm = (d.community && d.community.length)
       ? '<div class="kk-feat kk-comm"><div class="kk-feattitle">💬 커뮤니티에서 자주 나온 얘기</div>' +
