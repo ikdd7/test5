@@ -512,7 +512,11 @@
   var PILL_PAD = 12, PILL_ICON = 20;
   function xmlEsc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function strW(s) { var w = 0; for (var i = 0; i < s.length; i++) { var c = s[i]; w += /[0-9]/.test(c) ? 7.6 : c === " " ? 4 : c === "/" ? 5 : c === "." ? 4 : 12; } return w; }
-  function lineValW(l) { return l.num != null ? strW(l.num) + 2 + strW(l.unit) : strW(l.v); }
+  function lineValW(l) {
+    if (l.bar != null) return l.bar + 4 + strW(l.unit);
+    if (l.num != null) return strW(l.num) + 2 + strW(l.unit);
+    return strW(l.v);
+  }
   function pillWidth(lines, sel) {
     var hasIcon = lines.some(function (l) { return l.ic; });
     var mv = 0; lines.forEach(function (l) { mv = Math.max(mv, lineValW(l)); });
@@ -525,6 +529,10 @@
     function row(line, i) {
       var y = 16 + i * 16, vx = line.ic ? PILL_PAD + PILL_ICON : PILL_PAD;
       var ic = line.ic ? '<text x="' + PILL_PAD + '" y="' + y + '" font-size="12.5">' + line.ic + '</text>' : "";
+      if (line.bar != null) { // 가림 막대(redacted) + 단위 선명
+        return ic + '<rect x="' + vx + '" y="' + (y - 10) + '" width="' + line.bar + '" height="11" rx="3" fill="#d6dae2"/>' +
+          '<text x="' + (vx + line.bar + 4) + '" y="' + y + '"' + FONT + '>' + xmlEsc(line.unit) + '</text>';
+      }
       if (line.num != null) { // 숫자만 블러, 단위(만원)는 선명
         return ic + '<text x="' + vx + '" y="' + y + '"' + FONT + (blur ? ' filter="url(#bl)"' : "") + '>' + xmlEsc(line.num) + '</text>' +
           '<text x="' + (vx + strW(line.num) + 2) + '" y="' + y + '"' + FONT + '>' + xmlEsc(line.unit) + '</text>';
@@ -546,11 +554,11 @@
       lines = [];
       if (d.rental) lines.push({ ic: "💒", v: manwon(d.rental) + "원" });
       lines.push({ ic: "🍽️", v: manwon(d.meal) + "원" });
-    } else if (locked) { // 더미 금액(숫자만 블러, 만원은 선명) — 대관료+식대 2줄
-      color = "#c7b6d6"; blur = true;
-      lines = [{ ic: "💒", num: "650", unit: "만원" }, { ic: "🍽️", num: "7.0", unit: "만원" }];
+    } else if (locked) { // 대관료+식대 2줄, 숫자 자리는 가림 막대(redacted)
+      color = "#c7b6d6";
+      lines = [{ ic: "💒", bar: 30, unit: "만원" }, { ic: "🍽️", bar: 24, unit: "만원" }];
     } else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
-    var key = (priced ? "p|" : locked ? "l|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + (l.num != null ? l.num + l.unit : l.v); }).join("~") + "|" + color;
+    var key = (priced ? "p|" : locked ? "l|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + (l.bar != null ? "bar" + l.bar + l.unit : l.num != null ? l.num + l.unit : l.v); }).join("~") + "|" + color;
     if (imgCache[key]) return imgCache[key];
     var w = pillWidth(lines, sel), th = 8 + lines.length * 16 + 8;
     var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, color, sel, w, blur)),
