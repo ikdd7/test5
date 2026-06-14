@@ -34,7 +34,7 @@ module.exports = async (req, res) => {
       const b = req.body || {};
       const venue = String(b.venue || ""), cid = String(b.cid || "");
       const meal = (b.meal >= 10000 && b.meal <= 400000) ? Math.round(b.meal) : null;
-      const rental = (b.rental >= 0 && b.rental <= 200000000) ? Math.round(b.rental) : null;
+      const rental = (b.rental >= 100000 && b.rental <= 100000000) ? Math.round(b.rental) : null;
       const name = b.name ? String(b.name).slice(0, 80) : null;
       if (!venue || !cid || (meal == null && rental == null)) return res.status(400).json({ error: "venue, cid, meal|rental required" });
       await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental) values (${venue}, ${name}, ${cid}, ${meal}, ${rental})`;

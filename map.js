@@ -94,8 +94,9 @@
     if (!currentPop) return;
     var d = currentPop, p = panelEl;
     var m = p.querySelector("#prMeal"), r = p.querySelector("#prRent");
-    var meal = m ? parseInt(m.value, 10) : 0, rent = r ? parseInt(r.value, 10) : 0;
-    if (!(meal >= 10000 && meal <= 400000) && !(rent > 0)) { if (m) m.focus(); alert("1인 식대(원)를 입력해 주세요. 예: 70000"); return; }
+    var meal = m ? parseInt(m.value, 10) : 0, rent = r && r.value ? parseInt(r.value, 10) : 0;
+    if (!(meal >= 10000 && meal <= 400000)) { if (m) m.focus(); alert("1인 식대를 원 단위로 입력해 주세요.\n예: 70000  (1만~40만원)"); return; }
+    if (rent && !(rent >= 100000 && rent <= 100000000)) { if (r) r.focus(); alert("대관료를 원 단위로 입력해 주세요.\n예: 5000000  (10만원~1억)"); return; }
     if (!apiOK) { alert("가격 제보는 온라인에서만 가능해요 🙏"); return; }
     var btn = p.querySelector(".kk-prsubmit"); if (btn) { btn.disabled = true; btn.textContent = "제출 중…"; }
     fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
@@ -332,8 +333,8 @@
       (pr.meal ? " · 식대 " + won(pr.meal) : "") + (pr.rental ? " · 대관료 " + manwon(pr.rental) + "원" : "") + "</div>" : "";
     var prForm = showPriceForm
       ? '<div class="kk-prform"><div class="kk-prrow">' +
-          '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원)" />' +
-          '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택)" />' +
+          '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원) 예:70000" />' +
+          '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택) 예:5000000" />' +
         "</div><button class=\"kk-prsubmit\" onclick=\"window.__submitPrice()\">제보 보내기</button>" +
         '<div class="kk-prhint">정확한 정보가 다른 분께 큰 도움이 돼요. 검증 후 반영됩니다.</div></div>'
       : "";
