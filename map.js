@@ -204,29 +204,27 @@
     panelEl.innerHTML = popupHtml(currentPop);
     var nc = panelEl.querySelector(".kkcard"); if (nc) nc.scrollTop = st;
     var nta = panelEl.querySelector(".kk-cmt textarea"); if (nta && draft != null) nta.value = draft;
-    mountThumbs();
   }
-  // 사진 칸 HTML: 실제 사진 우선, 없으면 좌표로 카카오 지도 썸네일(없으면 플레이스홀더)
+  // 식장 타입별 대표 아이콘
+  function venueIcon(t) {
+    t = String(t || "");
+    if (/호텔/.test(t)) return "🏨";
+    if (/채플|성당|교회/.test(t)) return "⛪";
+    if (/하우스|가든|야외|루프탑/.test(t)) return "🌿";
+    if (/컨벤션|타워|플라자|컨벤/.test(t)) return "🏛️";
+    return "💒";
+  }
+  // 사진 칸 HTML: 실제 사진 우선, 없으면 깔끔한 디자인 플레이스홀더
   function photoHtml(d) {
     if (d.photo) return '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="window.__photoErr(this)">';
-    if (d.lat && d.lng) return '<div class="kk-photo kk-photo-map" data-lat="' + d.lat + '" data-lng="' + d.lng + '"></div>';
-    return '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>';
+    return placeholderHtml(d);
   }
-  // 좌표 썸네일 div에 카카오 StaticMap 장착(SDK 있을 때만)
-  function mountThumbs() {
-    if (!panelEl || !(window.kakao && kakao.maps && kakao.maps.StaticMap)) return;
-    var nodes = panelEl.querySelectorAll(".kk-photo-map");
-    for (var i = 0; i < nodes.length; i++) {
-      var n = nodes[i];
-      if (n.getAttribute("data-mounted")) continue;
-      var lat = parseFloat(n.getAttribute("data-lat")), lng = parseFloat(n.getAttribute("data-lng"));
-      if (!lat || !lng) continue;
-      n.setAttribute("data-mounted", "1");
-      try {
-        var pos = new kakao.maps.LatLng(lat, lng);
-        new kakao.maps.StaticMap(n, { center: pos, level: 4, marker: [{ position: pos }] });
-      } catch (e) { n.removeAttribute("data-mounted"); }
-    }
+  function placeholderHtml(d) {
+    var loc = (d.region || "") + (d.district ? " " + d.district : "");
+    return '<div class="kk-photo kk-ph kk-ph-' + (venueIcon(d.type) === "🏨" ? "h" : venueIcon(d.type) === "⛪" ? "c" : venueIcon(d.type) === "🌿" ? "g" : venueIcon(d.type) === "🏛️" ? "v" : "w") + '">' +
+      '<span class="kk-ph-ic">' + venueIcon(d.type) + '</span>' +
+      '<span class="kk-ph-tx">' + esc(d.type || "예식장") + (loc ? ' <i>· ' + esc(loc) + '</i>' : "") + '</span>' +
+      '</div>';
   }
   // 팝업 열 때 서버에서 투표·후기 동기화(없으면 폴백 유지)
   function loadServer(d) {
@@ -303,14 +301,8 @@
     if (panelEl) panelEl.classList.remove("open", "expanded"); lockMap(false); currentPop = null;
     if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
   };
-  window.__photoErr = function (img) { // 핫링크 깨지면 지도 썸네일로 대체
-    try {
-      var d = currentPop;
-      if (d && d.lat && d.lng && window.kakao && kakao.maps && kakao.maps.StaticMap) {
-        img.outerHTML = '<div class="kk-photo kk-photo-map" data-lat="' + d.lat + '" data-lng="' + d.lng + '"></div>';
-        mountThumbs();
-      } else { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; }
-    } catch (e) {}
+  window.__photoErr = function (img) { // 핫링크 깨지면 디자인 플레이스홀더로 대체
+    try { if (currentPop) img.outerHTML = placeholderHtml(currentPop); } catch (e) {}
   };
   function openPop(d) {
     currentPop = d;
@@ -318,7 +310,6 @@
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
-    mountThumbs();
     p.classList.add("open");
     lockMap(true); // 팝업 동안 지도 고정
     loadServer(d); // 공유 데이터 동기화
