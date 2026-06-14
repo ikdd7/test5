@@ -110,11 +110,17 @@
     el.addEventListener("touchend", function (e) {
       if (window.innerWidth > 560 || !el.classList.contains("open")) return;
       var card = el.querySelector(".kkcard"), atTop = !card || card.scrollTop <= 1;
-      if (!handle && !atTop) return; // 내용 스크롤 중이면 시트 제어 안 함
       var dy = e.changedTouches[0].clientY - sy, exp = el.classList.contains("expanded");
-      if (dy < -28) setSheet(!exp);              // 위로: 펼침↔접힘 토글
-      else if (dy > 40) { if (exp) setSheet(false); else window.__closePop(); } // 아래로: 접힘/닫기
-      else if (handle && Math.abs(dy) < 8) setSheet(!exp); // 핸들 탭 토글
+      if (!exp) {
+        // 접힘: 위로 스와이프 → 무조건 먼저 펼침(내용 스크롤 X), 아래로 → 닫기
+        if (dy < -20) setSheet(true);
+        else if (dy > 45) window.__closePop();
+        else if (handle && Math.abs(dy) < 8) setSheet(true);
+      } else {
+        // 펼침: 내용 스크롤. 맨 위에서 아래로 스와이프(또는 핸들 탭) → 접힘
+        if (atTop && dy > 36) setSheet(false);
+        else if (handle && Math.abs(dy) < 8) setSheet(false);
+      }
     }, { passive: true });
   }
   function lockMap(on) { if (map) { try { map.setDraggable(!on); map.setZoomable(!on); } catch (e) {} } }

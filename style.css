@@ -297,8 +297,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
   .venue-panel.open{animation:vpUp .22s ease}
   @keyframes vpUp{from{transform:translateY(100%)}to{transform:none}}
   .venue-panel .kkcard{width:100%;height:auto;max-height:52vh;border-radius:18px 18px 0 0;padding:20px 14px 14px;
-    box-shadow:0 -8px 30px rgba(0,0,0,.25);transition:max-height .26s ease}
-  .venue-panel.expanded .kkcard{max-height:88vh}
+    box-shadow:0 -8px 30px rgba(0,0,0,.25);transition:max-height .26s ease;overflow-y:hidden}
+  .venue-panel.expanded .kkcard{max-height:88vh;overflow-y:auto}
   .venue-panel .kkcard::before{content:"";position:absolute;top:8px;left:50%;transform:translateX(-50%);
     width:40px;height:4px;border-radius:99px;background:#d7dbe2}
   .venue-panel .kkcard .kk-x{top:13px}
