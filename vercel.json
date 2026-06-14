@@ -1,13 +1,16 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "buildCommand": "echo 'static site - no build needed'",
+  "buildCommand": "node build-pub.js",
   "outputDirectory": ".",
   "installCommand": "npm install",
   "cleanUrls": true,
   "functions": {
-    "api/*.js": { "maxDuration": 10 }
+    "api/*.js": { "maxDuration": 10, "includeFiles": "venues.js" }
   },
+  "redirects": [
+    { "source": "/venues.js", "destination": "/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/map.html" }
   ]

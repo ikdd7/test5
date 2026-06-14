@@ -299,7 +299,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
   ok(fs.existsSync(path.join(__dirname, "map.html")), "map.html 존재");
   ok(fs.existsSync(path.join(__dirname, "map.js")), "map.js 존재");
   const mh = fs.readFileSync(path.join(__dirname, "map.html"), "utf8");
-  ["map.js", "koreamap.js", "stats.js", "venues.js", "KAKAO_JS_KEY", 'id="map"', 'id="mapFallback"'].forEach((n) =>
+  ["map.js", "koreamap.js", "stats.js", "venues.pub.js", "KAKAO_JS_KEY", 'id="map"', 'id="mapFallback"'].forEach((n) =>
     ok(mh.includes(n), `map.html: ${n}`));
   ok(fs.readFileSync(path.join(__dirname, "wedding.html"), "utf8").includes("map.html"), "wedding.html→map.html 링크");
   // 전국 예식장 리스트(좌표 포함)
@@ -320,7 +320,7 @@ for (let annual = 20000000; annual <= 150000000; annual += 7000000) {
     vregions[v.region] = 1;
   });
   ok(Object.keys(vregions).length >= 5, `전국성: ${Object.keys(vregions).length}개 지역`);
-  ok(fs.readFileSync(path.join(__dirname, "map.html"), "utf8").includes("venues.js"), "map.html→venues.js 연결");
+  ok(fs.readFileSync(path.join(__dirname, "map.html"), "utf8").includes("venues.pub.js"), "map.html→venues.pub.js 연결");
   const files = fs.existsSync(path.join(__dirname, "region")) ? fs.readdirSync(path.join(__dirname, "region")).filter((f) => f.endsWith(".html")) : [];
   ok(files.length >= 1, `지역 페이지 생성됨(${files.length}개)`);
   files.forEach((f) => {

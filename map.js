@@ -60,6 +60,21 @@
     if (!v) { v = Date.now().toString(36) + Math.random().toString(36).slice(2, 10); try { localStorage.setItem(k, v); } catch (e) {} }
     return v;
   }
+  // ── 가격 게이팅: 제보 1건 하면 전체 언락 ──
+  var UNLOCKED = false, PRICES = null;
+  function isPriced(d) { return !!d.p || hasPrice(d); }                 // 가격 존재(잠금 포함)
+  function applyPrices() {
+    if (!PRICES) return;
+    DATA.forEach(function (d) { var p = PRICES[d.name]; if (p) { d.meal = p.m; if (p.r) d.rental = p.r; if (p.g) d.guarantee = p.g; } });
+  }
+  function fetchPrices(onUnlock) {
+    if (!apiOK || UNLOCKED) return;
+    fetch(API + "/prices?cid=" + encodeURIComponent(clientId()))
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (j) {
+        if (j && j.unlocked && j.prices) { UNLOCKED = true; PRICES = j.prices; applyPrices(); if (onUnlock) onUnlock(); }
+      });
+  }
 
   function kwVoteKey(d) { return "wedding_kw_" + favKey(d); }
   function getVotes(d) { try { return JSON.parse(localStorage.getItem(kwVoteKey(d)) || "[]"); } catch (e) { return []; } }
@@ -86,7 +101,12 @@
     fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId() }) })
       .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
-      .then(function (a) { d._pr = a; showPriceForm = false; rerenderPanel(); })
+      .then(function (a) {
+        d._pr = a; showPriceForm = false;
+        UNLOCKED = false; PRICES = null;                 // 방금 기여 → 언락 재조회
+        fetchPrices(function () { if (currentRefresh) currentRefresh(); }); // 지도 가격 적용·재그리기
+        rerenderPanel();
+      })
       .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제출"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
   };
   function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
@@ -294,6 +314,9 @@
             (rentNote ? '<div class="kk-pbnote">' + rentNote + "</div>" : "") + "</div>" +
           guarBox +
         "</div>" + chipHtml;
+    } else if (isPriced(d)) {
+      body = '<div class="kk-lock"><div class="kk-lockt">🔒 가격 잠김</div>' +
+        '<div class="kk-locks">아무 식장이나 <b>가격 1건만 제보</b>하면<br>모든 식장 가격이 한 번에 열려요</div></div>' + chipHtml;
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 아래에서 제보해 주세요 🙏</div>' + chipHtml;
     }
@@ -502,13 +525,14 @@
       body + x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d), color, lines;
+    var priced = hasPrice(d), locked = !priced && isPriced(d), color, lines;
     if (priced) {
       color = priceColor(d.meal, lo, hi, mid);
       lines = [];
       if (d.rental) lines.push({ ic: "💒", v: manwon(d.rental) + "원" });
       lines.push({ ic: "🍽️", v: manwon(d.meal) + "원" });
-    } else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
+    } else if (locked) { color = "#b6a0c8"; lines = [{ ic: "🔒", v: "가격 잠김" }]; }
+    else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
     var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + l.v; }).join("~") + "|" + color;
     if (imgCache[key]) return imgCache[key];
     var w = pillWidth(lines, sel), th = 8 + lines.length * 16 + 8;
@@ -559,6 +583,7 @@
     });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") window.__closePop(); });
     buildFilters(drawKakao); drawKakao(); setupSearch();
+    fetchPrices(function () { drawKakao(); if (currentPop) rerenderPanel(); }); // 언락 상태면 가격 적용
     try {
       var b = new kakao.maps.LatLngBounds();
       DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); });
@@ -589,11 +614,15 @@
     var fabs = $("mapFabs"); if (fabs) fabs.style.display = "none"; // 히트맵 폴백에선 숨김
     $("offlineBanner").style.display = "block";
     var fb = $("mapFallback"); fb.style.display = "flex";
-    if (window.KoreaMap) window.KoreaMap.render($("fbMap"), {
-      data: DATA, slugs: SLUGS, minPage: 3,
-      onPick: function (r, e, slug) { if (e && slug) location.href = "region/" + slug + ".html"; },
-    });
+    var renderHeat = function () {
+      if (window.KoreaMap) window.KoreaMap.render($("fbMap"), {
+        data: DATA, slugs: SLUGS, minPage: 3,
+        onPick: function (r, e, slug) { if (e && slug) location.href = "region/" + slug + ".html"; },
+      });
+    };
+    renderHeat();
     buildFilters(function () { renderStats(visible()); }); renderStats(visible());
+    fetchPrices(function () { renderHeat(); }); // 언락 시 히트맵 가격 반영
   }
 
   // ── 찜 목록·비교 패널 ──

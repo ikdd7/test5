@@ -6,3 +6,7 @@ serve.log
 # 스크래퍼 워크플로가 설치하는 의존성(커밋 금지 — Vercel용 package.json 보호)
 node_modules/
 package-lock.json
+
+# 빌드 시 생성(가격 게이팅)
+venues.pub.js
+hub-data.js
