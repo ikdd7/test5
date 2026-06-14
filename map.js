@@ -162,10 +162,19 @@
     loadServer(d); // 공유 데이터 동기화
   }
 
+  function isOutdoor(d) {
+    if (d.type === "야외") return true;
+    var s = (d.name || "") + " " + ((d.tags || []).join(" "));
+    return /야외|가든|루프탑|테라스|글라스|하우스웨딩/.test(s) || d.type === "하우스웨딩";
+  }
+  function typeOk(d) {
+    if (fType === "전체") return true;
+    if (fType === "야외") return isOutdoor(d);
+    return d.type === fType;
+  }
   function visible() {
     return DATA.filter(function (d) {
-      return (fType === "전체" || d.type === fType) && (fSlot === "전체" || d.slot === fSlot)
-        && (!fVer || d.verified) && (!fPriced || hasPrice(d)) && (!fFav || FAVS[favKey(d)]);
+      return typeOk(d) && (!fVer || d.verified) && (!fPriced || hasPrice(d)) && (!fFav || FAVS[favKey(d)]);
     });
   }
   function priceColor(m, lo, hi, mid) {
@@ -275,11 +284,10 @@
       b.onclick = function () { on(v); }; el.appendChild(b);
     });
   }
+  var TYPE_CHIPS = ["컨벤션", "호텔", "하우스웨딩", "야외", "일반예식장"];
   function buildFilters(onChange) {
     currentRefresh = onChange;
-    var types = {}, slots = {}; DATA.forEach(function (d) { if (d.type) types[d.type] = 1; if (d.slot) slots[d.slot] = 1; });
-    chips("fType", Object.keys(types), fType, function (v) { fType = v; buildFilters(onChange); onChange(); });
-    chips("fSlot", Object.keys(slots), fSlot, function (v) { fSlot = v; buildFilters(onChange); onChange(); });
+    chips("fType", TYPE_CHIPS, fType, function (v) { fType = v; buildFilters(onChange); onChange(); });
     var ff = $("fFav"); if (ff) { ff.className = "chip" + (fFav ? " on" : ""); ff.onclick = function () { fFav = !fFav; buildFilters(onChange); onChange(); }; }
     var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
     var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
@@ -334,36 +342,39 @@
       map.setLevel(6); map.panTo(here); showMyDot(here);
     }, function () { alert("위치 권한이 필요해요. 브라우저 설정에서 허용해 주세요 🙏"); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
   };
-  window.__fitAll = function () {
-    if (!map) return;
-    try { var b = new kakao.maps.LatLngBounds(); DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); }); map.setBounds(b); } catch (e) {}
-  };
-  // 거지맵식 가격 알약(pill) 마커. sel=선택 강조(어두운 배경 + × 닫기)
-  function pillSVG(text, color, sel) {
-    var pad = sel ? 20 : 0;                       // 선택 시 × 자리 확보
-    var w = 24 + Math.max(2, text.length) * 10 + 8 + pad, h = 24, th = h + 8, cx = w / 2;
+  // 홀타입 → 이모지
+  function typeEmoji(t) {
+    return t === "호텔" ? "🏨" : t === "컨벤션" ? "🏢" : t === "하우스웨딩" ? "🏡"
+      : t === "야외" ? "🌳" : t === "채플/성당" ? "⛪" : t === "일반예식장" ? "💒" : "💍";
+  }
+  // 거지맵식 가격 알약(pill) 마커. 앞에 홀타입 이모지, 색은 테두리(가격). sel=선택(어두움 + × 닫기)
+  function pillSVG(text, emoji, color, sel) {
+    var pad = sel ? 20 : 0;
+    var w = 28 + Math.max(2, text.length) * 10 + 8 + pad, h = 24, th = h + 8, cx = w / 2;
     var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#1a1a2e", bd = sel ? "#2b2b3a" : color;
     var x = sel ? '<text x="' + (w - 13) + '" y="' + (h / 2 + 5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<rect x="1.5" y="1.5" rx="11" ry="11" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
-      '<circle cx="14" cy="' + (h / 2) + '" r="4.5" fill="' + color + '"/>' +
-      '<text x="24" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
+      '<text x="8" y="' + (h / 2 + 5) + '" font-size="13">' + emoji + '</text>' +
+      '<text x="27" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
       x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
     var priced = hasPrice(d);
     if (!priced) {
-      if (imgCache.g) return imgCache.g;
-      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22"><circle cx="11" cy="11" r="7" fill="#9aa4ba" fill-opacity="0.30" stroke="#9aa4ba" stroke-width="2.5"/></svg>';
-      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(22, 22), { offset: new kakao.maps.Point(11, 11) });
+      if (imgCache.g) return imgCache.g;                 // 가격미확인: 진한 회색 GPS(물방울) 핀
+      var g = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="27">' +
+        '<path d="M10 1C5 1 1.2 4.8 1.2 9.8 1.2 16 10 26 10 26S18.8 16 18.8 9.8C18.8 4.8 15 1 10 1Z" fill="#7b8494" stroke="#fff" stroke-width="1.6"/>' +
+        '<circle cx="10" cy="9.8" r="3.1" fill="#fff"/></svg>';
+      imgCache.g = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(g), new kakao.maps.Size(20, 27), { offset: new kakao.maps.Point(10, 26) });
       return imgCache.g;
     }
-    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid);
-    var key = (sel ? "s|" : "p|") + t + "|" + color;
+    var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid), emoji = typeEmoji(d.type);
+    var key = (sel ? "s|" : "p|") + t + "|" + color + "|" + emoji;
     if (imgCache[key]) return imgCache[key];
-    var w = 24 + Math.max(2, t.length) * 10 + 8 + (sel ? 20 : 0), th = 32;
-    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, color, sel)),
+    var w = 28 + Math.max(2, t.length) * 10 + 8 + (sel ? 20 : 0), th = 32;
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, emoji, color, sel)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
   }
