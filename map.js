@@ -315,8 +315,16 @@
           guarBox +
         "</div>" + chipHtml;
     } else if (isPriced(d)) {
-      body = '<div class="kk-lock"><div class="kk-lockt">🔒 가격 잠김</div>' +
-        '<div class="kk-locks">아무 식장이나 <b>가격 1건만 제보</b>하면<br>모든 식장 가격이 한 번에 열려요</div></div>' + chipHtml;
+      // 잠김: 더미 금액을 블러로(실제 숫자는 서버만 보유). 제보 1건 시 전체 공개.
+      body = '<div class="kk-hero kk-lockhero">' +
+          '<div class="kk-herolab">하객 ' + GUESTS + "명 기준 예상 총액</div>" +
+          '<div class="kk-heroval kk-blur">00,000,000원</div>' +
+          '<div class="kk-herosub">🔒 가격 <b>1건 제보</b>하면 전체 공개</div>' +
+        "</div>" +
+        '<div class="kk-pricerow">' +
+          '<div class="kk-pb meal"><div class="kk-pblab">식대 (1인)</div><div class="kk-pbval kk-blur">00,000원</div></div>' +
+          '<div class="kk-pb rent"><div class="kk-pblab">대관료</div><div class="kk-pbval kk-blur">000만원</div></div>' +
+        "</div>" + chipHtml;
     } else {
       body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 아래에서 제보해 주세요 🙏</div>' + chipHtml;
     }
@@ -509,34 +517,36 @@
     var mv = 0; lines.forEach(function (l) { mv = Math.max(mv, strW(l.v)); });
     return Math.round(PILL_PAD + (hasIcon ? PILL_ICON : 0) + mv + PILL_PAD + (sel ? 22 : 0));
   }
-  function pillSVG(lines, color, sel, w) {
+  function pillSVG(lines, color, sel, w, blur) {
     var n = lines.length, h = 8 + n * 16, th = h + 8, cx = w / 2;
     var bg = sel ? "#2b2b3a" : "#ffffff", bd = sel ? "#2b2b3a" : color, val = sel ? "#ffffff" : "#16203a";
+    var bf = blur ? ' filter="url(#bl)"' : "";
     function row(line, i) {
       var y = 16 + i * 16, vx = line.ic ? PILL_PAD + PILL_ICON : PILL_PAD;
       var ic = line.ic ? '<text x="' + PILL_PAD + '" y="' + y + '" font-size="12.5">' + line.ic + '</text>' : "";
-      return ic + '<text x="' + vx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '">' + xmlEsc(line.v) + '</text>';
+      return ic + '<text x="' + vx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '"' + bf + '>' + xmlEsc(line.v) + '</text>';
     }
     var body = lines.map(function (l, i) { return row(l, i); }).join("");
     var x = sel ? '<text x="' + (w - 14) + '" y="' + (h / 2 + 5.5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="16" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
+    var defs = blur ? '<defs><filter id="bl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>' : "";
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' + defs +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<rect x="1.5" y="1.5" rx="12" ry="12" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       body + x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d), locked = !priced && isPriced(d), color, lines;
+    var priced = hasPrice(d), locked = !priced && isPriced(d), color, lines, blur = false;
     if (priced) {
       color = priceColor(d.meal, lo, hi, mid);
       lines = [];
       if (d.rental) lines.push({ ic: "💒", v: manwon(d.rental) + "원" });
       lines.push({ ic: "🍽️", v: manwon(d.meal) + "원" });
-    } else if (locked) { color = "#b6a0c8"; lines = [{ ic: "🔒", v: "가격 잠김" }]; }
+    } else if (locked) { color = "#c7b6d6"; blur = true; lines = [{ ic: "🍽️", v: "7.0만원" }]; } // 더미 금액 블러
     else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
-    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + l.v; }).join("~") + "|" + color;
+    var key = (priced ? "p|" : locked ? "l|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + l.v; }).join("~") + "|" + color;
     if (imgCache[key]) return imgCache[key];
     var w = pillWidth(lines, sel), th = 8 + lines.length * 16 + 8;
-    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, color, sel, w)),
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, color, sel, w, blur)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
   }

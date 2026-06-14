@@ -298,12 +298,10 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prsubmit{width:100%;margin-top:7px;border:0;background:linear-gradient(135deg,#f0932b,#f7b24a);color:#fff;
   font-weight:800;font-size:.86rem;padding:9px;border-radius:9px;cursor:pointer;font-family:inherit}
 .kk-prhint{font-size:.68rem;color:#9aa1ad;font-weight:600;margin-top:6px;text-align:center}
-/* 가격 잠김 카드 */
-.kk-lock{margin-top:11px;background:linear-gradient(135deg,#f6f0fb,#fbf0f6);border:1px solid #e6d6ef;
-  border-radius:14px;padding:16px 14px;text-align:center}
-.kk-lockt{font-size:1.05rem;font-weight:900;color:#7a4ea0;letter-spacing:-.02em}
-.kk-locks{font-size:.84rem;color:#7d7388;font-weight:700;margin-top:5px;line-height:1.5}
-.kk-locks b{color:#c2306a}
+/* 가격 잠김: 금액 블러 */
+.kk-blur{filter:blur(6px);-webkit-filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
+.kk-lockhero .kk-herosub{color:#9a5fb0}
+.kk-lockhero .kk-herosub b{color:#c2306a}
 .kk-soon{margin-top:10px;font-weight:800;color:#586074;font-size:.95rem}
 .kk-soonsub{font-size:.78rem;color:#9aa1ad;margin-top:2px}
 .kk-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
