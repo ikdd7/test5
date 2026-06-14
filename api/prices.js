@@ -33,8 +33,13 @@ module.exports = async (req, res) => {
     const cid = String(req.query.cid || "");
     let unlocked = false;
     if (cid) {
-      const r = await sql`select 1 from price_reports where client_id = ${cid} limit 1`;
-      unlocked = r.length > 0;
+      try {
+        const r = await sql`select 1 from price_reports where client_id = ${cid} and status = 'approved' limit 1`;
+        unlocked = r.length > 0;
+      } catch (e) { // status 컬럼 없으면(마이그레이션 전) 제보만 있으면 언락(과도기)
+        const r = await sql`select 1 from price_reports where client_id = ${cid} limit 1`;
+        unlocked = r.length > 0;
+      }
     }
     if (!unlocked) return res.json({ unlocked: false });
     return res.json({ unlocked: true, prices: priceMap() });

@@ -38,3 +38,7 @@ create table if not exists price_reports (
   created_at timestamptz not null default now()
 );
 create index if not exists price_reports_venue_idx on price_reports (venue_key);
+
+-- 운영자 승인 기반 언락: pending(대기)/approved(승인)/rejected(반려). 승인된 제보만 가격 언락·집계.
+alter table price_reports add column if not exists status text not null default 'pending';
+create index if not exists price_reports_status_idx on price_reports (client_id, status);

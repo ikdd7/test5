@@ -5,11 +5,20 @@ const { neon } = require("@neondatabase/serverless");
 const sql = neon(process.env.DATABASE_URL || process.env.POSTGRES_URL);
 
 async function agg(venue) {
-  const r = await sql`
-    select count(*)::int as n,
-      percentile_cont(0.5) within group (order by meal) filter (where meal is not null) as meal,
-      percentile_cont(0.5) within group (order by rental) filter (where rental is not null) as rental
-    from price_reports where venue_key = ${venue}`;
+  let r;
+  try {
+    r = await sql`
+      select count(*)::int as n,
+        percentile_cont(0.5) within group (order by meal) filter (where meal is not null) as meal,
+        percentile_cont(0.5) within group (order by rental) filter (where rental is not null) as rental
+      from price_reports where venue_key = ${venue} and status = 'approved'`;
+  } catch (e) { // status 컬럼 없으면 전체 집계
+    r = await sql`
+      select count(*)::int as n,
+        percentile_cont(0.5) within group (order by meal) filter (where meal is not null) as meal,
+        percentile_cont(0.5) within group (order by rental) filter (where rental is not null) as rental
+      from price_reports where venue_key = ${venue}`;
+  }
   const x = r[0] || {};
   return { n: Number(x.n || 0), meal: x.meal != null ? Math.round(Number(x.meal)) : null, rental: x.rental != null ? Math.round(Number(x.rental)) : null };
 }

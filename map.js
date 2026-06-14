@@ -88,7 +88,7 @@
   function saveLocalReview(d, t, cid, rating) { var a = getLocalRevs(d); a.unshift({ id: Date.now(), t: t, d: Date.now(), cid: cid, rating: rating || null }); setLocalRevs(d, a); }
   var draftRating = 0; // 후기 작성 시 선택한 별점(팝업당)
   window.__setRating = function (n) { draftRating = (draftRating === n) ? 0 : n; rerenderPanel(); };
-  var showPriceForm = false; // 가격 제보 폼 펼침
+  var showPriceForm = false, priceThanks = false; // 가격 제보 폼 펼침 / 제보 직후 안내
   window.__togglePriceForm = function () { showPriceForm = !showPriceForm; rerenderPanel(); };
   window.__submitPrice = function () {
     if (!currentPop) return;
@@ -102,9 +102,7 @@
       body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId() }) })
       .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
       .then(function (a) {
-        d._pr = a; showPriceForm = false;
-        UNLOCKED = false; PRICES = null;                 // 방금 기여 → 언락 재조회
-        fetchPrices(function () { if (currentRefresh) currentRefresh(); }); // 지도 가격 적용·재그리기
+        d._pr = a; showPriceForm = false; priceThanks = true; // 운영자 승인 후 언락(즉시 X)
         rerenderPanel();
       })
       .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제출"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
@@ -246,7 +244,7 @@
   window.__photoErr = function (img) { try { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; } catch (e) {} };
   function openPop(d) {
     currentPop = d;
-    draftRating = 0; showPriceForm = false; // 새 팝업: 별점/제보폼 초기화
+    draftRating = 0; showPriceForm = false; priceThanks = false; // 새 팝업: 별점/제보폼 초기화
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
@@ -319,7 +317,7 @@
       body = '<div class="kk-hero kk-lockhero">' +
           '<div class="kk-herolab">하객 ' + GUESTS + "명 기준 예상 총액</div>" +
           '<div class="kk-heroval kk-blur">00,000,000원</div>' +
-          '<div class="kk-herosub">🔒 가격 <b>1건 제보</b>하면 전체 공개</div>' +
+          '<div class="kk-herosub">🔒 가격 <b>제보·검증</b> 후 전체 공개</div>' +
         "</div>" +
         '<div class="kk-pricerow">' +
           '<div class="kk-pb meal"><div class="kk-pblab">식대 (1인)</div><div class="kk-pbval kk-blur">00,000원</div></div>' +
@@ -339,8 +337,10 @@
         "</div><button class=\"kk-prsubmit\" onclick=\"window.__submitPrice()\">제보 보내기</button>" +
         '<div class="kk-prhint">정확한 정보가 다른 분께 큰 도움이 돼요. 검증 후 반영됩니다.</div></div>'
       : "";
-    var priceReport = '<div class="kk-pr' + (hasPrice(d) ? "" : " soon") + '">' + prInfo +
-      '<button class="kk-prbtn" onclick="window.__togglePriceForm()">💰 가격 ' + (showPriceForm ? "제보 닫기" : "제보하기") + "</button>" + prForm + "</div>";
+    var priceReport = priceThanks
+      ? '<div class="kk-pr"><div class="kk-prthx">✅ 제보 감사합니다!<br><span>운영자 검증 후 가격이 공개돼요</span></div></div>'
+      : '<div class="kk-pr' + (hasPrice(d) ? "" : " soon") + '">' + prInfo +
+        '<button class="kk-prbtn" onclick="window.__togglePriceForm()">💰 가격 ' + (showPriceForm ? "제보 닫기" : "제보하기") + "</button>" + prForm + "</div>";
     var tagsBlock = (d.tags && d.tags.length) ? '<div class="kk-chips feat">' +
       d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
     var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";

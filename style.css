@@ -298,6 +298,9 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prsubmit{width:100%;margin-top:7px;border:0;background:linear-gradient(135deg,#f0932b,#f7b24a);color:#fff;
   font-weight:800;font-size:.86rem;padding:9px;border-radius:9px;cursor:pointer;font-family:inherit}
 .kk-prhint{font-size:.68rem;color:#9aa1ad;font-weight:600;margin-top:6px;text-align:center}
+.kk-prthx{background:#f1f6f1;border:1px solid #d8e8d8;border-radius:11px;padding:13px;text-align:center;
+  font-size:.92rem;font-weight:800;color:#3a6b3f;line-height:1.5}
+.kk-prthx span{font-size:.78rem;font-weight:700;color:#6b8a6e}
 /* 가격 잠김: 금액 블러 */
 .kk-blur{filter:blur(6px);-webkit-filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
 .kk-lockhero .kk-herosub{color:#9a5fb0}
