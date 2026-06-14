@@ -204,6 +204,29 @@
     panelEl.innerHTML = popupHtml(currentPop);
     var nc = panelEl.querySelector(".kkcard"); if (nc) nc.scrollTop = st;
     var nta = panelEl.querySelector(".kk-cmt textarea"); if (nta && draft != null) nta.value = draft;
+    mountThumbs();
+  }
+  // 사진 칸 HTML: 실제 사진 우선, 없으면 좌표로 카카오 지도 썸네일(없으면 플레이스홀더)
+  function photoHtml(d) {
+    if (d.photo) return '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="window.__photoErr(this)">';
+    if (d.lat && d.lng) return '<div class="kk-photo kk-photo-map" data-lat="' + d.lat + '" data-lng="' + d.lng + '"></div>';
+    return '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>';
+  }
+  // 좌표 썸네일 div에 카카오 StaticMap 장착(SDK 있을 때만)
+  function mountThumbs() {
+    if (!panelEl || !(window.kakao && kakao.maps && kakao.maps.StaticMap)) return;
+    var nodes = panelEl.querySelectorAll(".kk-photo-map");
+    for (var i = 0; i < nodes.length; i++) {
+      var n = nodes[i];
+      if (n.getAttribute("data-mounted")) continue;
+      var lat = parseFloat(n.getAttribute("data-lat")), lng = parseFloat(n.getAttribute("data-lng"));
+      if (!lat || !lng) continue;
+      n.setAttribute("data-mounted", "1");
+      try {
+        var pos = new kakao.maps.LatLng(lat, lng);
+        new kakao.maps.StaticMap(n, { center: pos, level: 4, marker: [{ position: pos }] });
+      } catch (e) { n.removeAttribute("data-mounted"); }
+    }
   }
   // 팝업 열 때 서버에서 투표·후기 동기화(없으면 폴백 유지)
   function loadServer(d) {
@@ -280,13 +303,22 @@
     if (panelEl) panelEl.classList.remove("open", "expanded"); lockMap(false); currentPop = null;
     if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
   };
-  window.__photoErr = function (img) { try { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; } catch (e) {} };
+  window.__photoErr = function (img) { // 핫링크 깨지면 지도 썸네일로 대체
+    try {
+      var d = currentPop;
+      if (d && d.lat && d.lng && window.kakao && kakao.maps && kakao.maps.StaticMap) {
+        img.outerHTML = '<div class="kk-photo kk-photo-map" data-lat="' + d.lat + '" data-lng="' + d.lng + '"></div>';
+        mountThumbs();
+      } else { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; }
+    } catch (e) {}
+  };
   function openPop(d) {
     currentPop = d;
     draftRating = 0; showPriceForm = false; priceThanks = false; showReviews = false; // 새 팝업: 별점/제보폼/후기 초기화
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
+    mountThumbs();
     p.classList.add("open");
     lockMap(true); // 팝업 동안 지도 고정
     loadServer(d); // 공유 데이터 동기화
@@ -473,8 +505,7 @@
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
       (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
     return '<div class="kkcard">' +
-      (d.photo ? '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="window.__photoErr(this)">'
-        : '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>') +
+      photoHtml(d) +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +

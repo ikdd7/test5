@@ -430,6 +430,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-revstars{color:#ffb400;font-size:.86rem;letter-spacing:1px;margin-bottom:3px}
 /* 빈 자리 유지 placeholder(사진/특징) */
 .kk-photo-empty{display:flex;align-items:center;justify-content:center;background:#eef1f5;color:#aab2bf;font-size:.86rem;font-weight:700}
+.kk-photo-map{position:relative;overflow:hidden;background:#eef1f5}
+.kk-photo-map *{border-radius:inherit}
 .kk-featempty{font-size:.82rem;color:#aab2bf;font-weight:600;padding:3px 0 2px}
 /* 별점 매기기 */
 .kk-rate{display:flex;align-items:center;gap:9px;margin:2px 0 9px}
