@@ -14,6 +14,10 @@
   .sub{color:#8a93a3;font-size:.82rem;margin-top:2px}
   .gate{background:#fff;border:1px solid #e2e6ee;border-radius:14px;padding:18px;margin-top:18px;box-shadow:0 2px 12px rgba(20,30,50,.06)}
   .gate input{width:100%;border:1px solid #dbe0e8;border-radius:10px;padding:12px;font-size:1rem;font-family:inherit;margin-top:8px}
+  .pwrow{position:relative}
+  .pwrow input{padding-right:46px}
+  .eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;font-size:1.1rem;cursor:pointer;padding:6px 8px;opacity:.55;margin:0}
+  .eye.on{opacity:1}
   .gate button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit}
   .gate button{width:100%;margin-top:10px;background:linear-gradient(135deg,#ec4f8e,#f7a072);color:#fff}
   .tabs{display:flex;gap:6px;margin:16px 0 10px}
@@ -51,7 +55,10 @@
 
   <div id="gate" class="gate">
     <div style="font-weight:800">운영자 비밀번호</div>
-    <input id="pw" type="password" placeholder="ADMIN_TOKEN" autocomplete="off" />
+    <div class="pwrow">
+      <input id="pw" type="password" placeholder="ADMIN_TOKEN" autocomplete="off" onkeydown="if(event.key==='Enter')login()" />
+      <button type="button" class="eye" onclick="togglePw()" aria-label="비밀번호 보기">👁</button>
+    </div>
     <button onclick="login()">입장</button>
     <div id="gerr" style="color:#b23b3b;font-size:.8rem;margin-top:8px;display:none">비밀번호가 틀렸어요.</div>
   </div>
@@ -83,6 +90,7 @@
     }).then(function(r){ if(r.status===401){ throw {auth:true}; } return r.ok?r.json():r.json().then(function(e){throw e;}); });
   }
 
+  function togglePw(){ var i=$("pw"), e=document.querySelector(".eye"); var show=i.type==="password"; i.type=show?"text":"password"; e.classList.toggle("on",show); i.focus(); }
   function login(){
     var pw = $("pw").value.trim(); if(!pw) return;
     TOKEN = pw;
