@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>웨딩홀맵 운영자</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",system-ui,sans-serif;
+    background:#f3f5f8;color:#1c2230;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:16px 14px 60px}
+  h1{font-size:1.2rem;font-weight:900;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .sub{color:#8a93a3;font-size:.82rem;margin-top:2px}
+  .gate{background:#fff;border:1px solid #e2e6ee;border-radius:14px;padding:18px;margin-top:18px;box-shadow:0 2px 12px rgba(20,30,50,.06)}
+  .gate input{width:100%;border:1px solid #dbe0e8;border-radius:10px;padding:12px;font-size:1rem;font-family:inherit;margin-top:8px}
+  .gate button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit}
+  .gate button{width:100%;margin-top:10px;background:linear-gradient(135deg,#ec4f8e,#f7a072);color:#fff}
+  .tabs{display:flex;gap:6px;margin:16px 0 10px}
+  .tabs button{flex:1;background:#fff;border:1px solid #e2e6ee;border-radius:999px;padding:9px;font-weight:800;font-size:.86rem;color:#5a6273;cursor:pointer;font-family:inherit}
+  .tabs button.on{background:#1c2230;border-color:#1c2230;color:#fff}
+  .bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .bar .muted{color:#8a93a3;font-size:.8rem}
+  .bar a{color:#8a93a3;font-size:.8rem;font-weight:700;cursor:pointer}
+  .card{background:#fff;border:1px solid #e7eaf0;border-radius:12px;padding:12px 13px;margin-bottom:9px}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card .name{font-weight:800;font-size:.96rem}
+  .card .meta{font-size:.74rem;color:#9aa1ad;font-weight:700;white-space:nowrap}
+  .card .vals{margin-top:5px;font-size:.9rem;color:#3a4150;font-weight:700}
+  .card .vals b{color:#d6336c}
+  .card .body{margin-top:5px;font-size:.88rem;color:#2a2230;white-space:pre-wrap;word-break:break-word}
+  .acts{display:flex;gap:7px;margin-top:9px}
+  .acts button{flex:1}
+  .ok{background:#e7f6ea;color:#2f7a44;border:1px solid #c7e8cf}
+  .no{background:#fdeeee;color:#b23b3b;border:1px solid #f3cccc}
+  .del{background:#f1f3f7;color:#7a8394;border:1px solid #e2e6ee}
+  .badge{font-size:.66rem;font-weight:800;padding:2px 7px;border-radius:999px;margin-left:6px}
+  .b-pending{background:#fff4e5;color:#b9791f}.b-approved{background:#e7f6ea;color:#2f7a44}
+  .b-rejected{background:#fdeeee;color:#b23b3b}.b-hidden{background:#eee;color:#777}.b-visible{background:#e8f0fb;color:#3a5a86}
+  .empty{text-align:center;color:#9aa1ad;padding:34px 12px;font-size:.92rem}
+  .stars{color:#ffb400;font-size:.86rem;letter-spacing:1px}
+  #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#1c2230;color:#fff;
+    padding:10px 16px;border-radius:999px;font-size:.85rem;font-weight:700;opacity:0;transition:.2s;pointer-events:none}
+  #toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🛠 웨딩홀맵 운영자</h1>
+  <div class="sub">가격 제보 승인 · 후기 관리</div>
+
+  <div id="gate" class="gate">
+    <div style="font-weight:800">운영자 비밀번호</div>
+    <input id="pw" type="password" placeholder="ADMIN_TOKEN" autocomplete="off" />
+    <button onclick="login()">입장</button>
+    <div id="gerr" style="color:#b23b3b;font-size:.8rem;margin-top:8px;display:none">비밀번호가 틀렸어요.</div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="tabs">
+      <button id="tabPending" class="on" onclick="show('pending')">가격 제보 대기 <span id="cP"></span></button>
+      <button id="tabReviews" onclick="show('reviews')">후기</button>
+    </div>
+    <div class="bar"><span class="muted" id="listInfo"></span><a onclick="load()">↻ 새로고침</a> <a onclick="logout()" style="margin-left:12px">로그아웃</a></div>
+    <div id="list"></div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+  var TOKEN = "", TAB = "pending";
+  function $(id){return document.getElementById(id);}
+  function toast(m){var t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._);t._=setTimeout(function(){t.classList.remove("on");},1600);}
+  function esc(s){return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+  function won(n){return (Math.round(n||0)).toLocaleString("ko-KR")+"원";}
+  function dt(ts){var d=new Date(Number(ts));return (d.getMonth()+1)+"."+d.getDate()+" "+("0"+d.getHours()).slice(-2)+":"+("0"+d.getMinutes()).slice(-2);}
+
+  function api(opts){
+    return fetch("/api/admin"+(opts.qs||""), {
+      method: opts.method||"GET",
+      headers: Object.assign({"x-admin-token":TOKEN}, opts.body?{"Content-Type":"application/json"}:{}),
+      body: opts.body?JSON.stringify(opts.body):undefined,
+    }).then(function(r){ if(r.status===401){ throw {auth:true}; } return r.ok?r.json():r.json().then(function(e){throw e;}); });
+  }
+
+  function login(){
+    var pw = $("pw").value.trim(); if(!pw) return;
+    TOKEN = pw;
+    api({qs:"?type=counts"}).then(function(j){
+      try{localStorage.setItem("admin_token", TOKEN);}catch(e){}
+      $("gate").style.display="none"; $("app").style.display="block";
+      $("cP").textContent = j.pending? "("+j.pending+")":"";
+      show("pending");
+    }).catch(function(e){ if(e&&e.auth){ $("gerr").style.display="block"; } else { toast("연결 오류"); } });
+  }
+  function logout(){ TOKEN=""; try{localStorage.removeItem("admin_token");}catch(e){} $("app").style.display="none"; $("gate").style.display="block"; $("pw").value=""; }
+
+  function show(tab){
+    TAB=tab;
+    $("tabPending").className = tab==="pending"?"on":"";
+    $("tabReviews").className = tab==="reviews"?"on":"";
+    load();
+  }
+
+  function load(){
+    $("list").innerHTML = '<div class="empty">불러오는 중…</div>';
+    var type = TAB==="pending" ? "price-pending" : "reviews";
+    api({qs:"?type="+type}).then(function(j){ render(j.rows||[]); refreshCount(); })
+      .catch(function(e){ if(e&&e.auth){logout();} else { $("list").innerHTML='<div class="empty">오류: '+esc((e&&e.error)||"")+'</div>'; } });
+  }
+  function refreshCount(){ api({qs:"?type=counts"}).then(function(j){ $("cP").textContent=j.pending?"("+j.pending+")":""; }).catch(function(){}); }
+
+  function render(rows){
+    if(!rows.length){ $("list").innerHTML='<div class="empty">'+(TAB==="pending"?"대기 중인 제보가 없어요 👍":"후기가 없어요")+'</div>'; $("listInfo").textContent=""; return; }
+    $("listInfo").textContent = rows.length+"건";
+    if(TAB==="pending"){
+      $("list").innerHTML = rows.map(function(r){
+        return '<div class="card"><div class="top"><div class="name">'+esc(r.venue_name||"(이름없음)")+'</div><div class="meta">'+dt(r.ts)+'</div></div>'+
+          '<div class="vals">식대 <b>'+(r.meal?won(r.meal):"-")+'</b>'+(r.rental?' · 대관료 <b>'+won(r.rental)+'</b>':"")+'</div>'+
+          '<div class="acts"><button class="ok" onclick="act('+r.id+',\'approve\')">✓ 승인</button>'+
+          '<button class="no" onclick="act('+r.id+',\'reject\')">✕ 반려</button>'+
+          '<button class="del" onclick="act('+r.id+',\'delPrice\')">삭제</button></div></div>';
+      }).join("");
+    } else {
+      $("list").innerHTML = rows.map(function(r){
+        var b="b-"+(r.status||"visible");
+        return '<div class="card"><div class="top"><div class="name">'+esc(r.venue_name||"(이름없음)")+
+          '<span class="badge '+b+'">'+esc(r.status)+'</span></div><div class="meta">'+dt(r.ts)+'</div></div>'+
+          (r.rating?'<div class="stars">'+"★★★★★".slice(0,r.rating)+"☆☆☆☆☆".slice(0,5-r.rating)+'</div>':"")+
+          '<div class="body">'+esc(r.body)+'</div>'+
+          '<div class="acts">'+(r.status==="hidden"
+            ? '<button class="ok" onclick="act('+r.id+',\'showReview\')">노출</button>'
+            : '<button class="del" onclick="act('+r.id+',\'hideReview\')">숨김</button>')+
+          '<button class="no" onclick="act('+r.id+',\'delReview\')">삭제</button></div></div>';
+      }).join("");
+    }
+  }
+
+  function act(id, action){
+    if(action==="delPrice"||action==="delReview"){ if(!confirm("삭제할까요? 되돌릴 수 없어요.")) return; }
+    api({method:"POST", body:{id:id, action:action}}).then(function(){
+      toast(action==="approve"?"승인 ✓":action==="reject"?"반려":"완료"); load();
+    }).catch(function(e){ if(e&&e.auth){logout();} else toast("실패"); });
+  }
+
+  // 자동 로그인(저장된 토큰)
+  (function(){ try{ var t=localStorage.getItem("admin_token"); if(t){ $("pw").value=t; login(); } }catch(e){} })();
+</script>
+</body>
+</html>
