@@ -193,6 +193,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-feat{margin-top:11px}
 .kk-feat .kk-feattitle{font-size:.78rem;color:#8b93a1;font-weight:700;margin-bottom:5px}
 .kk-chips.feat span{background:#eef6ef;color:#3f7a4e}
+.kk-comm .kk-chips.feat span{background:#eef3fb;color:#3a5a86}
+.kk-comm .kk-chips.feat em{font-style:normal;font-weight:900;color:#2f6fd0;font-size:.7rem;margin-left:2px}
 .kk-feat.empty{background:#fafbfc;border:1px dashed #e7eaf0;border-radius:10px;padding:9px 11px;
   font-size:.8rem;color:#7a8290;font-weight:700}
 .kk-feat.empty span{display:block;font-weight:500;color:#9aa1ad;margin-top:2px}

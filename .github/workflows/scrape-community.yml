@@ -1,0 +1,53 @@
+name: Scrape community (네이버 후기 키워드)
+
+# Actions 탭 → 이 워크플로 → "Run workflow"
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: venues-write
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: claude/vibe-coding-revenue-page-k8dg72
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Scrape community keywords (Naver)
+        env:
+          NAVER_ID: ${{ secrets.NAVER_ID }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+        run: node scrape-community.js
+      - name: Rebuild & test
+        run: |
+          node build.js
+          node test.js
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add venues.js region/ sitemap.xml
+          git checkout -- package.json package-lock.json 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "변경 없음"
+          else
+            git commit -m "커뮤니티 후기 키워드 집계 (Actions)"
+            ok=0
+            for i in 1 2 3 4 5; do
+              git fetch origin claude/vibe-coding-revenue-page-k8dg72 || true
+              if git rebase origin/claude/vibe-coding-revenue-page-k8dg72 && git push origin HEAD:claude/vibe-coding-revenue-page-k8dg72; then ok=1; break; fi
+              git rebase --abort || true
+              sleep $((i * 5))
+            done
+            [ "$ok" = 1 ] || { echo "push 실패(동시 변경)"; exit 1; }
+          fi

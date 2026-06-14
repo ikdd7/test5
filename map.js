@@ -44,6 +44,7 @@
     ["🚇", "교통이 편해요"], ["🌿", "분위기가 좋아요"], ["🧹", "깨끗해요"],
     ["👥", "하객 수용이 좋아요"],
   ];
+  var KW_EMOJI = {}; KEYWORDS.forEach(function (k) { KW_EMOJI[k[1]] = k[0]; });
   // ── 백엔드(Vercel /api) 연동 + localStorage 폴백 ──
   var API = (location.protocol === "https:" || location.protocol === "http:") ? "/api" : null;
   var apiOK = !!API;
@@ -281,6 +282,13 @@
     var feat = '<div class="kk-feat"><div class="kk-feattitle">✨ 특징 · 장단점</div>' +
       (featBody ? featBody + ((pros || cons) ? '<div class="kk-pcsrc">※ 예신 커뮤니티 후기 참고 (검증 전)</div>' : "")
         : '<div class="kk-featempty">아직 등록된 특징·장단점이 없어요</div>') + "</div>";
+    // 커뮤니티(블로그) 후기에서 자주 나온 키워드 — 언급 빈도 기반
+    var comm = (d.community && d.community.length)
+      ? '<div class="kk-feat kk-comm"><div class="kk-feattitle">💬 커뮤니티에서 자주 나온 얘기</div>' +
+        '<div class="kk-chips feat">' + d.community.slice(0, 6).map(function (c) {
+          return "<span>" + (KW_EMOJI[c[0]] || "") + " " + esc(c[0]) + " <em>" + c[1] + "</em></span>";
+        }).join("") + '</div><div class="kk-pcsrc">※ 블로그 후기 언급 빈도 기반 (검증 전)</div></div>'
+      : "";
     // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
     var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
     var total = counts.reduce(function (a, b) { return a + b; }, 0);
@@ -338,7 +346,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + body + kwGrid + cmt +
+      feat + comm + body + kwGrid + cmt +
       '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }

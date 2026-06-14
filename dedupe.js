@@ -61,6 +61,10 @@ function dedupeVenues(vs) {
       if (priced[0].guarantee) merged.guarantee = priced[0].guarantee;
       if (priced[0].slot) merged.slot = priced[0].slot;
     }
+    // 부가 정보(병합 시 유실 방지): 클러스터 내 어느 항목이든 있으면 보존
+    ["tags", "pros", "cons", "photo", "community", "guarantee"].forEach(function (f) {
+      if (merged[f] == null) { var h = items.find(function (x) { return x[f] != null; }); if (h) merged[f] = h[f]; }
+    });
     return merged;
   });
 }
