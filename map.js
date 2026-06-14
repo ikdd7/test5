@@ -309,6 +309,7 @@
         (own ? '<button class="kk-revdel" onclick="window.__delReview(' + r.id + ')">삭제</button>' : "") + "</div></div>";
     }).join("") + "</div>" : "";
     var cmt = '<div class="kk-cmt"><div class="kk-cmth">📝 후기 ' + (revs.length ? "<b>" + revs.length + "</b>개" : "남기기") + "</div>" +
+      summary +
       '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요"></textarea>' +
       '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
 
@@ -320,9 +321,8 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      summary + body + feat + kwGrid + cmt +
-      '<div class="kk-actions">' + fav +
-      (slug ? '<a class="kk-link" href="region/' + slug + '.html">' + d.region + " 전체 →</a>" : "") + "</div>" +
+      feat + body + kwGrid + cmt +
+      '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }
 
