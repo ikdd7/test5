@@ -6,7 +6,7 @@
  *   ⚠️ og:image는 사이트가 공유용으로 직접 게시한 대표 이미지. 블로그/카페/지도/SNS는 제외.
  *      rate limit·robots/ToS 존중. 깨질 수 있는 핫링크이므로 화면엔 onerror 폴백(지도 썸네일) 있음.
  */
-const fs = require("fs"), path = require("path"), vm = require("vm"), https = require("https"), zlib = require("zlib");
+const fs = require("fs"), path = require("path"), vm = require("vm"), https = require("https"), http = require("http"), zlib = require("zlib");
 const { URL } = require("url");
 const { nameOverlap } = require("./pricemerge.js");
 
@@ -16,14 +16,15 @@ const FILE = path.join(__dirname, "venues.js");
 const MAX = parseInt(process.env.MAX || "300", 10);
 
 // 공식 홈페이지로 볼 수 없는 호스트(블로그/카페/지도/쇼핑/SNS 등) 제외
-const BAD_HOST = /(blog\.|cafe\.|m\.blog|map\.naver|place\.|smartstore|shopping\.|search\.|news\.|post\.naver|tv\.naver|youtube|youtu\.be|facebook|instagram|band\.us|pf\.kakao|tistory|wikipedia|namu\.wiki|jobkorea|saramin)/i;
+const BAD_HOST = /(blog\.|cafe\.|m\.blog|map\.naver|place\.|smartstore|shopping\.|search\.|news\.|post\.naver|tv\.naver|youtube|youtu\.be|facebook|instagram|band\.us|pf\.kakao|tistory|wikipedia|namu\.wiki|jobkorea|saramin|yna\.co|yonhap|chosun|donga\.|hankyung|mk\.co\.kr|hani\.co|khan\.co|sedaily|edaily|news1\.|newsis|joongang|sbs\.co|kbs\.co|mbc\.co|dcinside|ruliweb|fmkorea|theqoo)/i;
 const IMG_OK = /\.(jpe?g|png|webp)(\?|$)/i;
 
 function get(url, headers, redirects) {
   redirects = redirects || 0;
   return new Promise((resolve, reject) => {
     let u; try { u = new URL(url); } catch (e) { return reject(new Error("bad url")); }
-    const req = https.get(u, {
+    const mod = u.protocol === "http:" ? http : https; // http 홈페이지도 읽기
+    const req = mod.get(u, {
       headers: Object.assign({
         "User-Agent": "Mozilla/5.0 (compatible; weddingmap-photo/1.0)",
         "Accept": "text/html,application/json;q=0.9,*/*;q=0.8",
@@ -54,25 +55,29 @@ function get(url, headers, redirects) {
 
 function stripTags(s) { return String(s || "").replace(/<[^>]+>/g, "").trim(); }
 
-async function findHomepage(name, region) {
+const NV = { "X-Naver-Client-Id": ID, "X-Naver-Client-Secret": SECRET };
+async function naverSearch(kind, name, region) { // kind: local.json | webkr.json
   const q = encodeURIComponent((region ? region + " " : "") + name + " 웨딩홀");
-  const api = "https://openapi.naver.com/v1/search/local.json?display=5&query=" + q;
-  let data;
-  try {
-    const r = await get(api, { "X-Naver-Client-Id": ID, "X-Naver-Client-Secret": SECRET });
-    data = JSON.parse(r.body);
-  } catch (e) { return null; }
-  const items = (data && data.items) || [];
+  const api = "https://openapi.naver.com/v1/search/" + kind + "?display=5&query=" + q;
+  try { return (JSON.parse((await get(api, NV)).body).items) || []; }
+  catch (e) { return []; }
+}
+// 검색결과 후보 중 식장명과 겹치는 첫 공식 홈페이지 링크
+function pickLink(items, name) {
   for (const it of items) {
     const link = String(it.link || "").trim();
     if (!link || !/^https?:/.test(link)) continue;
     let host; try { host = new URL(link).host; } catch (e) { continue; }
     if (BAD_HOST.test(host)) continue;
-    // 검색결과 상호가 식장명과 충분히 겹칠 때만(과매칭 방지)
-    if (!nameOverlap(name, stripTags(it.title))) continue;
+    if (!nameOverlap(name, stripTags(it.title))) continue; // 과매칭 방지
     return link;
   }
   return null;
+}
+async function findHomepage(name, region) {
+  let link = pickLink(await naverSearch("local.json", name, region), name); // 1) 지역검색
+  if (!link) link = pickLink(await naverSearch("webkr.json", name, region), name); // 2) 웹문서 폴백
+  return link;
 }
 
 function extractOgImage(html, baseUrl) {
