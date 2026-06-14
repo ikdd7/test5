@@ -512,23 +512,28 @@
   var PILL_PAD = 12, PILL_ICON = 20;
   function xmlEsc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
   function strW(s) { var w = 0; for (var i = 0; i < s.length; i++) { var c = s[i]; w += /[0-9]/.test(c) ? 7.6 : c === " " ? 4 : c === "/" ? 5 : c === "." ? 4 : 12; } return w; }
+  function lineValW(l) { return l.num != null ? strW(l.num) + 2 + strW(l.unit) : strW(l.v); }
   function pillWidth(lines, sel) {
     var hasIcon = lines.some(function (l) { return l.ic; });
-    var mv = 0; lines.forEach(function (l) { mv = Math.max(mv, strW(l.v)); });
+    var mv = 0; lines.forEach(function (l) { mv = Math.max(mv, lineValW(l)); });
     return Math.round(PILL_PAD + (hasIcon ? PILL_ICON : 0) + mv + PILL_PAD + (sel ? 22 : 0));
   }
   function pillSVG(lines, color, sel, w, blur) {
     var n = lines.length, h = 8 + n * 16, th = h + 8, cx = w / 2;
     var bg = sel ? "#2b2b3a" : "#ffffff", bd = sel ? "#2b2b3a" : color, val = sel ? "#ffffff" : "#16203a";
-    var bf = blur ? ' filter="url(#bl)"' : "";
+    var FONT = ' font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '"';
     function row(line, i) {
       var y = 16 + i * 16, vx = line.ic ? PILL_PAD + PILL_ICON : PILL_PAD;
       var ic = line.ic ? '<text x="' + PILL_PAD + '" y="' + y + '" font-size="12.5">' + line.ic + '</text>' : "";
-      return ic + '<text x="' + vx + '" y="' + y + '" font-family="-apple-system,sans-serif" font-size="13" font-weight="800" fill="' + val + '"' + bf + '>' + xmlEsc(line.v) + '</text>';
+      if (line.num != null) { // 숫자만 블러, 단위(만원)는 선명
+        return ic + '<text x="' + vx + '" y="' + y + '"' + FONT + (blur ? ' filter="url(#bl)"' : "") + '>' + xmlEsc(line.num) + '</text>' +
+          '<text x="' + (vx + strW(line.num) + 2) + '" y="' + y + '"' + FONT + '>' + xmlEsc(line.unit) + '</text>';
+      }
+      return ic + '<text x="' + vx + '" y="' + y + '"' + FONT + '>' + xmlEsc(line.v) + '</text>';
     }
     var body = lines.map(function (l, i) { return row(l, i); }).join("");
     var x = sel ? '<text x="' + (w - 14) + '" y="' + (h / 2 + 5.5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="16" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
-    var defs = blur ? '<defs><filter id="bl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.6"/></filter></defs>' : "";
+    var defs = blur ? '<defs><filter id="bl" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.5"/></filter></defs>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' + defs +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<rect x="1.5" y="1.5" rx="12" ry="12" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
@@ -541,9 +546,11 @@
       lines = [];
       if (d.rental) lines.push({ ic: "💒", v: manwon(d.rental) + "원" });
       lines.push({ ic: "🍽️", v: manwon(d.meal) + "원" });
-    } else if (locked) { color = "#c7b6d6"; blur = true; lines = [{ ic: "🍽️", v: "7.0만원" }]; } // 더미 금액 블러
-    else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
-    var key = (priced ? "p|" : locked ? "l|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + l.v; }).join("~") + "|" + color;
+    } else if (locked) { // 더미 금액(숫자만 블러, 만원은 선명) — 대관료+식대 2줄
+      color = "#c7b6d6"; blur = true;
+      lines = [{ ic: "💒", num: "650", unit: "만원" }, { ic: "🍽️", num: "7.0", unit: "만원" }];
+    } else { color = "#aeb6c2"; lines = [{ v: "정보없음" }]; }
+    var key = (priced ? "p|" : locked ? "l|" : "g|") + (sel ? "s|" : "") + lines.map(function (l) { return (l.ic || "") + (l.num != null ? l.num + l.unit : l.v); }).join("~") + "|" + color;
     if (imgCache[key]) return imgCache[key];
     var w = pillWidth(lines, sel), th = 8 + lines.length * 16 + 8;
     var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(lines, color, sel, w, blur)),
