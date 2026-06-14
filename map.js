@@ -319,17 +319,37 @@
   }
 
   // ── 카카오 지도 ──
-  var map, clusterer, imgCache = {}, selectedMarker = null;
-  // 거지맵식 가격 알약(pill) 마커. sel=선택 강조(어두운 배경)
+  var map, clusterer, imgCache = {}, selectedMarker = null, myDot = null;
+  function showMyDot(here) {
+    if (myDot) { try { myDot.setMap(null); } catch (e) {} }
+    myDot = new kakao.maps.Circle({ map: map, center: here, radius: 90, strokeWeight: 2, strokeColor: "#2b7cff", strokeOpacity: 0.9, fillColor: "#2b7cff", fillOpacity: 0.35 });
+  }
+  // 좌하단 플로팅 버튼 핸들러
+  window.__recenterMe = function () {
+    if (!navigator.geolocation || !map) { return; }
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      var lat = pos.coords.latitude, lng = pos.coords.longitude;
+      if (!(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) { alert("현재 위치가 국내 서비스 지역 밖이에요."); return; }
+      var here = new kakao.maps.LatLng(lat, lng);
+      map.setLevel(6); map.panTo(here); showMyDot(here);
+    }, function () { alert("위치 권한이 필요해요. 브라우저 설정에서 허용해 주세요 🙏"); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+  };
+  window.__fitAll = function () {
+    if (!map) return;
+    try { var b = new kakao.maps.LatLngBounds(); DATA.forEach(function (d) { b.extend(new kakao.maps.LatLng(d.lat, d.lng)); }); map.setBounds(b); } catch (e) {}
+  };
+  // 거지맵식 가격 알약(pill) 마커. sel=선택 강조(어두운 배경 + × 닫기)
   function pillSVG(text, color, sel) {
-    var w = 24 + Math.max(2, text.length) * 10 + 8, h = 24, th = h + 8, cx = w / 2;
+    var pad = sel ? 20 : 0;                       // 선택 시 × 자리 확보
+    var w = 24 + Math.max(2, text.length) * 10 + 8 + pad, h = 24, th = h + 8, cx = w / 2;
     var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#1a1a2e", bd = sel ? "#2b2b3a" : color;
+    var x = sel ? '<text x="' + (w - 13) + '" y="' + (h / 2 + 5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<rect x="1.5" y="1.5" rx="11" ry="11" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
       '<circle cx="14" cy="' + (h / 2) + '" r="4.5" fill="' + color + '"/>' +
       '<text x="24" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
-      '</svg>';
+      x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
     var priced = hasPrice(d);
@@ -342,7 +362,7 @@
     var t = manwon(d.meal), color = priceColor(d.meal, lo, hi, mid);
     var key = (sel ? "s|" : "p|") + t + "|" + color;
     if (imgCache[key]) return imgCache[key];
-    var w = 24 + Math.max(2, t.length) * 10 + 8, th = 32;
+    var w = 24 + Math.max(2, t.length) * 10 + 8 + (sel ? 20 : 0), th = 32;
     var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, color, sel)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
@@ -364,7 +384,8 @@
       mk.__img = normal;
       if (hasPrice(d)) mk.__selImg = markerImage(d, lo, hi, mid, true);
       kakao.maps.event.addListener(mk, "click", function () {
-        if (selectedMarker && selectedMarker !== mk) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} }
+        if (selectedMarker === mk) { window.__closePop(); return; } // 선택된 핀 다시 누르면 닫기(× 토글)
+        if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} }
         if (mk.__selImg) { mk.setImage(mk.__selImg); mk.setZIndex(10000); selectedMarker = mk; }
         openPop(d, mk.getPosition());
         map.panTo(mk.getPosition());
@@ -409,12 +430,7 @@
       var lat = pos.coords.latitude, lng = pos.coords.longitude;
       if (!(lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132)) return; // 한반도 밖이면 전국뷰 유지
       var here = new kakao.maps.LatLng(lat, lng);
-      map.setLevel(6); map.setCenter(here);
-      new kakao.maps.Circle({                          // 내 위치 표시(파란 점)
-        map: map, center: here, radius: 90,
-        strokeWeight: 2, strokeColor: "#2b7cff", strokeOpacity: 0.9,
-        fillColor: "#2b7cff", fillOpacity: 0.35,
-      });
+      map.setLevel(6); map.setCenter(here); showMyDot(here); // 내 위치 파란 점
     }, function () {}, { enableHighAccuracy: true, timeout: 8000, maximumAge: 300000 });
   }
 
@@ -422,6 +438,7 @@
   function initFallback() {
     $("map").style.display = "none";
     var ms = $("msearch"); if (ms) ms.style.display = "none";
+    var fabs = $("mapFabs"); if (fabs) fabs.style.display = "none"; // 히트맵 폴백에선 숨김
     $("offlineBanner").style.display = "block";
     var fb = $("mapFallback"); fb.style.display = "flex";
     if (window.KoreaMap) window.KoreaMap.render($("fbMap"), {
