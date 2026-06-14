@@ -78,8 +78,36 @@
   // 현재 열린 팝업(화면 고정 패널 — 지도 움직여도 안 사라짐)
   var currentPop = null, panelEl = null;
   function getPanel() {
-    if (!panelEl) { panelEl = document.createElement("div"); panelEl.id = "venuePanel"; panelEl.className = "venue-panel"; document.body.appendChild(panelEl); }
+    if (!panelEl) {
+      panelEl = document.createElement("div"); panelEl.id = "venuePanel"; panelEl.className = "venue-panel";
+      document.body.appendChild(panelEl);
+      bindSheetGestures(panelEl);
+    }
     return panelEl;
+  }
+  // 모바일 바텀시트 제스처: 위로 스와이프=펼침↔접힘 토글, 아래로=접힘/닫기
+  function bindSheetGestures(el) {
+    var sy = 0, handle = false;
+    el.addEventListener("touchstart", function (e) {
+      var card = el.querySelector(".kkcard"); if (!card) return;
+      sy = e.touches[0].clientY;
+      handle = (sy - card.getBoundingClientRect().top) < 46; // 카드 상단(핸들) 영역
+    }, { passive: true });
+    el.addEventListener("touchend", function (e) {
+      if (window.innerWidth > 560 || !el.classList.contains("open")) return;
+      var card = el.querySelector(".kkcard"), atTop = !card || card.scrollTop <= 1;
+      if (!handle && !atTop) return; // 내용 스크롤 중이면 시트 제어 안 함
+      var dy = e.changedTouches[0].clientY - sy;
+      if (dy < -28) { // 위로 스와이프
+        if (!el.classList.contains("expanded")) el.classList.add("expanded");
+        else el.classList.remove("expanded"); // 그 이후 위로 → 내려감
+      } else if (dy > 40) { // 아래로 스와이프
+        if (el.classList.contains("expanded")) el.classList.remove("expanded");
+        else window.__closePop();
+      } else if (handle && Math.abs(dy) < 8) { // 핸들 탭 → 토글
+        el.classList.toggle("expanded");
+      }
+    }, { passive: true });
   }
   function lockMap(on) { if (map) { try { map.setDraggable(!on); map.setZoomable(!on); } catch (e) {} } }
   function rerenderPanel() { // 갱신 시 스크롤 위치 + 작성중인 후기 초안 유지
@@ -150,12 +178,13 @@
     }
   };
   window.__closePop = function () {
-    if (panelEl) panelEl.classList.remove("open"); lockMap(false); currentPop = null;
+    if (panelEl) panelEl.classList.remove("open", "expanded"); lockMap(false); currentPop = null;
     if (selectedMarker) { try { selectedMarker.setImage(selectedMarker.__img); selectedMarker.setZIndex(0); } catch (e) {} selectedMarker = null; }
   };
   function openPop(d) {
     currentPop = d;
     var p = getPanel();
+    p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
     p.classList.add("open");
     lockMap(true); // 팝업 동안 지도 고정
