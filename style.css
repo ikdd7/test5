@@ -295,6 +295,11 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prform input{flex:1;min-width:0;border:1px solid #e2e6ee;border-radius:8px;padding:9px 10px;
   font-size:.86rem;font-family:inherit;color:#1c2230;background:#fff}
 .kk-prform input:focus{outline:0;border-color:#f0a85a}
+.kk-prdates{display:flex;gap:7px;margin-top:8px}
+.kk-prdates label{flex:1;min-width:0;font-size:.7rem;font-weight:800;color:#6b7480}
+.kk-prdates input{width:100%;margin-top:3px;border:1px solid #e2e6ee;border-radius:8px;padding:8px 9px;
+  font-size:.82rem;font-family:inherit;color:#1c2230;background:#fff;box-sizing:border-box}
+.kk-prdates input:focus{outline:0;border-color:#f0a85a}
 .kk-prfile{display:block;margin-top:8px;background:#fff;border:1.5px dashed #f0b27a;border-radius:9px;
   padding:11px;text-align:center;font-size:.84rem;font-weight:800;color:#c2691f;cursor:pointer}
 .kk-prfile span{color:#e0588a}

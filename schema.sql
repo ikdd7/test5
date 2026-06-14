@@ -46,3 +46,7 @@ create index if not exists price_reports_status_idx on price_reports (client_id,
 -- 제보 증빙 사진(견적서, base64 data URL) + 검증용 메모(연락처/SNS 등)
 alter table price_reports add column if not exists photo text;
 alter table price_reports add column if not exists note  text;
+
+-- 견적 받은 날짜 / 결혼식(예식) 날짜
+alter table price_reports add column if not exists quote_date   date;
+alter table price_reports add column if not exists wedding_date date;

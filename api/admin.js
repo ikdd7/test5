@@ -18,7 +18,9 @@ module.exports = async (req, res) => {
       if (type === "price-pending") {
         let r;
         try {
-          r = await sql`select id, venue_name, meal, rental, client_id, photo, note, (extract(epoch from created_at)*1000)::bigint as ts
+          r = await sql`select id, venue_name, meal, rental, client_id, photo, note,
+            to_char(quote_date,'YYYY-MM-DD') as quote_date, to_char(wedding_date,'YYYY-MM-DD') as wedding_date,
+            (extract(epoch from created_at)*1000)::bigint as ts
             from price_reports where status = 'pending' order by created_at desc limit 300`;
         } catch (e) {
           r = await sql`select id, venue_name, meal, rental, client_id, (extract(epoch from created_at)*1000)::bigint as ts

@@ -38,12 +38,20 @@ module.exports = async (req, res) => {
       const name = b.name ? String(b.name).slice(0, 80) : null;
       const photo = (typeof b.photo === "string" && b.photo.length > 100 && b.photo.length < 900000) ? b.photo : null;
       const note = b.note ? String(b.note).slice(0, 200) : null;
+      const dre = /^\d{4}-\d{2}-\d{2}$/;
+      const qDate = dre.test(b.quoteDate || "") ? b.quoteDate : null;
+      const wDate = dre.test(b.weddingDate || "") ? b.weddingDate : null;
       if (!venue || !cid || meal == null) return res.status(400).json({ error: "venue, cid, meal required" });
       if (!photo) return res.status(400).json({ error: "photo required" });
       try {
-        await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental, photo, note) values (${venue}, ${name}, ${cid}, ${meal}, ${rental}, ${photo}, ${note})`;
-      } catch (e) { // photo/note 컬럼 없으면(마이그레이션 전) 기본 컬럼만
-        await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental) values (${venue}, ${name}, ${cid}, ${meal}, ${rental})`;
+        await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental, photo, note, quote_date, wedding_date)
+          values (${venue}, ${name}, ${cid}, ${meal}, ${rental}, ${photo}, ${note}, ${qDate}, ${wDate})`;
+      } catch (e1) {
+        try { // 날짜 컬럼 없는 경우
+          await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental, photo, note) values (${venue}, ${name}, ${cid}, ${meal}, ${rental}, ${photo}, ${note})`;
+        } catch (e2) { // photo/note도 없는(초기) 경우
+          await sql`insert into price_reports (venue_key, venue_name, client_id, meal, rental) values (${venue}, ${name}, ${cid}, ${meal}, ${rental})`;
+        }
       }
       const a = await agg(venue);
       return res.json({ ok: true, n: a.n, meal: a.meal, rental: a.rental });

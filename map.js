@@ -114,6 +114,8 @@
     var m = p.querySelector("#prMeal"), r = p.querySelector("#prRent"), f = p.querySelector("#prPhoto");
     var meal = m ? parseInt(m.value, 10) : 0, rent = r && r.value ? parseInt(r.value, 10) : 0;
     var note = (p.querySelector("#prNote") || {}).value || "";
+    var qDate = (p.querySelector("#prQDate") || {}).value || "";
+    var wDate = (p.querySelector("#prWDate") || {}).value || "";
     var file = f && f.files && f.files[0];
     if (!(meal >= 10000 && meal <= 400000)) { if (m) m.focus(); alert("1인 식대를 원 단위로 입력해 주세요.\n예: 70000  (1만~40만원)"); return; }
     if (rent && !(rent >= 100000 && rent <= 100000000)) { if (r) r.focus(); alert("대관료를 원 단위로 입력해 주세요.\n예: 5000000  (10만원~1억)"); return; }
@@ -124,7 +126,7 @@
       if (!photo) { if (btn) { btn.disabled = false; btn.textContent = "제보 보내기"; } alert("사진을 처리하지 못했어요. 다른 사진으로 시도해 주세요."); return; }
       if (btn) btn.textContent = "제출 중…";
       fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId(), photo: photo, note: note }) })
+        body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId(), photo: photo, note: note, quoteDate: qDate, weddingDate: wDate }) })
         .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
         .then(function (a) { d._pr = a; showPriceForm = false; priceThanks = true; rerenderPanel(); })
         .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제보 보내기"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
@@ -358,6 +360,10 @@
       ? '<div class="kk-prform"><div class="kk-prrow">' +
           '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원) 예:70000" />' +
           '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택) 예:5000000" />' +
+        "</div>" +
+        '<div class="kk-prdates">' +
+          '<label>견적 받은 날짜<input id="prQDate" type="date" /></label>' +
+          '<label>결혼식 날짜<input id="prWDate" type="date" /></label>' +
         "</div>" +
         '<label class="kk-prfile">📷 가격표·견적서 사진 첨부 <span>(필수)</span>' +
           '<input id="prPhoto" type="file" accept="image/*" onchange="window.__prFile(this)" /></label>' +
