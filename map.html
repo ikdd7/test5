@@ -24,16 +24,25 @@
 <div id="mapFallback"><div style="margin:auto;width:100%;max-width:420px"><div id="fbMap"></div></div></div>
 
 <div id="mapFabs">
-  <button class="fab" onclick="window.__recenterMe&&window.__recenterMe()" aria-label="내 위치로" title="내 위치로">📍</button>
+  <button class="fab" onclick="window.__recenterMe&&window.__recenterMe()" aria-label="내 위치로" title="내 위치로">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3a4150" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="6"/>
+      <circle cx="12" cy="12" r="1.6" fill="#3a4150" stroke="none"/>
+      <line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/>
+      <line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/>
+    </svg>
+  </button>
 </div>
 
 <div id="offlineBanner">🗺️ 카카오 지도를 불러오지 못해 ‘전국 히트맵’으로 표시 중이에요. (지도 키 설정/도메인 등록 후 표시)</div>
 
 <div class="map-top">
   <div class="row1">
-    <a class="back" href="wedding.html">← 허브</a>
-    <span class="ttl">🗺️ 전국 웨딩홀 지도</span>
-    <a class="back" href="method.html" style="margin-left:auto">방법론</a>
+    <div class="brandwrap">
+      <span class="ttl">전국 웨딩홀 지도</span>
+      <span class="bsub">전국 예식장 가격·후기 지도</span>
+    </div>
+    <a class="back" href="method.html">방법론</a>
   </div>
   <div class="msearch" id="msearch">
     <span class="qicon">🔍</span>

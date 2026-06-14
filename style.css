@@ -169,11 +169,15 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 #offlineBanner{display:none;position:fixed;top:118px;left:12px;right:12px;z-index:1100;
   background:rgba(251,191,36,.14);border:1px solid var(--warn);color:var(--warn);
   padding:9px 12px;border-radius:10px;font-size:.8rem;text-align:center}
-.map-top{position:fixed;top:0;left:0;right:0;z-index:1000;padding:10px 12px 12px;
-  background:linear-gradient(180deg,rgba(248,249,251,.98) 70%,rgba(248,249,251,0))}
-.map-top .row1{display:flex;align-items:center;gap:12px}
-.map-top .ttl{font-weight:900;font-size:1rem;color:#1c2230}
-.map-top a.back{color:#7b8494;font-weight:700;font-size:.85rem}
+.map-top{position:fixed;top:0;left:0;right:0;z-index:1000;padding:12px 14px 10px;background:none;pointer-events:none}
+.map-top>*{pointer-events:auto}
+.map-top .row1{display:flex;align-items:flex-start;gap:12px}
+.map-top .brandwrap{display:flex;flex-direction:column;line-height:1.12;
+  text-shadow:0 1px 3px rgba(255,255,255,.95),0 0 10px rgba(255,255,255,.8)}
+.map-top .ttl{font-weight:900;font-size:1.3rem;color:#1b2330;letter-spacing:-.03em}
+.map-top .bsub{font-size:.74rem;color:#707a88;font-weight:700;margin-top:1px}
+.map-top a.back{margin-left:auto;color:#5a6273;font-weight:700;font-size:.8rem;
+  background:rgba(255,255,255,.9);padding:6px 11px;border-radius:999px;box-shadow:0 2px 8px rgba(20,30,50,.12)}
 .msearch{position:relative;margin-top:10px}
 .msearch .qicon{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:.92rem;opacity:.55}
 .msearch input{width:100%;border:1px solid #e2e6ee;background:#fff;color:#1c2230;border-radius:11px;
@@ -201,7 +205,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .mfilters{display:flex;gap:14px;overflow-x:auto;margin-top:10px;scrollbar-width:none;padding-bottom:2px}
 .mfilters::-webkit-scrollbar{display:none}
 .mfilters .grp{display:flex;gap:5px;align-items:center;white-space:nowrap}
-.mfilters .glab{color:#8a93a3;font-size:.72rem;font-weight:800}
+.mfilters .glab{color:#6b7480;font-size:.72rem;font-weight:800;text-shadow:0 1px 3px rgba(255,255,255,.95)}
+.map-top .row1{pointer-events:none}.map-top .row1>*{pointer-events:auto}
 .mfilters #fType,.mfilters #fSlot{display:flex;gap:5px}
 .chip{background:#fff;border:1px solid #e2e6ee;color:#5a6273;font-weight:700;
   font-size:.8rem;padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;box-shadow:0 1px 4px rgba(20,30,50,.06)}
@@ -231,6 +236,7 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 #mapFabs .fab{width:46px;height:46px;border-radius:50%;border:0;background:#fff;color:#222;
   box-shadow:0 3px 12px rgba(0,0,0,.22);font-size:21px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #mapFabs .fab:active{transform:scale(.94)}
+#mapFabs .fab svg{display:block}
 .kk-name{font-weight:800;font-size:1.02rem;letter-spacing:-.02em;padding-right:18px}
 .kk-sub{font-size:.76rem;color:#8b93a1;margin-top:2px}
 .kk-price{margin-top:10px;color:#d6336c;display:flex;align-items:baseline;gap:5px}
