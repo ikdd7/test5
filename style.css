@@ -243,15 +243,23 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-price b{font-size:1.45rem;font-weight:900;letter-spacing:-.02em}
 .kk-price span{font-size:.74rem;color:#8b93a1;font-weight:700}
 .kk-rent{font-size:.86rem;color:#3a4150;margin-top:2px}
-/* 식대·대관료 강조 박스(홀별 대관료 안내 포함) */
-.kk-pricerow{display:flex;gap:9px;margin-top:12px}
-.kk-pb{flex:1;border-radius:12px;padding:10px 12px;min-width:0}
-.kk-pb .kk-pblab{font-size:.74rem;font-weight:800;margin-bottom:3px}
-.kk-pb .kk-pbval{font-size:1.2rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap}
+/* 예상 총액 히어로(B: 가장 먼저 보는 정보) */
+.kk-hero{margin-top:12px;background:linear-gradient(135deg,#fff0f6,#fff6f1);border:1px solid #ffd4e4;
+  border-radius:14px;padding:13px 14px 12px;text-align:center}
+.kk-herolab{font-size:.77rem;color:#a06480;font-weight:800}
+.kk-heroval{font-size:1.62rem;font-weight:900;color:#d6336c;letter-spacing:-.03em;line-height:1.12;margin-top:2px}
+.kk-herosub{font-size:.68rem;color:#b3a0ad;font-weight:700;margin-top:3px}
+/* 식대·대관료·보증인원 박스 */
+.kk-pricerow{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.kk-pb{flex:1;border-radius:12px;padding:9px 11px;min-width:84px}
+.kk-pb .kk-pblab{font-size:.72rem;font-weight:800;margin-bottom:3px}
+.kk-pb .kk-pbval{font-size:1.08rem;font-weight:900;letter-spacing:-.02em;white-space:nowrap}
 .kk-pb.meal{background:#fff4f8;border:1px solid #ffd9e7}
 .kk-pb.meal .kk-pblab{color:#b06283}.kk-pb.meal .kk-pbval{color:#d6336c}
 .kk-pb.rent{background:#eef2ff;border:1px solid #d9e2ff}
 .kk-pb.rent .kk-pblab{color:#6677aa}.kk-pb.rent .kk-pbval{color:#3f56b8}
+.kk-pb.guar{background:#f1f6f1;border:1px solid #d8e8d8}
+.kk-pb.guar .kk-pblab{color:#5f8060}.kk-pb.guar .kk-pbval{color:#3a6b3f}
 .kk-pbnote{font-size:.68rem;color:#9aa1ad;font-weight:700;margin-top:3px;white-space:normal}
 .kk-total{font-size:.86rem;color:#586074;margin-top:9px;background:#fafafe;border:1px solid #e7eaf5;
   padding:8px 11px;border-radius:9px;text-align:center}
