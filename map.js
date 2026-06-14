@@ -30,6 +30,12 @@
   // ── 하객수 / 메모 / 총비용 ──
   var GUESTS = parseInt(localStorage.getItem("wedding_guests"), 10) || 250;
   function setGuests(n) { GUESTS = n || 0; try { localStorage.setItem("wedding_guests", GUESTS); } catch (e) {} }
+  window.__setGuests = function (v) {
+    var n = Math.max(0, Math.min(2000, parseInt(v, 10) || 0));
+    setGuests(n);
+    if (currentPop) rerenderPanel();
+    var gi = document.getElementById("fpGuests"); if (gi) gi.value = GUESTS; // 찜패널 동기화
+  };
   function memoKey(d) { return "wedding_memo_" + favKey(d); }
   function getMemo(d) { try { return localStorage.getItem(memoKey(d)) || ""; } catch (e) { return ""; } }
   function setMemo(d, t) { try { localStorage.setItem(memoKey(d), t); } catch (e) {} }
@@ -67,6 +73,22 @@
   function saveLocalReview(d, t, cid, rating) { var a = getLocalRevs(d); a.unshift({ id: Date.now(), t: t, d: Date.now(), cid: cid, rating: rating || null }); setLocalRevs(d, a); }
   var draftRating = 0; // 후기 작성 시 선택한 별점(팝업당)
   window.__setRating = function (n) { draftRating = (draftRating === n) ? 0 : n; rerenderPanel(); };
+  var showPriceForm = false; // 가격 제보 폼 펼침
+  window.__togglePriceForm = function () { showPriceForm = !showPriceForm; rerenderPanel(); };
+  window.__submitPrice = function () {
+    if (!currentPop) return;
+    var d = currentPop, p = panelEl;
+    var m = p.querySelector("#prMeal"), r = p.querySelector("#prRent");
+    var meal = m ? parseInt(m.value, 10) : 0, rent = r ? parseInt(r.value, 10) : 0;
+    if (!(meal >= 10000 && meal <= 400000) && !(rent > 0)) { if (m) m.focus(); alert("1인 식대(원)를 입력해 주세요. 예: 70000"); return; }
+    if (!apiOK) { alert("가격 제보는 온라인에서만 가능해요 🙏"); return; }
+    var btn = p.querySelector(".kk-prsubmit"); if (btn) { btn.disabled = true; btn.textContent = "제출 중…"; }
+    fetch(API + "/price", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ venue: favKey(d), name: d.name, meal: meal || null, rental: rent || null, cid: clientId() }) })
+      .then(function (x) { return x.ok ? x.json() : Promise.reject(); })
+      .then(function (a) { d._pr = a; showPriceForm = false; rerenderPanel(); })
+      .catch(function () { if (btn) { btn.disabled = false; btn.textContent = "제출"; } alert("제보 전송에 실패했어요. 잠시 후 다시 시도해 주세요."); });
+  };
   function revDate(ts) { var d = new Date(ts); return (d.getMonth() + 1) + "." + d.getDate(); }
   // 키워드 카운트: 서버 집계(나 포함) 우선, 없으면 이 기기 투표만
   function kwCount(d, label) {
@@ -142,11 +164,13 @@
     Promise.all([
       fetch(API + "/votes?venue=" + encodeURIComponent(key) + "&cid=" + encodeURIComponent(cid)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
       fetch(API + "/reviews?venue=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
+      fetch(API + "/price?venue=" + encodeURIComponent(key)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }),
     ]).then(function (res) {
       if (currentPop !== d) return; // 다른 핀으로 이동했으면 무시
       if (res[0]) { d.kw = res[0].kw || {}; d.kwMine = res[0].mine || []; d._kwsrv = true; }
       if (res[1]) { d._revs = res[1].reviews || []; d._revsrv = true; }
-      if (res[0] || res[1]) rerenderPanel();
+      if (res[2]) { d._pr = res[2]; }
+      if (res[0] || res[1] || res[2]) rerenderPanel();
     });
   }
   window.__kwVote = function (idx) {
@@ -202,7 +226,7 @@
   window.__photoErr = function (img) { try { img.outerHTML = '<div class="kk-photo kk-photo-empty">🖼️ 사진 준비 중</div>'; } catch (e) {} };
   function openPop(d) {
     currentPop = d;
-    draftRating = 0; // 새 팝업: 별점 초기화
+    draftRating = 0; showPriceForm = false; // 새 팝업: 별점/제보폼 초기화
     var p = getPanel();
     p.classList.remove("expanded"); // 항상 접힌(peek) 상태로 열기
     p.innerHTML = popupHtml(d);
@@ -259,7 +283,7 @@
       var rentNote = (d.halls > 1) ? "홀 " + d.halls + "개 · 홀마다 달라요" : (d.nobs > 1 ? "소스 평균" : "");
       var guarBox = d.guarantee ? '<div class="kk-pb guar"><div class="kk-pblab">보증인원</div><div class="kk-pbval">' + d.guarantee + "명</div></div>" : "";
       body = '<div class="kk-hero">' +
-          '<div class="kk-herolab">하객 ' + GUESTS + "명 기준 예상 총액</div>" +
+          '<div class="kk-herolab">하객 <input class="kk-guests" type="number" inputmode="numeric" min="0" value="' + GUESTS + '" onchange="window.__setGuests(this.value)" onclick="this.select()">명 기준 예상 총액</div>' +
           '<div class="kk-heroval">' + won(totalCost(d)) + "</div>" +
           '<div class="kk-herosub">식대×하객 + 대관료 추정' + (d.guarantee && d.guarantee > GUESTS ? " · 보증 " + d.guarantee + "명 주의" : "") + "</div>" +
         "</div>" +
@@ -271,8 +295,21 @@
           guarBox +
         "</div>" + chipHtml;
     } else {
-      body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 제보해 주세요 🙏</div>' + chipHtml;
+      body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 아래에서 제보해 주세요 🙏</div>' + chipHtml;
     }
+    // 사용자 가격 제보(집계 표시 + 입력 폼)
+    var pr = d._pr;
+    var prInfo = (pr && pr.n) ? '<div class="kk-prinfo">👥 사용자 제보 <b>' + pr.n + "</b>건" +
+      (pr.meal ? " · 식대 " + won(pr.meal) : "") + (pr.rental ? " · 대관료 " + manwon(pr.rental) + "원" : "") + "</div>" : "";
+    var prForm = showPriceForm
+      ? '<div class="kk-prform"><div class="kk-prrow">' +
+          '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원)" />' +
+          '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택)" />' +
+        "</div><button class=\"kk-prsubmit\" onclick=\"window.__submitPrice()\">제보 보내기</button>" +
+        '<div class="kk-prhint">정확한 정보가 다른 분께 큰 도움이 돼요. 검증 후 반영됩니다.</div></div>'
+      : "";
+    var priceReport = '<div class="kk-pr' + (hasPrice(d) ? "" : " soon") + '">' + prInfo +
+      '<button class="kk-prbtn" onclick="window.__togglePriceForm()">💰 가격 ' + (showPriceForm ? "제보 닫기" : "제보하기") + "</button>" + prForm + "</div>";
     var tagsBlock = (d.tags && d.tags.length) ? '<div class="kk-chips feat">' +
       d.tags.slice(0, 8).map(function (t) { return "<span>" + esc(t) + "</span>"; }).join("") + "</div>" : "";
     var pros = (d.pros && d.pros.length) ? '<div class="kk-pc good">👍 ' + d.pros.slice(0, 5).map(esc).join(" · ") + "</div>" : "";
@@ -346,7 +383,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + comm + body + kwGrid + cmt +
+      feat + comm + body + priceReport + kwGrid + cmt +
       '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }

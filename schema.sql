@@ -26,3 +26,15 @@ create index if not exists reviews_venue_idx on reviews (venue_key, status);
 
 -- 기존 테이블에 별점 컬럼 추가(이미 만들어둔 경우 이 한 줄만 실행)
 alter table reviews add column if not exists rating int;
+
+-- 사용자 가격 제보(식대/대관료). 공식 데이터와 별개로 집계해 참고용 표시.
+create table if not exists price_reports (
+  id         bigint generated always as identity primary key,
+  venue_key  text not null,
+  venue_name text,
+  client_id  text not null,
+  meal       int,                       -- 1인 식대(원)
+  rental     bigint,                    -- 대관료(원)
+  created_at timestamptz not null default now()
+);
+create index if not exists price_reports_venue_idx on price_reports (venue_key);

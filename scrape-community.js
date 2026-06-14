@@ -24,16 +24,14 @@ const KW = [
 ];
 const stripTags = (s) => String(s || "").replace(/<[^>]+>/g, " ").replace(/&[a-z#0-9]+;/g, " ");
 
-function api(q) {
+function naver(p) {
   return new Promise((res) => {
-    const opt = {
-      hostname: "openapi.naver.com",
-      path: "/v1/search/blog.json?display=30&sort=sim&query=" + encodeURIComponent(q),
-      headers: { "X-Naver-Client-Id": ID, "X-Naver-Client-Secret": SECRET },
-    };
+    const opt = { hostname: "openapi.naver.com", path: p, headers: { "X-Naver-Client-Id": ID, "X-Naver-Client-Secret": SECRET } };
     https.get(opt, (r) => { let d = ""; r.on("data", (c) => (d += c)); r.on("end", () => { try { res(JSON.parse(d)); } catch (e) { res(null); } }); }).on("error", () => res(null));
   });
 }
+const api = (q) => naver("/v1/search/blog.json?display=30&sort=sim&query=" + encodeURIComponent(q));
+const imgApi = (q) => naver("/v1/search/image.json?display=5&sort=sim&filter=large&query=" + encodeURIComponent(q));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
@@ -42,19 +40,27 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   vm.runInNewContext(fs.readFileSync(FILE, "utf8"), sandbox);
   const venues = sandbox.window.WEDDING_VENUES || [];
   const MAX = parseInt(process.env.MAX || "1300", 10), START = parseInt(process.env.START || "0", 10);
-  let done = 0, filled = 0;
+  const WANT_PHOTO = process.env.PHOTOS !== "0"; // 사진 없는 곳 대표 이미지 채움
+  let done = 0, filled = 0, photos = 0;
   for (let i = START; i < venues.length && done < MAX; i++) {
     const v = venues[i]; done++;
     const j = await api(v.name + " 웨딩홀 후기");
     if (j && j.errorCode) { console.log("API 오류: " + j.errorMessage + " (키/한도 확인)"); break; }
-    if (!j || !j.items || !j.items.length) { console.log("  [" + i + "] " + v.name + ": 결과 없음"); await sleep(120); continue; }
-    const text = j.items.map((it) => stripTags(it.title) + " " + stripTags(it.description)).join("  ");
-    const counts = KW.map((k) => { const m = text.match(k.re); return [k.l, m ? m.length : 0]; }).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
-    if (counts.length) { v.community = counts.slice(0, 6); filled++; console.log("  [" + i + "] " + v.name + " ← " + counts.slice(0, 3).map((x) => x[0] + "(" + x[1] + ")").join(", ")); }
-    else { if (v.community) delete v.community; console.log("  [" + i + "] " + v.name + ": 키워드 없음"); }
+    if (j && j.items && j.items.length) {
+      const text = j.items.map((it) => stripTags(it.title) + " " + stripTags(it.description)).join("  ");
+      const counts = KW.map((k) => { const m = text.match(k.re); return [k.l, m ? m.length : 0]; }).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
+      if (counts.length) { v.community = counts.slice(0, 6); filled++; console.log("  [" + i + "] " + v.name + " ← " + counts.slice(0, 3).map((x) => x[0] + "(" + x[1] + ")").join(", ")); }
+      else { if (v.community) delete v.community; console.log("  [" + i + "] " + v.name + ": 키워드 없음"); }
+    } else { console.log("  [" + i + "] " + v.name + ": 결과 없음"); }
+    // 대표 사진(없을 때만): 네이버 이미지 검색 첫 결과
+    if (WANT_PHOTO && !v.photo) {
+      await sleep(90);
+      const im = await imgApi(v.name + " 웨딩홀");
+      if (im && im.items && im.items.length && im.items[0].link) { v.photo = im.items[0].link; v.photoSrc = "naver"; photos++; }
+    }
     await sleep(110); // rate limit
   }
   const header = "/* 전국 예식장 리스트 — 커뮤니티 키워드 집계(" + new Date().toISOString().slice(0, 10) + ") */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
-  console.log("처리 " + done + "곳, community 채움 " + filled + "곳");
+  console.log("처리 " + done + "곳, community 채움 " + filled + "곳, 사진 채움 " + photos + "곳");
 })();

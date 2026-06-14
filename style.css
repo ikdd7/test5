@@ -260,6 +260,10 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-hero{margin-top:12px;background:linear-gradient(135deg,#fff0f6,#fff6f1);border:1px solid #ffd4e4;
   border-radius:14px;padding:13px 14px 12px;text-align:center}
 .kk-herolab{font-size:.77rem;color:#a06480;font-weight:800}
+.kk-guests{width:46px;border:0;border-bottom:1.5px dashed #e29ab8;background:transparent;color:#d6336c;
+  font-weight:900;font-size:.84rem;text-align:center;font-family:inherit;padding:0 1px;margin:0 2px;-moz-appearance:textfield}
+.kk-guests:focus{outline:0;border-bottom-color:#d6336c}
+.kk-guests::-webkit-outer-spin-button,.kk-guests::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 .kk-heroval{font-size:1.62rem;font-weight:900;color:#d6336c;letter-spacing:-.03em;line-height:1.12;margin-top:2px}
 .kk-herosub{font-size:.68rem;color:#b3a0ad;font-weight:700;margin-top:3px}
 /* 식대·대관료·보증인원 박스 */
@@ -277,6 +281,23 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-total{font-size:.86rem;color:#586074;margin-top:9px;background:#fafafe;border:1px solid #e7eaf5;
   padding:8px 11px;border-radius:9px;text-align:center}
 .kk-total b{color:#d6336c}
+/* 사용자 가격 제보 */
+.kk-pr{margin-top:10px}
+.kk-pr.soon{margin-top:8px}
+.kk-prinfo{font-size:.8rem;color:#3a4150;font-weight:700;background:#f4f7f1;border:1px solid #dcebd9;
+  border-radius:9px;padding:7px 11px;margin-bottom:7px}
+.kk-prinfo b{color:#3a6b3f}
+.kk-prbtn{border:1.5px solid #ffd0a8;background:#fff7ef;color:#c2691f;font-weight:800;font-size:.82rem;
+  padding:8px 12px;border-radius:999px;cursor:pointer;font-family:inherit}
+.kk-prbtn:hover{background:#fff0e2}
+.kk-prform{margin-top:8px;background:#fafbfc;border:1px solid #eef0f4;border-radius:11px;padding:10px}
+.kk-prrow{display:flex;gap:7px}
+.kk-prform input{flex:1;min-width:0;border:1px solid #e2e6ee;border-radius:8px;padding:9px 10px;
+  font-size:.86rem;font-family:inherit;color:#1c2230;background:#fff}
+.kk-prform input:focus{outline:0;border-color:#f0a85a}
+.kk-prsubmit{width:100%;margin-top:7px;border:0;background:linear-gradient(135deg,#f0932b,#f7b24a);color:#fff;
+  font-weight:800;font-size:.86rem;padding:9px;border-radius:9px;cursor:pointer;font-family:inherit}
+.kk-prhint{font-size:.68rem;color:#9aa1ad;font-weight:600;margin-top:6px;text-align:center}
 .kk-soon{margin-top:10px;font-weight:800;color:#586074;font-size:.95rem}
 .kk-soonsub{font-size:.78rem;color:#9aa1ad;margin-top:2px}
 .kk-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
