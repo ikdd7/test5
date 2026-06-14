@@ -480,8 +480,7 @@
       '<div class="kk-sub">' + sub + "</div>" +
       feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + reviewSec +
       '<div class="kk-actions">' + fav + "</div>" +
-      '<div class="kk-prdisc">가격은 제보·공개정보 기반 추정치로 실제와 다를 수 있어요. · ' +
-        '<a href="/privacy.html" target="_blank" rel="noopener">정정·삭제·약관</a></div>' +
+      '<div class="kk-prdisc">가격은 제보·공개정보 기반 추정치로 실제와 다를 수 있어요.</div>' +
       '<div class="kk-tail"></div></div>';
   }
 

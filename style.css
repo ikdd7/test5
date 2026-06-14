@@ -334,7 +334,6 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prconsent a{color:#c2691f;font-weight:800}
 /* 가격 면책 고지 — 팝업 맨 아래 작은 회색 fine-print */
 .kk-prdisc{font-size:.64rem;color:#b3b9c2;font-weight:500;line-height:1.5;margin-top:10px;text-align:left}
-.kk-prdisc a{color:#aab0bb;text-decoration:underline}
 .kk-prthx{background:#f1f6f1;border:1px solid #d8e8d8;border-radius:11px;padding:13px;text-align:center;
   font-size:.92rem;font-weight:800;color:#3a6b3f;line-height:1.5}
 .kk-prthx span{font-size:.78rem;font-weight:700;color:#6b8a6e}
