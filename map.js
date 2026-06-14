@@ -187,6 +187,7 @@
   }
 
   function renderStats(rows) {
+    if (!$("mStatN")) return;                 // 통계박스 제거됨 → 안전 가드
     var priced = rows.filter(hasPrice);
     $("mStatN").textContent = rows.length;
     $("mStatMeal").textContent = priced.length ? won(S.robust(priced.map(function (d) { return d.meal; })).median) : "–";
@@ -347,27 +348,32 @@
     return t === "호텔" ? "🏨" : t === "컨벤션" ? "🏢" : t === "하우스웨딩" ? "🏡"
       : t === "야외" ? "🌳" : t === "채플/성당" ? "⛪" : t === "일반예식장" ? "💒" : "💍";
   }
-  // 거지맵식 가격 알약(pill) 마커. 앞에 홀타입 이모지, 색은 테두리(가격). sel=선택(어두움 + × 닫기)
-  function pillSVG(text, emoji, color, sel) {
-    var pad = sel ? 20 : 0;
-    var w = 28 + Math.max(2, text.length) * 10 + 8 + pad, h = 24, th = h + 8, cx = w / 2;
-    var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#1a1a2e", bd = sel ? "#2b2b3a" : color;
-    var x = sel ? '<text x="' + (w - 13) + '" y="' + (h / 2 + 5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="15" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
+  // 거지맵식 가격 알약(pill). 식대(굵게) + 대관료(연하게). sel=선택(어두움 + × 닫기)
+  function pillWidth(main, sub, sel) {
+    return Math.round(24 + Math.max(2, main.length) * 11 + (sub ? 6 + sub.length * 8.5 : 0) + 12 + (sel ? 22 : 0));
+  }
+  function pillSVG(main, sub, emoji, color, sel, w) {
+    var h = 26, th = h + 8, cx = w / 2;
+    var bg = sel ? "#2b2b3a" : "#ffffff", fg = sel ? "#ffffff" : "#16203a", bd = sel ? "#2b2b3a" : color;
+    var subfg = sel ? "#c7ccd6" : "#7b8494";
+    var mainX = 26, mainW = Math.max(2, main.length) * 11;
+    var subEl = sub ? '<text x="' + (mainX + mainW + 5) + '" y="' + (h / 2 + 4) + '" font-family="-apple-system,sans-serif" font-size="11" font-weight="700" fill="' + subfg + '">' + sub + '</text>' : "";
+    var x = sel ? '<text x="' + (w - 13) + '" y="' + (h / 2 + 5.5) + '" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="16" font-weight="600" fill="#fff" opacity="0.85">×</text>' : "";
     return '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + th + '">' +
       '<path d="M' + (cx - 6) + ' ' + (h - 1) + ' L' + cx + ' ' + (th - 1) + ' L' + (cx + 6) + ' ' + (h - 1) + ' Z" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
-      '<rect x="1.5" y="1.5" rx="11" ry="11" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
-      '<text x="8" y="' + (h / 2 + 5) + '" font-size="13">' + emoji + '</text>' +
-      '<text x="27" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="12.5" font-weight="700" fill="' + fg + '">' + text + '</text>' +
-      x + '</svg>';
+      '<rect x="1.5" y="1.5" rx="12" ry="12" width="' + (w - 3) + '" height="' + (h - 3) + '" fill="' + bg + '" stroke="' + bd + '" stroke-width="2"/>' +
+      '<text x="7" y="' + (h / 2 + 5.5) + '" font-size="14.5">' + emoji + '</text>' +
+      '<text x="' + mainX + '" y="' + (h / 2 + 4.5) + '" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="13.5" font-weight="800" fill="' + fg + '">' + main + '</text>' +
+      subEl + x + '</svg>';
   }
   function markerImage(d, lo, hi, mid, sel) {
-    var priced = hasPrice(d), emoji = typeEmoji(d.type), t, color;
-    if (priced) { t = manwon(d.meal); color = priceColor(d.meal, lo, hi, mid); }
-    else { t = "정보없음"; color = "#aeb6c2"; }      // 가격미확인도 동일 pill 디자인
-    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + t + "|" + color + "|" + emoji;
+    var priced = hasPrice(d), emoji = typeEmoji(d.type), main, sub = "", color;
+    if (priced) { main = manwon(d.meal); sub = d.rental ? manwon(d.rental) : ""; color = priceColor(d.meal, lo, hi, mid); }
+    else { main = "정보없음"; color = "#aeb6c2"; }      // 가격미확인도 동일 pill 디자인
+    var key = (priced ? "p|" : "g|") + (sel ? "s|" : "") + main + "|" + sub + "|" + color + "|" + emoji;
     if (imgCache[key]) return imgCache[key];
-    var w = 28 + Math.max(2, t.length) * 10 + 8 + (sel ? 20 : 0), th = 32;
-    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(t, emoji, color, sel)),
+    var w = pillWidth(main, sub, sel), th = 34;
+    var img = new kakao.maps.MarkerImage("data:image/svg+xml," + encodeURIComponent(pillSVG(main, sub, emoji, color, sel, w)),
       new kakao.maps.Size(w, th), { offset: new kakao.maps.Point(w / 2, th) });
     imgCache[key] = img; return img;
   }
