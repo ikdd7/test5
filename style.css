@@ -332,10 +332,9 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prconsent input{margin:2px 0 0;flex:none;width:15px;height:15px;accent-color:#f0932b}
 .kk-prconsent span{font-size:.74rem;color:#5a6473;font-weight:600;line-height:1.45}
 .kk-prconsent a{color:#c2691f;font-weight:800}
-/* 가격 면책 고지 */
-.kk-prdisc{font-size:.68rem;color:#9aa1ad;font-weight:600;line-height:1.5;margin-top:9px;text-align:center}
-.kk-prdisc b{color:#7a828f}
-.kk-prdisc a{color:#b6bdc8;text-decoration:underline}
+/* 가격 면책 고지 — 팝업 맨 아래 작은 회색 fine-print */
+.kk-prdisc{font-size:.64rem;color:#b3b9c2;font-weight:500;line-height:1.5;margin-top:10px;text-align:left}
+.kk-prdisc a{color:#aab0bb;text-decoration:underline}
 .kk-prthx{background:#f1f6f1;border:1px solid #d8e8d8;border-radius:11px;padding:13px;text-align:center;
   font-size:.92rem;font-weight:800;color:#3a6b3f;line-height:1.5}
 .kk-prthx span{font-size:.78rem;font-weight:700;color:#6b8a6e}

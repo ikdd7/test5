@@ -478,11 +478,10 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + comm + '<div class="kk-pricesec">' + body +
-        '<div class="kk-prdisc">※ 제보·공개정보 기반 <b>추정치</b>예요. 실제와 다를 수 있으니 계약 시 직접 확인하세요. · ' +
-        '<a href="/privacy.html" target="_blank" rel="noopener">정정·삭제·약관</a></div>' +
-      "</div>" + priceReport + reviewSec +
+      feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + reviewSec +
       '<div class="kk-actions">' + fav + "</div>" +
+      '<div class="kk-prdisc">가격은 제보·공개정보 기반 추정치로 실제와 다를 수 있어요. · ' +
+        '<a href="/privacy.html" target="_blank" rel="noopener">정정·삭제·약관</a></div>' +
       '<div class="kk-tail"></div></div>';
   }
 
