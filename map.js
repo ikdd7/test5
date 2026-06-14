@@ -304,7 +304,7 @@
   }
   function visible() {
     return DATA.filter(function (d) {
-      return typeOk(d) && (!fVer || d.verified) && (!fPriced || hasPrice(d)) && (!fFav || FAVS[favKey(d)]);
+      return typeOk(d) && (!fVer || d.verified) && (!fPriced || isPriced(d)) && (!fFav || FAVS[favKey(d)]);
     });
   }
   function priceColor(m, lo, hi, mid) {
