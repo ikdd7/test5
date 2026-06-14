@@ -449,7 +449,7 @@
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
       '<div class="kk-name">' + (d.name || sub) + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
-      feat + comm + body + priceReport + kwGrid + cmt +
+      feat + comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + kwGrid + cmt +
       '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-tail"></div></div>';
   }

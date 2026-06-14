@@ -256,6 +256,9 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-price b{font-size:1.45rem;font-weight:900;letter-spacing:-.02em}
 .kk-price span{font-size:.74rem;color:#8b93a1;font-weight:700}
 .kk-rent{font-size:.86rem;color:#3a4150;margin-top:2px}
+/* 가격 섹션 구분선(특징·장단점과 분리) */
+.kk-pricesec{border-top:1px solid #eef0f4;margin-top:14px;padding-top:13px}
+.kk-pricesec>.kk-hero,.kk-pricesec>.kk-soon{margin-top:0}
 /* 예상 총액 히어로(B: 가장 먼저 보는 정보) */
 .kk-hero{margin-top:12px;background:linear-gradient(135deg,#fff0f6,#fff6f1);border:1px solid #ffd4e4;
   border-radius:14px;padding:13px 14px 12px;text-align:center}
@@ -287,8 +290,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .kk-prinfo{font-size:.8rem;color:#3a4150;font-weight:700;background:#f4f7f1;border:1px solid #dcebd9;
   border-radius:9px;padding:7px 11px;margin-bottom:7px}
 .kk-prinfo b{color:#3a6b3f}
-.kk-prbtn{border:1.5px solid #ffd0a8;background:#fff7ef;color:#c2691f;font-weight:800;font-size:.82rem;
-  padding:8px 12px;border-radius:999px;cursor:pointer;font-family:inherit}
+.kk-prbtn{width:100%;border:1.5px solid #ffd0a8;background:#fff7ef;color:#c2691f;font-weight:800;font-size:.82rem;
+  padding:9px 12px;border-radius:999px;cursor:pointer;font-family:inherit}
 .kk-prbtn:hover{background:#fff0e2}
 .kk-prform{margin-top:8px;background:#fafbfc;border:1px solid #eef0f4;border-radius:11px;padding:10px}
 .kk-prrow{display:flex;gap:7px}
@@ -355,7 +358,7 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
   .kk-pb{padding:8px 10px;min-width:78px}
   .kk-pb .kk-pblab{font-size:.68rem;margin-bottom:2px}
   .kk-pb .kk-pbval{font-size:.98rem}
-  .kk-feat,.kk-kw,.kk-cmt{margin-top:11px;padding-top:10px}
+  .kk-feat,.kk-kw,.kk-cmt,.kk-pricesec{margin-top:11px;padding-top:10px}
   .kk-cmt textarea{min-height:42px}
 }
 /* "여기는 이런 점이 좋아요" 요약 헤더 */
