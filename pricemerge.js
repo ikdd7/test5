@@ -35,6 +35,13 @@ module.exports = { addPrice: addPrice };
 // ── 이름 매칭 + 신규 식장 삽입(스크래퍼 공용) ──
 var norm = function (s) { return String(s || "").replace(/[\s()\-·_]/g, "").toLowerCase(); };
 
+// og:image가 실제 사진인지 가벼운 검증(https + 로고/공유카드/배너/기본이미지 제외)
+function okPhoto(url) {
+  if (!url || !/^https:\/\//i.test(url)) return false; // 혼합콘텐츠 방지: https만
+  if (/(logo|sprite|blank|spacer|1x1|icon|favicon|sns|share|symbol|banner|ci[-_]|bi[-_]|default|no[-_]?img|noimage|placeholder|common|opengraph)/i.test(url)) return false;
+  return /\.(jpe?g|png|webp)(\?|$)/i.test(url) || /(upload|photo|image|img|thumb|file)/i.test(url);
+}
+
 // 정규화 이름의 포함관계(짧은 쪽이 4자 이상). 브랜드/지점명 변형을 폭넓게 잡되 과매칭 방지.
 function nameOverlap(an, bn) {
   var a = norm(an), b = norm(bn);
@@ -74,7 +81,7 @@ function makeVenue(p) {
   if (p.slot) v.slot = p.slot;
   if (p.guarantee) v.guarantee = p.guarantee;
   if (p.tags && p.tags.length) v.tags = p.tags.slice(0, 8);
-  if (p.photo) v.photo = p.photo;
+  if (okPhoto(p.photo)) v.photo = p.photo;
   return v;
 }
 
@@ -85,7 +92,7 @@ function applyScrape(venues, p) {
   var hit = venues.find(function (v) { return matchVenue(v, p); });
   if (hit) {
     var res = addPrice(hit, { meal: p.meal, rental: p.rental, source: p.source, slot: p.slot, guarantee: p.guarantee });
-    if (p.photo && !hit.photo) hit.photo = p.photo;
+    if (okPhoto(p.photo) && !hit.photo) hit.photo = p.photo;
     if (p.tags && p.tags.length && !(hit.tags && hit.tags.length)) hit.tags = p.tags.slice(0, 8);
     return { status: res, venue: hit };
   }
@@ -98,7 +105,19 @@ function applyScrape(venues, p) {
   return { status: "inserted", venue: nv };
 }
 
+// 매칭되는 기존 식장에 "사진만" 채움(가격 없어도). status: photo|had|nomatch|skip
+function fillPhoto(venues, p) {
+  if (!p.name || !okPhoto(p.photo)) return { status: "skip", venue: null };
+  var hit = venues.find(function (v) { return matchVenue(v, { name: p.name, region: p.region }); });
+  if (!hit) return { status: "nomatch", venue: null };
+  if (hit.photo) return { status: "had", venue: hit };
+  hit.photo = p.photo;
+  return { status: "photo", venue: hit };
+}
+
 module.exports.matchVenue = matchVenue;
 module.exports.nameOverlap = nameOverlap;
 module.exports.applyScrape = applyScrape;
 module.exports.makeVenue = makeVenue;
+module.exports.okPhoto = okPhoto;
+module.exports.fillPhoto = fillPhoto;

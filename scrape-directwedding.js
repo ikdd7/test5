@@ -6,7 +6,7 @@
  */
 const fs = require("fs"), path = require("path"), vm = require("vm");
 const { chromium } = require("playwright");
-const { applyScrape } = require("./pricemerge.js");
+const { applyScrape, fillPhoto } = require("./pricemerge.js");
 
 const BASE = "https://www.directwedding.co.kr/weddinghall/hall";
 const START = parseInt(process.env.START, 10) || 1;
@@ -49,7 +49,7 @@ function cleanName(title) {
     } catch (e) { console.log("[DEBUG] " + dbg + " 오류 " + e.message); }
   }
 
-  let scraped = 0, filled = 0, averaged = 0, inserted = 0, empty = 0; const report = [];
+  let scraped = 0, filled = 0, averaged = 0, inserted = 0, empty = 0, photoed = 0; const report = [];
   const log = (i, s) => { report.push(s); console.log("  [" + i + "/" + END + "] " + s); };
   for (let i = START; i <= END; i++) {
     const id = "hall" + String(i).padStart(4, "0");
@@ -66,7 +66,11 @@ function cleanName(title) {
       const pr = parsePrice(text), region = parseRegion(text);
       let photo = ""; try { photo = await page.$eval('meta[property="og:image"]', (e) => e.content); } catch (e) {}
       scraped++;
-      if (!pr.meal) { log(i, id + " " + name + ": 식대 못찾음"); continue; }
+      if (!pr.meal) {
+        var fp = fillPhoto(venues, { name: name, region: region, photo: photo }); // 가격 없어도 사진은 채움
+        if (fp.status === "photo") { photoed++; log(i, "📷 " + name + " (사진만)"); continue; }
+        log(i, id + " " + name + ": 식대 못찾음"); continue;
+      }
       const out = applyScrape(venues, { name: name, region: region, meal: pr.meal, rental: pr.rental, source: "directwedding/" + id, photo: photo });
       const v = out.venue;
       if (out.status === "filled") { filled++; log(i, "✓ " + id + " " + name + " : " + v.meal); }
@@ -80,5 +84,5 @@ function cleanName(title) {
 
   const header = "/* 전국 예식장 리스트 — directwedding 가격 채움(" + new Date().toISOString().slice(0, 10) + ", 가격 " + venues.filter((v) => v.meal).length + "곳) */\n";
   fs.writeFileSync(FILE, header + "window.WEDDING_VENUES = [\n" + venues.map((v) => "  " + JSON.stringify(v)).join(",\n") + "\n];\n", "utf8");
-  console.log("스크랩 " + scraped + "곳 / 빈페이지 " + empty + " → 새채움 " + filled + ", 평균추가 " + averaged + ", 신규삽입 " + inserted + "(좌표는 geocode가 채움), 총가격 " + venues.filter((v) => v.meal).length + "곳");
+  console.log("스크랩 " + scraped + "곳 / 빈페이지 " + empty + " → 새채움 " + filled + ", 평균추가 " + averaged + ", 신규삽입 " + inserted + ", 사진만 " + photoed + "(좌표는 geocode가 채움), 총가격 " + venues.filter((v) => v.meal).length + "곳, 총사진 " + venues.filter((v) => v.photo).length + "곳");
 })();
