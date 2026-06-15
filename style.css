@@ -222,8 +222,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .glab{color:#6b7480;font-size:.72rem;font-weight:800;margin-right:2px}
 .glab b{color:#d6336c}
 /* 가격대 듀얼 슬라이더 */
-.filterpanel .grp.price{flex-wrap:nowrap;gap:10px}
-.rangewrap{position:relative;flex:1;min-width:130px;height:28px;display:flex;align-items:center}
+.filterpanel .grp.price{flex-direction:column;align-items:stretch;gap:8px}
+.rangewrap{position:relative;width:100%;height:28px;display:flex;align-items:center;flex:none}
 .rangetrack{position:absolute;left:0;right:0;height:5px;background:#ece2e8;border-radius:5px}
 .rangefill{position:absolute;height:5px;background:#ec4f8e;border-radius:5px}
 .rangewrap input[type=range]{position:absolute;left:0;width:100%;margin:0;height:28px;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}

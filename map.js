@@ -560,7 +560,7 @@
     var el = $("fPref"); if (!el) return; el.innerHTML = "";
     KEYWORDS.forEach(function (k) {
       var label = k[1], b = document.createElement("button");
-      b.className = "chip" + (fPrefs[label] ? " on" : ""); b.textContent = k[2] || label;
+      b.className = "chip" + (fPrefs[label] ? " on" : ""); b.textContent = k[0] + " " + (k[2] || label);
       b.onclick = function () { if (fPrefs[label]) delete fPrefs[label]; else fPrefs[label] = 1; buildPrefChips(onChange); updateFilterSummary(); onChange(); };
       el.appendChild(b);
     });
