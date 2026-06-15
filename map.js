@@ -426,20 +426,19 @@
             (rentNote ? '<div class="kk-pbnote">' + rentNote + "</div>" : "") + "</div>" +
           guarBox +
         "</div>" + chipHtml;
-    } else if (isPriced(d)) {
-      // 잠김: 더미 금액을 블러로(실제 숫자는 서버만 보유). 제보 1건 시 전체 공개.
+    } else {
+      // 가격 미공개: 모든 식장이 동일한 가격 칸(블러)을 갖도록 통일. p 플래그 유무로 안내만 다르게.
+      var noData = !isPriced(d); // 서버에도 가격 없음 = 아직 데이터 없음
       body = '<div class="kk-hero kk-lockhero">' +
           '<div class="kk-herolab">하객 ' + GUESTS + "명 기준 예상 총액</div>" +
           '<div class="kk-heroval kk-blur">00,000,000원</div>' +
-          '<div class="kk-herosub">🔒 가격 <b>제보·검증</b> 후 전체 공개</div>' +
+          '<div class="kk-herosub">' + (noData ? '💬 아직 가격 정보가 없어요 · <b>제보 환영</b>' : '🔒 가격 <b>제보·검증</b> 후 전체 공개') + "</div>" +
         "</div>" +
         lockedAvgLine(d) +
         '<div class="kk-pricerow">' +
           '<div class="kk-pb meal"><div class="kk-pblab">식대 (1인)</div><div class="kk-pbval kk-blur">00,000원</div></div>' +
           '<div class="kk-pb rent"><div class="kk-pblab">대관료</div><div class="kk-pbval kk-blur">000만원</div></div>' +
         "</div>" + chipHtml;
-    } else {
-      body = '<div class="kk-soon">💬 가격 정보 수집 중</div><div class="kk-soonsub">아는 가격이 있다면 아래에서 제보해 주세요 🙏</div>' + chipHtml;
     }
     // 사용자 가격 제보(집계 표시 + 입력 폼)
     var pr = d._pr;
@@ -448,7 +447,7 @@
     var prForm = showPriceForm
       ? '<div class="kk-prform"><div class="kk-prrow">' +
           '<input id="prMeal" type="number" inputmode="numeric" placeholder="1인 식대 (원) 예:70000" />' +
-          '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택) 예:5000000" />' +
+          '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원) 예:5000000" />' +
         "</div>" +
         '<div class="kk-prdates">' +
           '<label>견적 받은 날짜<input id="prQDate" type="date" max="' + todayStr() + '" /></label>' +
@@ -523,18 +522,15 @@
       starSel +
       '<textarea maxlength="300" placeholder="다녀온 후기를 남겨보세요"></textarea>' +
       '<button class="kk-cmtbtn" onclick="window.__addReview()">후기 등록</button>' + revList + "</div>";
-    // ── 후기·평가: 기본 접힘(비중 축소). 한 줄 요약 + 펼치기 토글 ──
-    var revMeta = [];
-    if (revs.length) revMeta.push("후기 " + revs.length + "개" + (avg ? " ★" + avg.toFixed(1) : ""));
-    if (total) revMeta.push("평가 " + total + "명");
-    var revSummary = revMeta.length ? revMeta.join(" · ") : "아직 후기·평가가 없어요";
+    // ── 후기: 기본 접힘(비중 축소). 한 줄 요약 + 펼치기 토글. 키워드 투표(막대) 제거, 댓글만. ──
+    var revSummary = revs.length ? "후기 " + revs.length + "개" + (avg ? " ★" + avg.toFixed(1) : "") : "아직 후기가 없어요";
     var reviewSec = '<div class="kk-revsec' + (showReviews ? " open" : "") + '">' +
       '<button class="kk-revtoggle" onclick="window.__toggleReviews()">' +
-        '<span class="kk-revtl">📝 후기 · 평가</span>' +
+        '<span class="kk-revtl">📝 후기</span>' +
         '<span class="kk-revtsum">' + revSummary + '</span>' +
         '<span class="kk-revtarr">' + (showReviews ? "▴" : "▾") + "</span>" +
       "</button>" +
-      (showReviews ? '<div class="kk-revbody">' + kwGrid + cmt + "</div>" : "") + "</div>";
+      (showReviews ? '<div class="kk-revbody">' + cmt + "</div>" : "") + "</div>";
 
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
