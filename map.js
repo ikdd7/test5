@@ -78,9 +78,9 @@
   // ── 키워드 후기(네이버 플레이스식) ──
   // 사람들이 식장에서 가장 많이 따지는 항목으로 압축. [이모지, 문구]
   var KEYWORDS = [
-    ["🍽️", "음식이 맛있어요"], ["✨", "인테리어가 예뻐요"], ["🏛️", "홀이 넓어요"],
-    ["🙂", "응대가 친절해요"], ["💰", "가성비가 좋아요"], ["🅿️", "주차가 편해요"],
-    ["🚇", "교통이 편해요"], ["🌿", "분위기가 좋아요"], ["🧹", "깨끗해요"],
+    ["🍽️", "음식이 맛있어요"], ["💰", "가성비가 좋아요"], ["🏛️", "홀이 넓어요"],
+    ["🚪", "단독홀이에요"], ["🙂", "응대가 친절해요"], ["🅿️", "주차가 편해요"],
+    ["🚇", "교통이 편해요"], ["🌸", "분위기가 예뻐요"], ["👰", "신부대기실이 좋아요"],
     ["👥", "하객 수용이 좋아요"],
   ];
   var KW_EMOJI = {}; KEYWORDS.forEach(function (k) { KW_EMOJI[k[1]] = k[0]; });
@@ -458,7 +458,7 @@
       ? '<div class="kk-feat kk-comm"><div class="kk-feattitle">💬 커뮤니티에서 자주 나온 얘기</div>' +
         '<div class="kk-chips feat">' + d.community.slice(0, 6).map(function (c) {
           return "<span>" + (KW_EMOJI[c[0]] || "") + " " + esc(c[0]) + " <em>" + c[1] + "</em></span>";
-        }).join("") + '</div><div class="kk-pcsrc">※ 블로그·카페 후기 언급 빈도 기반 (검증 전)</div></div>'
+        }).join("") + '</div><div class="kk-pcsrc">※ 커뮤니티 언급 기반 (검증 전)</div></div>'
       : "";
     // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
     var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
@@ -527,10 +527,9 @@
     return '<div class="kkcard">' +
       photoHtml(d) +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
-      '<div class="kk-name">' + (d.name || sub) + "</div>" +
+      '<div class="kk-namerow"><div class="kk-name">' + (d.name || sub) + "</div>" + fav + "</div>" +
       '<div class="kk-sub">' + sub + "</div>" +
       comm + '<div class="kk-pricesec">' + body + "</div>" + priceReport + reviewSec +
-      '<div class="kk-actions">' + fav + "</div>" +
       '<div class="kk-prdisc">가격은 제보·공개정보 기반 추정치로 실제와 다를 수 있어요.</div>' +
       '<div class="kk-tail"></div></div>';
   }
