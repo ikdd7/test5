@@ -78,11 +78,12 @@
   // ── 키워드 후기(네이버 플레이스식) ──
   // 사람들이 식장에서 가장 많이 따지는 항목으로 압축. [이모지, 문구]
   var KEYWORDS = [
-    ["🍽️", "음식이 맛있어요"], ["💰", "가성비가 좋아요"], ["🏛️", "홀이 넓어요"],
-    ["🚪", "단독홀이에요"], ["🙂", "응대가 친절해요"], ["🅿️", "주차가 편해요"],
-    ["🚇", "교통이 편해요"], ["🌸", "분위기가 예뻐요"], ["👰", "신부대기실이 좋아요"],
-    ["👥", "하객 수용이 좋아요"],
+    ["🍽️", "음식이 맛있어요", "음식"], ["💰", "가성비가 좋아요", "가성비"], ["🏛️", "홀이 넓어요", "넓은 홀"],
+    ["🚪", "단독홀이에요", "단독홀"], ["🙂", "응대가 친절해요", "친절 응대"], ["🅿️", "주차가 편해요", "주차"],
+    ["🚇", "교통이 편해요", "교통"], ["🌸", "분위기가 예뻐요", "분위기"], ["👰", "신부대기실이 좋아요", "신부대기실"],
+    ["👥", "하객 수용이 좋아요", "하객수용"],
   ];
+  var PREF_SHORT = {}; KEYWORDS.forEach(function (k) { PREF_SHORT[k[1]] = k[2] || k[1]; });
   var KW_EMOJI = {}; KEYWORDS.forEach(function (k) { KW_EMOJI[k[1]] = k[0]; });
   // ── 백엔드(Vercel /api) 연동 + localStorage 폴백 ──
   var API = (location.protocol === "https:" || location.protocol === "http:") ? "/api" : null;
@@ -402,6 +403,7 @@
   function popupHtml(d) {
     var slug = SLUGS[d.region];
     var sub = [d.region + (d.district ? " " + d.district : ""), d.type].join(" · ");
+    if (isOutdoor(d) && d.type !== "야외") sub += " · 야외";
     var chips = [];
     if (d.nobs > 1) chips.push(d.nobs + "개 소스 평균");
     if (d.slot) chips.push(d.slot);
@@ -558,7 +560,7 @@
     var el = $("fPref"); if (!el) return; el.innerHTML = "";
     KEYWORDS.forEach(function (k) {
       var label = k[1], b = document.createElement("button");
-      b.className = "chip" + (fPrefs[label] ? " on" : ""); b.textContent = k[0] + " " + label;
+      b.className = "chip" + (fPrefs[label] ? " on" : ""); b.textContent = k[2] || label;
       b.onclick = function () { if (fPrefs[label]) delete fPrefs[label]; else fPrefs[label] = 1; buildPrefChips(onChange); updateFilterSummary(); onChange(); };
       el.appendChild(b);
     });
@@ -599,7 +601,7 @@
     var a = [];
     if (fType !== "전체") a.push(fType);
     if (priceActive()) a.push(priceLabel());
-    Object.keys(fPrefs).filter(function (k) { return fPrefs[k]; }).forEach(function (k) { a.push(k); });
+    Object.keys(fPrefs).filter(function (k) { return fPrefs[k]; }).forEach(function (k) { a.push(PREF_SHORT[k] || k); });
     if (fPriced) a.push("가격있는 곳");
     el.innerHTML = a.length
       ? a.map(function (x) { return '<span class="sumchip">' + x + "</span>"; }).join("")
