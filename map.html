@@ -26,6 +26,10 @@
 <a id="mapLegal" href="/privacy.html" target="_blank" rel="noopener">약관·개인정보 · 정정/삭제 문의</a>
 
 <div id="mapFabs">
+  <button id="favOpen" class="fab favbtn" aria-label="내 찜·비교" title="내 찜·비교">
+    <svg width="23" height="23" viewBox="0 0 24 24" fill="#d6336c"><path d="M12 20.5S3.5 15.4 3.5 9.4c0-2.6 2-4.4 4.3-4.4 1.7 0 3.2 1 4.2 2.5C13 6 14.5 5 16.2 5c2.3 0 4.3 1.8 4.3 4.4 0 6-8.5 11.1-8.5 11.1z"/></svg>
+    <span id="favN" class="favbadge hide">0</span>
+  </button>
   <button class="fab" onclick="window.__recenterMe&&window.__recenterMe()" aria-label="내 위치로" title="내 위치로">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3a4150" stroke-width="2" stroke-linecap="round">
       <circle cx="12" cy="12" r="6"/>
@@ -55,15 +59,20 @@
   </div>
   <div class="filterpanel" id="filterPanel">
     <div class="grp"><span class="glab">홀타입</span><span id="fType"></span></div>
+    <div class="grp price">
+      <span class="glab">가격대 <b id="fPlabel">전체</b></span>
+      <div class="rangewrap">
+        <div class="rangetrack"><div class="rangefill" id="fPfill"></div></div>
+        <input type="range" id="fPmin" min="500" max="6000" step="100" value="500" aria-label="최소 예상총액" />
+        <input type="range" id="fPmax" min="500" max="6000" step="100" value="6000" aria-label="최대 예상총액" />
+      </div>
+    </div>
+    <div class="grp prefs"><span class="glab">선호</span><span id="fPref"></span></div>
     <div class="grp toggles">
-      <button class="chip" id="fFav">💗 찜</button>
-      <button class="chip" id="fPriced">💰 가격있는 곳만</button>
-      <button class="chip" id="fVer">✅ 검증만</button>
+      <button class="chip" id="fPriced">가격 있는 곳만</button>
     </div>
   </div>
 </div>
-
-<button id="favOpen" class="favfab">💗 내 찜·비교 <span id="favN">0</span></button>
 
 <div id="favPanel" class="favpanel">
   <div class="fp-head"><b>💗 내 찜 · 비교</b><button id="favClose" class="fp-x" aria-label="닫기">×</button></div>

@@ -5,9 +5,11 @@
   var won = S.won, manwon = S.manwon;
   var SRC = (window.WEDDING_VENUES && window.WEDDING_VENUES.length) ? window.WEDDING_VENUES : (window.WEDDING_SAMPLE || []);
   var DATA = S.aggregateByName(SRC.filter(function (d) { return d.lat && d.lng; }));
-  var fType = "전체", fSlot = "전체", fVer = false, fPriced = false, fFav = false;
+  var fType = "전체", fSlot = "전체", fPriced = false;
+  var fPriceMin = 500, fPriceMax = 6000, fPrefs = {}; // 가격대(만원)·선호항목 필터
   var $ = function (id) { return document.getElementById(id); };
   function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
 
   // ── 찜(favorite) ──
   var FAVS = {};
@@ -15,15 +17,13 @@
   function favKey(d) { return String(d.name || "").replace(/[^\wㄱ-힣]/g, "") + Math.round(d.lat * 1000); }
   function saveFavs() { try { localStorage.setItem("wedding_favs", JSON.stringify(FAVS)); } catch (e) {} }
   function favCount() { return Object.keys(FAVS).length; }
-  function updateFavChip() { var c = $("fFav"); if (c) c.textContent = "💗 찜" + (favCount() ? " (" + favCount() + ")" : ""); }
+  function updateFavBadge() { var fn = $("favN"); if (fn) { var n = favCount(); fn.textContent = n; fn.classList.toggle("hide", n === 0); } }
   window.__toggleFav = function (key, el) {
     if (FAVS[key]) delete FAVS[key]; else FAVS[key] = 1;
     saveFavs();
     if (el) { el.className = "kk-fav" + (FAVS[key] ? " on" : ""); el.textContent = FAVS[key] ? "💗 찜됨" : "🤍 찜하기"; }
-    updateFavChip();
-    var fn = document.getElementById("favN"); if (fn) fn.textContent = favCount();
+    updateFavBadge();
     if (panelOpen) renderFavPanel();
-    if (fFav && currentRefresh) currentRefresh();
   };
   var currentRefresh = null;
 
@@ -361,9 +361,24 @@
     if (fType === "야외") return isOutdoor(d);
     return d.type === fType;
   }
+  // 예상 총액(원): 가격 있으면 실제, 없으면 지역+타입 평균 추정
+  function estTotal(d) { if (hasPrice(d)) return totalCost(d); var a = regionAvg(d); return a ? avgTotalAt(a) : null; }
+  function priceActive() { return fPriceMin > 500 || fPriceMax < 6000; }
+  function priceOk(d) {
+    if (!priceActive()) return true;
+    var e = estTotal(d); if (e == null) return false;
+    var man = e / 10000, lo = Math.min(fPriceMin, fPriceMax), hi = Math.max(fPriceMin, fPriceMax);
+    return man >= lo && (hi >= 6000 || man <= hi);
+  }
+  function prefOk(d) {
+    var keys = Object.keys(fPrefs).filter(function (k) { return fPrefs[k]; });
+    if (!keys.length) return true;
+    var labs = (d.community || []).map(function (c) { return c[0]; });
+    return keys.every(function (k) { return labs.indexOf(k) >= 0; });
+  }
   function visible() {
     return DATA.filter(function (d) {
-      return typeOk(d) && (!fVer || d.verified) && (!fPriced || isPriced(d)) && (!fFav || FAVS[favKey(d)]);
+      return typeOk(d) && (!fPriced || isPriced(d)) && priceOk(d) && prefOk(d);
     });
   }
   function priceColor(m, lo, hi, mid) {
@@ -436,8 +451,8 @@
           '<input id="prRent" type="number" inputmode="numeric" placeholder="대관료 (원, 선택) 예:5000000" />' +
         "</div>" +
         '<div class="kk-prdates">' +
-          '<label>견적 받은 날짜<input id="prQDate" type="date" /></label>' +
-          '<label>결혼식 날짜<input id="prWDate" type="date" /></label>' +
+          '<label>견적 받은 날짜<input id="prQDate" type="date" max="' + todayStr() + '" /></label>' +
+          '<label>결혼식 날짜<input id="prWDate" type="date" min="' + todayStr() + '" /></label>' +
         "</div>" +
         '<label class="kk-prfile">📷 가격표·견적서 사진 첨부 <span>(필수)</span>' +
           '<input id="prPhoto" type="file" accept="image/*" onchange="window.__prFile(this)" /></label>' +
@@ -543,12 +558,38 @@
     });
   }
   var TYPE_CHIPS = ["컨벤션", "호텔", "하우스웨딩", "야외", "일반예식장"];
+  function buildPrefChips(onChange) {
+    var el = $("fPref"); if (!el) return; el.innerHTML = "";
+    KEYWORDS.forEach(function (k) {
+      var label = k[1], b = document.createElement("button");
+      b.className = "chip" + (fPrefs[label] ? " on" : ""); b.textContent = k[0] + " " + label;
+      b.onclick = function () { if (fPrefs[label]) delete fPrefs[label]; else fPrefs[label] = 1; buildPrefChips(onChange); updateFilterSummary(); onChange(); };
+      el.appendChild(b);
+    });
+  }
+  function priceLabel() {
+    var lo = Math.min(fPriceMin, fPriceMax), hi = Math.max(fPriceMin, fPriceMax);
+    if (lo <= 500 && hi >= 6000) return "전체";
+    return lo.toLocaleString("ko-KR") + "만 ~ " + (hi >= 6000 ? "6,000만+" : hi.toLocaleString("ko-KR") + "만");
+  }
+  function updatePriceUI() {
+    var lo = Math.min(fPriceMin, fPriceMax), hi = Math.max(fPriceMin, fPriceMax);
+    var fill = $("fPfill"); if (fill) { var a = (lo - 500) / 55, b = (hi - 500) / 55; fill.style.left = a + "%"; fill.style.width = (b - a) + "%"; }
+    var lab = $("fPlabel"); if (lab) lab.textContent = priceLabel();
+  }
   function buildFilters(onChange) {
     currentRefresh = onChange;
     chips("fType", TYPE_CHIPS, fType, function (v) { fType = v; buildFilters(onChange); onChange(); });
-    var ff = $("fFav"); if (ff) { ff.className = "chip" + (fFav ? " on" : ""); ff.onclick = function () { fFav = !fFav; buildFilters(onChange); onChange(); }; }
     var pb = $("fPriced"); if (pb) { pb.className = "chip" + (fPriced ? " on" : ""); pb.onclick = function () { fPriced = !fPriced; buildFilters(onChange); onChange(); }; }
-    var vb = $("fVer"); vb.className = "chip" + (fVer ? " on" : ""); vb.onclick = function () { fVer = !fVer; buildFilters(onChange); onChange(); };
+    buildPrefChips(onChange);
+    // 가격대 듀얼 슬라이더(한 번만 바인딩)
+    var pmin = $("fPmin"), pmax = $("fPmax");
+    if (pmin && pmax && !pmin.__b) {
+      pmin.__b = true;
+      pmin.oninput = function () { fPriceMin = Math.min(parseInt(pmin.value, 10), fPriceMax); pmin.value = fPriceMin; updatePriceUI(); updateFilterSummary(); onChange(); };
+      pmax.oninput = function () { fPriceMax = Math.max(parseInt(pmax.value, 10), fPriceMin); pmax.value = fPriceMax; updatePriceUI(); updateFilterSummary(); onChange(); };
+    }
+    updatePriceUI();
     // 드롭다운 토글(한 번만 바인딩) + 선택요약
     var tog = $("filterToggle"), pan = $("filterPanel");
     if (tog && !tog.__b) {
@@ -556,15 +597,14 @@
       tog.onclick = function () { if (pan) { var open = pan.classList.toggle("open"); tog.classList.toggle("on", open); } };
     }
     updateFilterSummary();
-    updateFavChip();
   }
   function updateFilterSummary() {
     var el = $("filterSummary"); if (!el) return;
     var a = [];
     if (fType !== "전체") a.push(fType);
-    if (fFav) a.push("💗 찜");
-    if (fPriced) a.push("💰 가격");
-    if (fVer) a.push("✅ 검증");
+    if (priceActive()) a.push(priceLabel());
+    Object.keys(fPrefs).filter(function (k) { return fPrefs[k]; }).forEach(function (k) { a.push(k); });
+    if (fPriced) a.push("가격있는 곳");
     el.innerHTML = a.length
       ? a.map(function (x) { return '<span class="sumchip">' + x + "</span>"; }).join("")
       : '<span class="sumchip muted">전체 보기</span>';
@@ -770,7 +810,7 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function renderFavPanel() {
     var list = favList(), el = $("fpList");
-    var fn = $("favN"); if (fn) fn.textContent = favCount();
+    updateFavBadge();
     if (!el) return;
     if (!list.length) { el.innerHTML = '<div class="fp-empty">아직 찜한 곳이 없어요.<br>지도 핀을 눌러 🤍 를 탭해보세요 💗</div>'; return; }
     list.sort(function (a, b) { var ta = totalCost(a), tb = totalCost(b); if (ta == null) return 1; if (tb == null) return -1; return ta - tb; });
@@ -807,7 +847,7 @@
     var gi = $("fpGuests"); gi.value = GUESTS;
     gi.addEventListener("input", function () { setGuests(parseInt(gi.value.replace(/[^0-9]/g, ""), 10) || 0); renderFavPanel(); });
     $("fpShare").onclick = shareFavs;
-    var fn = $("favN"); if (fn) fn.textContent = favCount();
+    updateFavBadge();
   }
   initPanel();
 
