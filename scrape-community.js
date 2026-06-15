@@ -1,5 +1,5 @@
 /*
- * scrape-community.js — 네이버 검색 API(블로그)로 식장별 공개 후기 스니펫에서
+ * scrape-community.js — 네이버 검색 API(블로그+카페)로 식장별 공개 후기 스니펫에서
  *   긍정 키워드 '언급 빈도'만 집계해 venue.community 에 저장(원문 복제 X).
  *   실행: NAVER_ID=클라이언트ID NAVER_SECRET=시크릿 node scrape-community.js
  *   ⚠️ 공식 API + 스니펫 키워드 빈도만 집계 → 저작권 부담 적음. 표기는 "언급 기반·검증 전".
@@ -30,7 +30,8 @@ function naver(p) {
     https.get(opt, (r) => { let d = ""; r.on("data", (c) => (d += c)); r.on("end", () => { try { res(JSON.parse(d)); } catch (e) { res(null); } }); }).on("error", () => res(null));
   });
 }
-const api = (q) => naver("/v1/search/blog.json?display=30&sort=sim&query=" + encodeURIComponent(q));
+const blogApi = (q) => naver("/v1/search/blog.json?display=70&sort=sim&query=" + encodeURIComponent(q));
+const cafeApi = (q) => naver("/v1/search/cafearticle.json?display=70&sort=sim&query=" + encodeURIComponent(q));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 (async () => {
@@ -43,10 +44,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const FOOD = "음식이 맛있어요";
   for (let i = START; i < venues.length && done < MAX; i++) {
     const v = venues[i]; done++;
-    const j = await api(v.name + " 웨딩홀 후기");
-    if (j && j.errorCode) { console.log("API 오류: " + j.errorMessage + " (키/한도 확인)"); break; }
-    if (j && j.items && j.items.length) {
-      const text = j.items.map((it) => stripTags(it.title) + " " + stripTags(it.description)).join("  ");
+    // 블로그 + 카페(다른 커뮤니티) 각 70개 → 합쳐서 키워드 집계
+    const jb = await blogApi(v.name + " 웨딩홀 후기");
+    if (jb && jb.errorCode) { console.log("API 오류: " + jb.errorMessage + " (키/한도 확인)"); break; }
+    await sleep(90);
+    const jc = await cafeApi(v.name + " 웨딩홀");
+    const items = [].concat((jb && jb.items) || [], (jc && jc.items) || []);
+    if (items.length) {
+      const text = items.map((it) => stripTags(it.title) + " " + stripTags(it.description)).join("  ");
       const counts = KW.map((k) => { const m = text.match(k.re); return [k.l, m ? m.length : 0]; }).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]);
       if (counts.length) {
         v.community = counts.slice(0, 6); filled++;

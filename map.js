@@ -458,7 +458,7 @@
       ? '<div class="kk-feat kk-comm"><div class="kk-feattitle">💬 커뮤니티에서 자주 나온 얘기</div>' +
         '<div class="kk-chips feat">' + d.community.slice(0, 6).map(function (c) {
           return "<span>" + (KW_EMOJI[c[0]] || "") + " " + esc(c[0]) + " <em>" + c[1] + "</em></span>";
-        }).join("") + '</div><div class="kk-pcsrc">※ 블로그 후기 언급 빈도 기반 (검증 전)</div></div>'
+        }).join("") + '</div><div class="kk-pcsrc">※ 블로그·카페 후기 언급 빈도 기반 (검증 전)</div></div>'
       : "";
     // ── 키워드 비율(%) 계산: 각 키워드 / 전체 선택 합 ──
     var counts = KEYWORDS.map(function (k) { return kwCount(d, k[1]); });
