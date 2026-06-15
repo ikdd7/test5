@@ -10,6 +10,13 @@
   var $ = function (id) { return document.getElementById(id); };
   function hasPrice(d) { return d.meal >= 20000 && d.meal <= 300000; }
   function todayStr() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  // 모든 찜 하트는 동일한 2D 하트 SVG(GPS 옆 버튼과 동일). on=채움/off=외곽선.
+  function heartIcon(on, sz) {
+    sz = sz || 14;
+    return '<svg class="hicon" width="' + sz + '" height="' + sz + '" viewBox="0 0 24 24" ' +
+      (on ? 'fill="#d6336c" stroke="none"' : 'fill="none" stroke="currentColor" stroke-width="2.2"') +
+      '><path d="M12 20.5S3.5 15.4 3.5 9.4c0-2.6 2-4.4 4.3-4.4 1.7 0 3.2 1 4.2 2.5C13 6 14.5 5 16.2 5c2.3 0 4.3 1.8 4.3 4.4 0 6-8.5 11.1-8.5 11.1z"/></svg>';
+  }
 
   // ── 찜(favorite) ──
   var FAVS = {};
@@ -21,7 +28,7 @@
   window.__toggleFav = function (key, el) {
     if (FAVS[key]) delete FAVS[key]; else FAVS[key] = 1;
     saveFavs();
-    if (el) { el.className = "kk-fav" + (FAVS[key] ? " on" : ""); el.textContent = FAVS[key] ? "💗 찜됨" : "🤍 찜하기"; }
+    if (el) { el.className = "kk-fav" + (FAVS[key] ? " on" : ""); el.innerHTML = heartIcon(!!FAVS[key]) + (FAVS[key] ? " 찜됨" : " 찜하기"); }
     updateFavBadge();
     if (panelOpen) renderFavPanel();
   };
@@ -536,7 +543,7 @@
 
     var key = favKey(d), on = !!FAVS[key];
     var fav = '<button class="kk-fav' + (on ? " on" : "") + '" onclick="window.__toggleFav(\'' + key + '\',this)">' +
-      (on ? "💗 찜됨" : "🤍 찜하기") + "</button>";
+      heartIcon(on) + (on ? " 찜됨" : " 찜하기") + "</button>";
     return '<div class="kkcard">' +
       photoHtml(d) +
       '<button class="kk-x" onclick="window.__closePop&&window.__closePop()" aria-label="닫기">×</button>' +
@@ -810,7 +817,7 @@
     var list = favList(), el = $("fpList");
     updateFavBadge();
     if (!el) return;
-    if (!list.length) { el.innerHTML = '<div class="fp-empty">아직 찜한 곳이 없어요.<br>지도 핀을 눌러 🤍 를 탭해보세요 💗</div>'; return; }
+    if (!list.length) { el.innerHTML = '<div class="fp-empty">아직 찜한 곳이 없어요.<br>지도 핀을 눌러 ' + heartIcon(true, 15) + ' 를 탭해보세요</div>'; return; }
     list.sort(function (a, b) { var ta = totalCost(a), tb = totalCost(b); if (ta == null) return 1; if (tb == null) return -1; return ta - tb; });
     el.innerHTML = list.map(function (d, i) {
       var k = favKey(d), t = totalCost(d);
@@ -820,7 +827,7 @@
       var rank = (hasPrice(d) && i === 0) ? '<span class="fp-best">최저</span>' : "";
       return '<div class="fp-item"><div class="fp-top"><div><div class="fp-name">' + esc(d.name) + rank +
         '</div><div class="fp-sub">' + esc(d.region + (d.district ? " " + d.district : "") + " · " + d.type) + "</div></div>" +
-        "<button class=\"fp-rem\" onclick=\"window.__toggleFav('" + k + "')\">💔</button></div>" + cost +
+        "<button class=\"fp-rem\" onclick=\"window.__toggleFav('" + k + "')\" aria-label=\"찜 해제\">" + heartIcon(true, 16) + "</button></div>" + cost +
         '<input class="fp-memo" data-k="' + k + '" placeholder="메모 (예: 토요일 가능? 주차 OK?)" value="' + esc(getMemo(d)) + '"></div>';
     }).join("");
     Array.prototype.forEach.call(el.querySelectorAll(".fp-memo"), function (inp) {
