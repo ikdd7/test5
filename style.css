@@ -219,6 +219,8 @@ details .a{color:var(--muted);padding:0 0 16px;font-size:.92rem}
 .filterpanel.open{display:flex;animation:fpDrop .16s ease}
 @keyframes fpDrop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 .filterpanel .grp{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.filterpanel .grp.prefs{align-items:flex-start}
+#fType,#fPref{display:flex;flex-wrap:wrap;gap:8px;flex:1}
 .glab{color:#6b7480;font-size:.72rem;font-weight:800;margin-right:2px}
 .glab b{color:#d6336c}
 /* 가격대 듀얼 슬라이더 */
