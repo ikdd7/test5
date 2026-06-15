@@ -260,10 +260,16 @@
     if (d.photo) return '<img class="kk-photo" src="' + d.photo + '" alt="" onerror="window.__photoErr(this)">';
     return placeholderHtml(d);
   }
+  function phKey(d) { var ic = venueIcon(d.type); return ic === "🏨" ? "h" : ic === "⛪" ? "c" : ic === "🌿" ? "g" : ic === "🏛️" ? "v" : "w"; }
+  // 찜 목록용 정사각 썸네일: 사진 있으면 사진(깨지면 placeholder), 없으면 타입별 그라데이션+아이콘
+  function favThumb(d) {
+    return '<div class="fp-thumb kk-ph-' + phKey(d) + '"><span class="fp-thic">' + venueIcon(d.type) + "</span>" +
+      (d.photo ? '<img src="' + d.photo + '" alt="" onerror="this.remove()">' : "") + "</div>";
+  }
   function placeholderHtml(d) {
     var loc = (d.region || "") + (d.district ? " " + d.district : "");
     var ic = venueIcon(d.type);
-    var k = ic === "🏨" ? "h" : ic === "⛪" ? "c" : ic === "🌿" ? "g" : ic === "🏛️" ? "v" : "w";
+    var k = phKey(d);
     return '<div class="kk-photo kk-ph kk-ph-' + k + '">' +
       '<div class="kk-ph-badge"><span class="kk-ph-ic">' + ic + '</span></div>' +
       '<div class="kk-ph-tx">' + esc(d.type || "예식장") + '</div>' +
@@ -825,7 +831,7 @@
         ? '<div class="fp-cost"><span>식대 ' + manwon(d.meal) + " · 대관 " + (d.rental ? manwon(d.rental) : "-") + "</span><b>" + manwon(t) + "원</b></div>"
         : '<div class="fp-cost"><span>가격 미확인</span></div>';
       var rank = (hasPrice(d) && i === 0) ? '<span class="fp-best">최저</span>' : "";
-      return '<div class="fp-item"><div class="fp-top"><div><div class="fp-name">' + esc(d.name) + rank +
+      return '<div class="fp-item"><div class="fp-top">' + favThumb(d) + '<div class="fp-info"><div class="fp-name">' + esc(d.name) + rank +
         '</div><div class="fp-sub">' + esc(d.region + (d.district ? " " + d.district : "") + " · " + d.type) + "</div></div>" +
         "<button class=\"fp-rem\" onclick=\"window.__toggleFav('" + k + "')\" aria-label=\"찜 해제\">" + heartIcon(true, 16) + "</button></div>" + cost +
         '<input class="fp-memo" data-k="' + k + '" placeholder="메모 (예: 토요일 가능? 주차 OK?)" value="' + esc(getMemo(d)) + '"></div>';
